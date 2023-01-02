@@ -1,0 +1,61 @@
+# Global ignores
+
+.DS_Store
+.localized
+
+
+# Folder specific ignores
+
+/.aws/**
+#/.aws/config
+#/.aws/credentials
+
+/.cache/**
+
+/.config/**
+
+/.docker/**
+!/.docker/daemon.json
+
+/.idea/**
+
+/.k8slens/**
+
+/.kube/**
+# /.kube/config
+
+/.npm/**
+
+/.oh-my-zsh/**
+
+/.postman/**
+
+/.ssh/**
+
+/.vscode/**
+
+/.zsh_sessions/**
+
+/Applications/**
+
+/code/**
+!/code/*.*
+!/code/*
+/code/.DS_Store
+
+/Downloads/**
+
+/Library/**
+
+/Movies/TV/**
+
+/Pictures/Photo Booth Library/**
+
+/Public/**
+
+# File specific ignores
+
+/.bash_history
+/.lesshst
+/.zcompdump*
+/.zsh_history

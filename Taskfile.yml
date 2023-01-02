@@ -1,0 +1,17 @@
+# https://taskfile.dev
+
+version: '3'
+
+silent: true
+
+tasks:
+  shorts:
+    desc: Show shortcuts for mac
+    cmds:
+      - |
+        echo '
+        screen recording   = shift - cmd - 5
+        screenshot full    = shift - cmd - 3
+        screenshot partial = shift - cmd - 4
+        '
+
