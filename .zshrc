@@ -9,7 +9,7 @@ fi
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
 # Path to your oh-my-zsh installation.
-export ZSH="/Users/tihonetlight.com/.oh-my-zsh"
+export ZSH="$HOME/.oh-my-zsh"
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,
@@ -110,6 +110,7 @@ export LC_ALL=$LANG
 # else
 #   export EDITOR='mvim'
 # fi
+export EDITOR=code
 
 # Compilation flags
 # export ARCHFLAGS="-arch x86_64"
@@ -157,4 +158,9 @@ alias fga="flux get -A"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
-export PATH="/usr/local/opt/mysql-client/bin:$PATH"
+
+export PATH="$PATH:/usr/local/opt/mysql-client/bin"
+
+export GOROOT=/usr/local/go
+export GOPATH=$HOME/go
+export PATH=$GOPATH/bin:$GOROOT/bin:$PATH

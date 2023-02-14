@@ -6,6 +6,8 @@
 
 # Folder specific ignores
 
+/.ansible/**
+
 /.aws/**
 #/.aws/config
 #/.aws/credentials
@@ -17,12 +19,19 @@
 /.docker/**
 !/.docker/daemon.json
 
+/.gnupg/**
+!/.gnupg/gpg.conf
+
+/go/**
+
 /.idea/**
 
 /.k8slens/**
 
 /.kube/**
 # /.kube/config
+
+/.motd_shown
 
 /.npm/**
 
@@ -32,7 +41,12 @@
 
 /.ssh/**
 
+/.terraform.d/**
+
 /.vscode/**
+
+/.vscode-server/**
+/.vscode-server-server/**
 
 /.zsh_sessions/**
 
