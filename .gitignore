@@ -17,6 +17,9 @@
 /.docker/**
 !/.docker/daemon.json
 
+/.granted/**
+!/.granted/config
+
 /.idea/**
 
 /.k8slens/**
@@ -33,6 +36,7 @@
 /.ssh/**
 
 /.vscode/**
+!/.vscode/extensions/extensions.json
 
 /.zsh_sessions/**
 
@@ -45,9 +49,13 @@
 
 /Downloads/**
 
+/go/**
+
 /Library/**
 
 /Movies/TV/**
+
+/Onedrive*/**
 
 /Pictures/Photo Booth Library/**
 
@@ -57,5 +65,6 @@
 
 /.bash_history
 /.lesshst
+/.viminfo
 /.zcompdump*
 /.zsh_history

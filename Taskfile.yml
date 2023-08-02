@@ -15,3 +15,8 @@ tasks:
         screenshot partial = shift - cmd - 4
         '
 
+  docker:
+    desc: Start docker
+    cmds:
+      - |
+        open -n "/Applications/Rancher Desktop.app"

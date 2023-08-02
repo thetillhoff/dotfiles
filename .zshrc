@@ -9,13 +9,12 @@ fi
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
 # Path to your oh-my-zsh installation.
-export ZSH="/Users/tihonetlight.com/.oh-my-zsh"
+export ZSH=$HOME/.oh-my-zsh
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
-#ZSH_THEME="agnoster"
 ZSH_THEME="powerlevel10k/powerlevel10k"
 
 # Set list of themes to pick from when loading at random
@@ -90,7 +89,7 @@ plugins=(
     macos
     terraform
     vscode
-
+    zsh-syntax-highlighting
 )
 
 source $ZSH/oh-my-zsh.sh
@@ -101,8 +100,6 @@ source $ZSH/oh-my-zsh.sh
 
 # You may need to manually set your language environment
 # export LANG=en_US.UTF-8
-export LANG=en_US.UTF-8
-export LC_ALL=$LANG
 
 # Preferred editor for local and remote sessions
 # if [[ -n $SSH_CONNECTION ]]; then
@@ -133,6 +130,7 @@ alias cd..="cd .."
 alias k="kubectl"
 alias kg="kubectl get"
 alias kga="kubectl get -A"
+alias kgar="kubectl api-resources --verbs=list --namespaced -o name | xargs -n 1 kubectl get --show-kind --ignore-not-found"
 
 # kubectx
 alias kctx="kubectx"
@@ -152,9 +150,11 @@ alias kdelk="kubectl delete -k"
 alias fg="flux get"
 alias fga="flux get -A"
 
-# docker / rancher
-#alias docker="nerdctl"
+# granted / assume
+alias assume="source /usr/local/bin/assume"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
-export PATH="/usr/local/opt/mysql-client/bin:$PATH"
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
