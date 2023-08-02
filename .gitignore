@@ -6,76 +6,84 @@
 
 # Folder specific ignores
 
-/.ansible/**
+/.ansible/
 
-/.aws/**
+/.aws/
 #/.aws/config
 #/.aws/credentials
 
-/.cache/**
+/.cache/
 
-/.config/**
+/.config/
 
-/.docker/**
+/.docker/
 !/.docker/daemon.json
 
-/.gnupg/**
+/.gnupg/
 !/.gnupg/gpg.conf
 
-/go/**
+/go/
 
-/.granted/**
+/.granted/
 !/.granted/config
 
-/.idea/**
+/.idea/
 
-/.k8slens/**
+/.k8slens/
 
-/.kube/**
+/.kube/
 # /.kube/config
 
-/.motd_shown
+/.npm/
 
-/.npm/**
+/.nvm/
 
-/.nvm/**
+/.oh-my-zsh/
 
-/.oh-my-zsh/**
+/.postman/
 
-/.postman/**
+/.ssh/
 
-/.ssh/**
+/.Trash/
 
-/.terraform.d/**
+/.vscode/
 
-/.vscode/**
+/.zsh_sessions/
 
-/.zsh_sessions/**
+/Applications/
 
-/Applications/**
-
-/code/**
+/code/
 !/code/*.*
 !/code/*
 /code/.DS_Store
 
-/Downloads/**
+/Desktop/
 
-/go/**
+/Documents/
 
-/Library/**
+/Downloads/
 
-/Movies/TV/**
+/go/
 
-/Onedrive*/**
+/Library/
 
-/Pictures/Photo Booth Library/**
+/Movies/
 
-/Public/**
+/Music/
+
+# This is a symlink
+/OneDrive - thetillhoff
+
+/Pictures/
+
+/Postman/
+
+/Public/
 
 # File specific ignores
 
 /.bash_history
+/.gitconfig
 /.lesshst
 /.viminfo
 /.zcompdump*
