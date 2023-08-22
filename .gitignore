@@ -93,6 +93,8 @@
 
 /Public/
 
+/.vscode-server/
+
 # File specific ignores
 
 /.aws
