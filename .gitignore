@@ -105,3 +105,6 @@
 /.viminfo
 /.zcompdump*
 /.zsh_history
+
+# wsl specific symlink
+/tillhoffmann
