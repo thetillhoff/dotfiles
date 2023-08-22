@@ -1,0 +1,9 @@
+[user]
+	name = Till Hoffmann
+	email = till@thetillhoff.de
+[commit]
+	gpgsign = false
+[init]
+	defaultBranch = main
+[pull]
+	rebase = true

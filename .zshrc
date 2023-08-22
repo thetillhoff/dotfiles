@@ -108,7 +108,7 @@ source $ZSH/oh-my-zsh.sh
 # else
 #   export EDITOR='mvim'
 # fi
-export EDITOR=code
+export EDITOR="code --wait"
 
 # Compilation flags
 # export ARCHFLAGS="-arch x86_64"
@@ -171,3 +171,11 @@ export PATH="$PATH:/usr/local/opt/mysql-client/bin"
 # nvm
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+# homebrew
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+
+# rust
+#source "$HOME/.cargo/env"
+

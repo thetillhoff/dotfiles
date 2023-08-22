@@ -14,10 +14,14 @@
 
 /.cache/
 
+/.cargo/
+
 /.config/
 
 /.docker/
 !/.docker/daemon.json
+
+/.dotnet/
 
 /.gnupg/
 !/.gnupg/gpg.conf
@@ -34,6 +38,10 @@
 /.kube/
 # /.kube/config
 
+/.local/
+
+/.motd_shown
+
 /.npm/
 
 /.nvm/
@@ -41,6 +49,8 @@
 /.oh-my-zsh/
 
 /.postman/
+
+/.rustup/
 
 /.ssh/
 !/.ssh/config
@@ -85,10 +95,13 @@
 
 # File specific ignores
 
+/.aws
+/.azure
 /.bash_history
 /.gitconfig
 /.lesshst
 /.netrc
+/.python_history
 /.viminfo
 /.zcompdump*
 /.zsh_history
