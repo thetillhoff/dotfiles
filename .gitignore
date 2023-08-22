@@ -43,6 +43,9 @@
 /.postman/
 
 /.ssh/
+!/.ssh/config
+
+/.terraform.d/
 
 /.Trash/
 
@@ -85,6 +88,7 @@
 /.bash_history
 /.gitconfig
 /.lesshst
+/.netrc
 /.viminfo
 /.zcompdump*
 /.zsh_history

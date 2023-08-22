@@ -82,6 +82,7 @@ plugins=(
     colorize
     docker
     git
+    ssh-agent
     helm
     history
     kubectl
@@ -127,6 +128,9 @@ alias cls="clear"
 # cd
 alias cd..="cd .."
 
+# git
+alias gcm="git commit -m"
+
 # kubectl
 alias k="kubectl"
 alias kg="kubectl get"
@@ -158,7 +162,6 @@ alias assume="source /usr/local/bin/assume"
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 # go
-export GOROOT=/usr/local/go
 export GOPATH=$HOME/go
 export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
 
