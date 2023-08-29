@@ -33,6 +33,8 @@
 
 /.idea/
 
+/.iterm2/
+
 /.k8slens/
 
 /.kube/
@@ -101,6 +103,7 @@
 /.azure
 /.bash_history
 /.gitconfig
+/.iterm2_shell_integration.zsh
 /.lesshst
 /.netrc
 /.python_history
