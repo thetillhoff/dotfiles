@@ -103,6 +103,7 @@
 /.azure
 /.bash_history
 /.gitconfig
+/.wget-hsts
 /.iterm2_shell_integration.zsh
 /.lesshst
 /.netrc
