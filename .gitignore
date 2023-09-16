@@ -108,6 +108,7 @@
 /.lesshst
 /.netrc
 /.python_history
+/.sudo_as_admin_successful
 /.viminfo
 /.zcompdump*
 /.zsh_history
