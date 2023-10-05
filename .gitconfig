@@ -1,9 +1,15 @@
 [user]
 	name = Till Hoffmann
 	email = till@thetillhoff.de
+	signingkey = ~/.ssh/id_ed25519.pub
 [commit]
 	gpgsign = false
 [init]
 	defaultBranch = main
 [pull]
 	rebase = true
+[gpg]
+	# program = gpg
+	format = ssh
+[push]
+	autoSetupRemote = true
