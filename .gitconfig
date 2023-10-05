@@ -9,7 +9,6 @@
 [pull]
 	rebase = true
 [gpg]
-	# program = gpg
 	format = ssh
 [push]
 	autoSetupRemote = true
