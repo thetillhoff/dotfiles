@@ -116,6 +116,8 @@ alias cls="clear"
 alias cd..="cd .."
 
 # git
+alias gc="git checkout"
+alias gcb="git checkout -b"
 alias gcm="git commit -m"
 
 # kubectl
