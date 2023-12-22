@@ -6,6 +6,7 @@
 	gpgsign = false
 [init]
 	defaultBranch = main
+	templateDir = /Users/tihonetlight.com/.git-template
 [pull]
 	rebase = true
 [gpg]

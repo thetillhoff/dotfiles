@@ -167,5 +167,8 @@ alias fga="flux get -A"
 # rust
 [ -s "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
 
+# rancher desktop
+[ -s "$HOME/.rd/bin" ] && export PATH="$PATH:$HOME/.rd/bin"
+
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
