@@ -18,6 +18,8 @@
 
 /.config/
 
+/.cups/
+
 /.docker/
 !/.docker/daemon.json
 
@@ -51,6 +53,8 @@
 /.oh-my-zsh/
 
 /.postman/
+
+/.rd/
 
 /.rustup/
 
