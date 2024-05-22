@@ -167,8 +167,12 @@ alias fga="flux get -A"
 # rust
 [ -s "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
 
+# vscode / code
+[ -s "/Applications/Visual Studio Code.app" ] && export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
+
 # rancher desktop
 [ -s "$HOME/.rd/bin" ] && export PATH="$PATH:$HOME/.rd/bin"
 
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
+source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
