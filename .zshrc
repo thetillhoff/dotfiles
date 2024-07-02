@@ -173,6 +173,14 @@ alias fga="flux get -A"
 # rancher desktop
 [ -s "$HOME/.rd/bin" ] && export PATH="$PATH:$HOME/.rd/bin"
 
-test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
+# enable iterm2 shell integration
+test -e "$HOME/.iterm2_shell_integration.zsh" && source "$HOME/.iterm2_shell_integration.zsh"
 
-source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+# download zsh-syntax-highlighting plugin
+[ -s "$HOME/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting" ] || git clone --depth=1 https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting 
+
+# ensure homebrew is installed
+[ -s "/opt/homebrew/bin/brew" ] || /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# ensure nerdfonts are installed
+[ -s "/opt/homebrew/Caskroom/font-meslo-lg-nerd-font" ] || brew install --cask font-meslo-lg-nerd-font
