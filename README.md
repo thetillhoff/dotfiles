@@ -2,6 +2,6 @@
 
 ```sh
 git init
-git remote add origin https://github.com/thetillhoff/dotfiles.git
+git remote add origin git@github.com:thetillhoff/dotfiles.git
 git pull
 ```
