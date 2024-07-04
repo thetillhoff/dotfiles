@@ -179,8 +179,11 @@ which brew >/dev/null || /bin/bash -c "$(curl -fsSL https://raw.githubuserconten
 # enable iterm2 shell integration
 test -e "$HOME/.iterm2_shell_integration.zsh" && source "$HOME/.iterm2_shell_integration.zsh"
 
+# ---
+# This should only run on mac:
+
 # download zsh-syntax-highlighting plugin
 # [ -s "$HOME/.oh-my-zsh" ] && ( [ -s "$HOME/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting" ] || git clone --depth=1 https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting)
 
 # ensure nerdfonts are installed
-[ -s "/opt/homebrew/Caskroom/font-meslo-lg-nerd-font" ] || brew install --cask font-meslo-lg-nerd-font
+# [ -s "/opt/homebrew/Caskroom/font-meslo-lg-nerd-font" ] || brew install --cask font-meslo-lg-nerd-font
