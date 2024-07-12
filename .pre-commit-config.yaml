@@ -1,0 +1,23 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-shebang-scripts-are-executable
+      - id: check-executables-have-shebangs
+      - id: destroyed-symlinks
+      - id: check-added-large-files
+      - id: detect-private-key
+  - repo: https://github.com/amperser/proselint/ # config in ~/.config/proselint/config.json
+    rev: "0.14.0"
+    hooks:
+      - id: proselint
+        types: [plain-text] # / [text] # what is 'types' for?
+        exclude: LICENSE
+  - repo: https://github.com/markdownlint/markdownlint # config in ~/mdlrc and ~/.config/markdownlint.
+    rev: "v0.13.0"
+    hooks:
+      - id: markdownlint

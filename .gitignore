@@ -16,14 +16,20 @@
 
 /.cargo/
 
+/.cdk/
+
 /.config/
 
 /.cups/
+
+/.expo/
 
 /.docker/
 !/.docker/daemon.json
 
 /.dotnet/
+
+/.gem/
 
 /.gnupg/
 !/.gnupg/gpg.conf
