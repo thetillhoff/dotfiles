@@ -151,7 +151,10 @@ alias fg="flux get"
 alias fga="flux get -A"
 
 # granted / assume
-[ -s "/usr/local/bin/assume" ] && alias assume="source /usr/local/bin/assume"
+alias assume=". assume"
+
+# aws-cdk
+alias cdk="npx aws-cdk"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [ -s "$HOME/.p10k.zsh" ] && source $HOME/.p10k.zsh
@@ -168,8 +171,34 @@ alias fga="flux get -A"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
 # homebrew
+# ensure homebrew is installed
+which brew >/dev/null || /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 [ -s "/home/linuxbrew/.linuxbrew/bin/brew" ] && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" # linux
 [ -s "/opt/homebrew/bin/brew" ] && eval "$(/opt/homebrew/bin/brew shellenv)" # mac
+
+# nvm
+[ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"  # This loads nvm
+
+autoload -U add-zsh-hook
+load-nvmrc() {
+  local nvmrc_path
+  nvmrc_path="$(nvm_find_nvmrc)"
+  if [ -n "$nvmrc_path" ]; then
+    local nvmrc_node_version
+    nvmrc_node_version=$(nvm version "$(cat "${nvmrc_path}")")
+
+    if [ "$nvmrc_node_version" = "N/A" ]; then
+      nvm install
+    elif [ "$nvmrc_node_version" != "$(nvm version)" ]; then
+      nvm use
+    fi
+  elif [ -n "$(PWD=$OLDPWD nvm_find_nvmrc)" ] && [ "$(nvm version)" != "$(nvm version default)" ]; then
+    echo "Reverting to nvm default version"
+    nvm use default
+  fi
+}
+add-zsh-hook chpwd load-nvmrc
+load-nvmrc
 
 # rust
 [ -s "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
