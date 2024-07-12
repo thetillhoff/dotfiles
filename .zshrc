@@ -151,10 +151,7 @@ alias fg="flux get"
 alias fga="flux get -A"
 
 # granted / assume
-alias assume=". assume"
-
-# aws-cdk
-alias cdk="npx aws-cdk"
+[ -s "/usr/local/bin/assume" ] && alias assume="source /usr/local/bin/assume"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [ -s "$HOME/.p10k.zsh" ] && source $HOME/.p10k.zsh
@@ -171,8 +168,6 @@ alias cdk="npx aws-cdk"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
 # homebrew
-# ensure homebrew is installed
-which brew >/dev/null || /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 [ -s "/home/linuxbrew/.linuxbrew/bin/brew" ] && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" # linux
 [ -s "/opt/homebrew/bin/brew" ] && eval "$(/opt/homebrew/bin/brew shellenv)" # mac
 
