@@ -151,7 +151,10 @@ alias fg="flux get"
 alias fga="flux get -A"
 
 # granted / assume
-[ -s "/usr/local/bin/assume" ] && alias assume="source /usr/local/bin/assume"
+alias assume=". assume"
+
+# aws-cdk
+alias cdk="npx aws-cdk"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [ -s "$HOME/.p10k.zsh" ] && source $HOME/.p10k.zsh
