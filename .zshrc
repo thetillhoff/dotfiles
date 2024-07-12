@@ -121,6 +121,10 @@ alias cd..="cd .."
 alias gc="git checkout"
 alias gcb="git checkout -b"
 alias gcm="git commit -m"
+alias gd="git diff"
+alias gds="git diff --staged" # equivalent to git diff --cached
+alias gdc="git diff --cached" # equivalent to git diff --staged
+alias gs="git status"
 
 # kubectl
 alias k="kubectl"
