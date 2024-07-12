@@ -201,6 +201,9 @@ load-nvmrc
 # rust
 [ -s "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
 
+# ruby (for some pre-commit hooks)
+[ -s "/opt/homebrew/opt/ruby/bin" ] && export PATH="/opt/homebrew/opt/ruby/bin:$PATH"
+
 # vscode / code
 [ -s "/Applications/Visual Studio Code.app" ] && export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
 
