@@ -75,6 +75,8 @@ plugins=(
     kubectl
     kubectx
     macos
+    npm
+    nvm
     terraform
     vscode
     zsh-syntax-highlighting
