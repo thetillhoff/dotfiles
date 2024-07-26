@@ -69,6 +69,7 @@ plugins=(
     aws
     colorize
     docker
+    dotenv
     git
     helm
     history
