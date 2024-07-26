@@ -212,7 +212,12 @@ load-nvmrc
 [ -s "$HOME/.rd/bin" ] && export PATH="$PATH:$HOME/.rd/bin"
 
 # enable iterm2 shell integration
-test -e "$HOME/.iterm2_shell_integration.zsh" && source "$HOME/.iterm2_shell_integration.zsh"
+[ -s "$HOME/.iterm2_shell_integration.zsh" ] && source "$HOME/.iterm2_shell_integration.zsh"
+
+# expo / android studio / jvm
+[ -s "/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home" ] && export JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home
+[ -s "$HOME/Library/Android/sdk" ] && export ANDROID_HOME="$HOME/Library/Android/sdk" && export PATH=$PATH:$ANDROID_HOME/emulator && export PATH=$PATH:$ANDROID_HOME/platform-tools
+
 
 # ---
 # This should only run on mac:
