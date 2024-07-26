@@ -44,11 +44,6 @@ repos:
     rev: v2.3.0
     hooks:
       - id: codespell
-        name: codespell
-        description: Checks for common misspellings in text files.
-        entry: codespell
-        language: python
-        types: [text]
   - repo: https://github.com/gitleaks/gitleaks
     rev: "v8.16.1"
     hooks:
