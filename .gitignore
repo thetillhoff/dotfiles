@@ -1,133 +1,147 @@
-# Global ignores
+# The lines in this file are sorted alphabetically.
+#
+# All folder names have a trailing `/`.
+#
+# To ignore a folder, but don't ignore a specific file in it, use the following format
+#   <folderpath>/*
+#   !<folderpath>/<filepath>
+# Please note, that the `/*` are required.
+# See https://stackoverflow.com/a/5534865
+
+.android/
+
+.ansible/
+
+.atlas/
+
+.aws/
+
+.azure
+
+.bash_history
+
+.bundle/
+
+.cache/
+
+.cargo/
+
+.cdk/
+
+.config/
+
+.cups/
+
+.cursor/
+.cursor-tutor/
+
+.docker/*
+!.docker/daemon.json
+
+.dotnet/
 
 .DS_Store
+
+.expo/
+
+.gem/
+
+.gitconfig
+
+.gnupg/*
+!.gnupg/gpg.conf
+
+.gradle/
+
+.granted/*
+!.granted/config
+
+.idea/
+
+.iterm2/
+.iterm2_shell_integration.zsh
+
+.k8slens/
+
+.kube/
+
+.kuberlr/
+
+.lesshst
+
+.local/
+
 .localized
 
+.motd_shown
 
-# Folder specific ignores
+.netrc
 
-/.android/
+.npm/
 
-/.ansible/
+.nvm/
 
-/.aws/
-#/.aws/config
-#/.aws/credentials
+.oh-my-zsh/
 
-/.bundle/
+.postman/
 
-/.cache/
+.python_history
 
-/.cargo/
+.rd/
 
-/.cdk/
+.rustup/
 
-/.config/
+.ssh/*
+!.ssh/config
 
-/.cups/
+.sudo_as_admin_successful
 
-/.expo/
+.terraform.d/
 
-/.docker/
-!/.docker/daemon.json
+.Trash/
 
-/.dotnet/
+.viminfo
 
-/.gem/
+.vscode/
 
-/.gnupg/
-!/.gnupg/gpg.conf
+# For wsl
+.vscode-server/
 
-/go/
+.wget-hsts
 
-/.gradle/
+.zsh_history
+.zsh_sessions/
 
-/.granted/
-!/.granted/config
+.zcompdump*
 
-/.idea/
+Applications/
 
-/.iterm2/
+# code/* # TODO
+# !code/*.*
+# !code/*
+code/.DS_Store
 
-/.k8slens/
+Desktop/
 
-/.kube/
-# /.kube/config
+Documents/
 
-/.local/
+Downloads/
 
-/.motd_shown
+go/
 
-/.npm/
+Library/
 
-/.nvm/
+Movies/
 
-/.oh-my-zsh/
-
-/.postman/
-
-/.rd/
-
-/.rustup/
-
-/.ssh/
-!/.ssh/config
-
-/.terraform.d/
-
-/.Trash/
-
-/.vscode/
-
-/.zsh_sessions/
-
-/Applications/
-
-/code/
-!/code/*.*
-!/code/*
-/code/.DS_Store
-
-/Desktop/
-
-/Documents/
-
-/Downloads/
-
-/go/
-
-/Library/
-
-/Movies/
-
-/Music/
+Music/
 
 # This is a symlink
-/OneDrive - thetillhoff
+OneDrive - thetillhoff
 
-/Pictures/
+Pictures/
 
-/Postman/
+Postman/
 
-/Public/
+Public/
 
-/.vscode-server/
-
-# File specific ignores
-
-/.aws
-/.azure
-/.bash_history
-/.gitconfig
-/.wget-hsts
-/.iterm2_shell_integration.zsh
-/.lesshst
-/.netrc
-/.python_history
-/.sudo_as_admin_successful
-/.viminfo
-/.zcompdump*
-/.zsh_history
-
-# wsl specific symlink
-/tillhoffmann
+tillhoffmann

@@ -68,7 +68,6 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 plugins=(
     aws
     colorize
-    docker
     dotenv
     git
     helm
@@ -79,9 +78,16 @@ plugins=(
     npm
     nvm
     terraform
-    vscode
     zsh-syntax-highlighting
 )
+
+# Homebrew home path
+[ -s "/home/linuxbrew/.linuxbrew/bin/brew" ] && export BREW_HOME="/home/linuxbrew/.linuxbrew" # linux
+[ -s "/opt/homebrew/bin/brew" ] && export BREW_HOME="/opt/homebrew" # mac
+
+
+# Enable autocompletions of homebrew
+[ -s "$BREW_HOME" ] && [ -s "$BREW_HOME" ] && export FPATH="$BREW_HOMEshare/zsh/site-functions:${FPATH}"
 
 source $ZSH/oh-my-zsh.sh
 
@@ -154,11 +160,12 @@ alias fga="flux get -A"
 # granted / assume
 alias assume=". assume"
 
-# aws-cdk
-alias cdk="npx aws-cdk"
-
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [ -s "$HOME/.p10k.zsh" ] && source $HOME/.p10k.zsh
+
+# homebrew
+[ -s "/home/linuxbrew/.linuxbrew/bin/brew" ] && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" # linux
+[ -s "/opt/homebrew/bin/brew" ] && eval "$(/opt/homebrew/bin/brew shellenv)" # mac
 
 # go
 [ -d "$HOME/go" ] && export GOPATH=$HOME/go && export PATH=$GOPATH/bin:$PATH
@@ -166,18 +173,10 @@ alias cdk="npx aws-cdk"
 # mysql-client
 [ -d "/usr/local/opt/mysql-client/bin" ] && export PATH="$PATH:/usr/local/opt/mysql-client/bin"
 
-# nvm
+# nvm with nvmrc
 [ -d "$HOME/.nvm" ] && export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-
-# homebrew
-[ -s "/home/linuxbrew/.linuxbrew/bin/brew" ] && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" # linux
-[ -s "/opt/homebrew/bin/brew" ] && eval "$(/opt/homebrew/bin/brew shellenv)" # mac
-
-# nvm
-[ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"  # This loads nvm
-
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm without brew
+[ -s "$BREW_HOME" ] && [ -s "$BREW_HOME/opt/nvm/nvm.sh" ] && \. "$BREW_HOME/opt/nvm/nvm.sh"  # This loads nvm with brew
 autoload -U add-zsh-hook
 load-nvmrc() {
   local nvmrc_path
@@ -203,10 +202,10 @@ load-nvmrc
 [ -s "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
 
 # ruby (for some pre-commit hooks)
-[ -s "/opt/homebrew/opt/ruby/bin" ] && export PATH="/opt/homebrew/opt/ruby/bin:$PATH"
+[ -s "$BREW_HOME" ] && [ -s "$BREW_HOME/opt/ruby/bin" ] && export PATH="$BREW_HOME/opt/ruby/bin:$PATH"
 
-# vscode / code
-[ -s "/Applications/Visual Studio Code.app" ] && export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
+# code
+[ -s "/Applications/Cursor.app" ] && export PATH="$PATH:/Applications/Cursor.app/Contents/Resources/app/bin"
 
 # rancher desktop
 [ -s "$HOME/.rd/bin" ] && export PATH="$PATH:$HOME/.rd/bin"
@@ -218,6 +217,8 @@ load-nvmrc
 [ -s "/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home" ] && export JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home
 [ -s "$HOME/Library/Android/sdk" ] && export ANDROID_HOME="$HOME/Library/Android/sdk" && export PATH=$PATH:$ANDROID_HOME/emulator && export PATH=$PATH:$ANDROID_HOME/platform-tools
 
+# asdf
+[ -s "$BREW_HOME" ] && [ -s "$BREW_HOME/opt/asdf/libexec/asdf.sh" ] && source "$BREW_HOME/opt/asdf/libexec/asdf.sh"
 
 # ---
 # This should only run on mac:
@@ -226,4 +227,7 @@ load-nvmrc
 # [ -s "$HOME/.oh-my-zsh" ] && ( [ -s "$HOME/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting" ] || git clone --depth=1 https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting)
 
 # ensure nerdfonts are installed
-# [ -s "/opt/homebrew/Caskroom/font-meslo-lg-nerd-font" ] || brew install --cask font-meslo-lg-nerd-font
+# [ -s "$BREW_HOME" ] && [ -s "$BREW_HOME/Caskroom/font-meslo-lg-nerd-font" ] || brew install --cask font-meslo-lg-nerd-font
+
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
