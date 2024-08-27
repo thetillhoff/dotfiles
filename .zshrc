@@ -68,6 +68,7 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 plugins=(
     aws
     colorize
+    docker
     dotenv
     git
     helm
