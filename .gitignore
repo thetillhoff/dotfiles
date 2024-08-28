@@ -35,6 +35,7 @@
 
 .cursor/
 .cursor-tutor/
+.cursor-server/
 
 .docker/*
 !.docker/daemon.json
