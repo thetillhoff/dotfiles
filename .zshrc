@@ -154,8 +154,9 @@ alias kdelf="kubectl delete -f"
 alias kdelk="kubectl delete -k"
 
 # flux
-alias fg="flux get"
-alias fga="flux get -A"
+alias f="flux"
+# alias fg="flux get" # `fg` is an existing command for putting a background job in the foreground
+# alias fga="flux get -A" # This could be confusing, as `fg` is already not allowed
 
 # granted / assume
 alias assume=". assume"
