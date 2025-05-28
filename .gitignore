@@ -77,7 +77,11 @@
 
 .motd_shown
 
+.mysql_history
+
 .netrc
+
+.node_repl_history
 
 .npm/
 
@@ -113,6 +117,8 @@
 .vscode-server/
 
 .wget-hsts
+
+.yarn/
 
 .zsh_history
 .zsh_sessions/
