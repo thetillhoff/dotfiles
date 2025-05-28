@@ -5,6 +5,7 @@ silent: true
 tasks:
   shorts:
     desc: Show shortcuts for mac
+    dir: '{{.USER_WORKING_DIR}}'
     cmds:
       - |
         echo '
@@ -14,6 +15,55 @@ tasks:
         '
   docker:
     desc: Start docker
+    dir: '{{.USER_WORKING_DIR}}'
     cmds:
       - |
-        open -n "/Applications/Rancher Desktop.app"
+        open -n "/Applications/Docker.app"
+  rancher:
+    desc: Start rancher
+    dir: '{{.USER_WORKING_DIR}}'
+    cmds:
+      - |
+        open -n "/Application/Rancher Desktop.app"
+  change-node-version:
+    desc: Change node version (`task change-node-version -- 22`)
+    dir: '{{.USER_WORKING_DIR}}'
+    cmds:
+      - |
+        nvm install {{.CLI_ARGS}}
+        nvm use {{.CLI_ARGS}}
+  update:
+    desc: Update all packages
+    dir: '{{.USER_WORKING_DIR}}'
+    cmds:
+      - |
+        # omz update # Doesn't work, as it's a function, not an application
+        brew update
+        brew upgrade
+        brew cleanup
+        softwareupdate --install --all
+  update-system:
+    desc: Update system
+    dir: '{{.USER_WORKING_DIR}}'
+    cmds:
+      - |
+        sudo softwareupdate --install --all --restart
+  netspeed:
+    desc: Show current network speed
+    dir: '{{.USER_WORKING_DIR}}'
+    cmds:
+      - |
+        networkQuality
+  git-show-origin:
+    desc: Show origin of current git repo
+    dir: '{{.USER_WORKING_DIR}}'
+    cmds:
+      - |
+        git ls-remote --get-url
+  flush-dns:
+    desc: Flush DNS
+    dir: '{{.USER_WORKING_DIR}}'
+    cmds:
+      - |
+        sudo dscacheutil -flushcache
+        sudo killall -HUP mDNSResponder
