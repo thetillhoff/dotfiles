@@ -77,7 +77,6 @@ plugins=(
     macos
     npm
     nvm
-    terraform
     zsh-syntax-highlighting
 )
 
@@ -87,7 +86,9 @@ plugins=(
 
 
 # Enable autocompletions of homebrew
-[ -s "$BREW_HOME" ] && [ -s "$BREW_HOME" ] && export FPATH="$BREW_HOMEshare/zsh/site-functions:${FPATH}"
+[ -s "$BREW_HOME" ] \
+&& [ -s "$BREW_HOME" ] \
+&& export FPATH="$BREW_HOMEshare/zsh/site-functions:${FPATH}"
 
 source $ZSH/oh-my-zsh.sh
 
@@ -118,20 +119,50 @@ export EDITOR="code --wait"
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
+#  android studio / jvm / expo
+[ -s "/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home" ] \
+&& export JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home
+
+[ -s "$HOME/Library/Android/sdk" ] \
+&& export ANDROID_HOME="$HOME/Library/Android/sdk" \
+&& export PATH=$PATH:$ANDROID_HOME/emulator \
+&& export PATH=$PATH:$ANDROID_HOME/platform-tools
+
+# asdf
+[ -s "$BREW_HOME" ] \
+&& [ -s "$BREW_HOME/opt/asdf/libexec/asdf.sh" ] \
+&& source "$BREW_HOME/opt/asdf/libexec/asdf.sh"
+
+# aws
+[ -s "$BREW_HOME/bin/aws_completer" ] \
+&& autoload bashcompinit \
+&& bashcompinit \
+&& autoload -Uz compinit \
+&& compinit \
+&& complete -C "$BREW_HOME/bin/aws_completer" aws
+
 # clear
 alias cls="clear"
 
 # cd
 alias cd..="cd .."
 
+# code/cursor
+[ -s "/Applications/Cursor.app" ] \
+&& export PATH="$PATH:/Applications/Cursor.app/Contents/Resources/app/bin"
+
 # git
-alias gc="git checkout"
-alias gcb="git checkout -b"
-alias gcm="git commit -m"
-alias gd="git diff"
-alias gds="git diff --staged" # equivalent to git diff --cached
-alias gdc="git diff --cached" # equivalent to git diff --staged
-alias gs="git status"
+if type "git" > /dev/null; then
+  alias gc="git checkout"
+  alias gcb="git checkout -b"
+  alias gcm="git commit -m"
+  alias gd="git diff"
+  alias gds="git diff --staged" # equivalent to git diff --cached
+  alias gdc="git diff --cached" # equivalent to git diff --staged
+  alias gst="git status"
+  alias gsw="git switch"
+  alias gswc="git switch -c"
+fi
 
 # kubectl
 alias k="kubectl"
@@ -158,26 +189,76 @@ alias f="flux"
 # alias fg="flux get" # `fg` is an existing command for putting a background job in the foreground
 # alias fga="flux get -A" # This could be confusing, as `fg` is already not allowed
 
+# go
+[ -d "$HOME/go" ] \
+&& export GOPATH=$HOME/go \
+&& export PATH=$GOPATH/bin:$PATH
+
 # granted / assume
 alias assume=". assume"
 
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[ -s "$HOME/.p10k.zsh" ] && source $HOME/.p10k.zsh
-
 # homebrew
-[ -s "/home/linuxbrew/.linuxbrew/bin/brew" ] && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" # linux
-[ -s "/opt/homebrew/bin/brew" ] && eval "$(/opt/homebrew/bin/brew shellenv)" # mac
+[ -s "/home/linuxbrew/.linuxbrew/bin/brew" ] \
+&& eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" # linux
 
-# go
-[ -d "$HOME/go" ] && export GOPATH=$HOME/go && export PATH=$GOPATH/bin:$PATH
+[ -s "/opt/homebrew/bin/brew" ] \
+&& eval "$(/opt/homebrew/bin/brew shellenv)" # mac
+
+# kubectl
+if type "kubectl" > /dev/null; then
+  alias k="kubectl"
+  alias kg="kubectl get"
+  alias kga="kubectl get -A"
+  alias kgar="kubectl api-resources --verbs=list --namespaced -o name | xargs -n 1 kubectl get --show-kind --ignore-not-found"
+
+  # kubectl apply
+  alias kaf="kubectl apply -f"
+  alias kak="kubectl apply -k"
+
+  # kubectl delete
+  alias kdelf="kubectl delete -f"
+  alias kdelk="kubectl delete -k"
+fi
+
+# kubectx
+if type "kubectx" > /dev/null; then
+  alias kctx="kubectx"
+fi
+
+# kubens
+if type "kubens" > /dev/null; then
+  alias kns="kubens"
+fi
+
+# flux
+if type "flux" > /dev/null; then
+  . <(flux completion zsh)
+  alias fg="flux get"
+  alias fga="flux get -A"
+fi
+
+# enable iterm2 shell integration
+[ -s "$HOME/.iterm2_shell_integration.zsh" ] \
+&& source "$HOME/.iterm2_shell_integration.zsh"
 
 # mysql-client
-[ -d "/usr/local/opt/mysql-client/bin" ] && export PATH="$PATH:/usr/local/opt/mysql-client/bin"
+[ -d "/usr/local/opt/mysql-client/bin" ] \
+&& export PATH="$PATH:/usr/local/opt/mysql-client/bin"
+
+[ -d "/opt/homebrew/opt/mysql-client/bin" ] \
+&& export PATH="$PATH:/opt/homebrew/opt/mysql-client/bin"
 
 # nvm with nvmrc
-[ -d "$HOME/.nvm" ] && export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm without brew
-[ -s "$BREW_HOME" ] && [ -s "$BREW_HOME/opt/nvm/nvm.sh" ] && \. "$BREW_HOME/opt/nvm/nvm.sh"  # This loads nvm with brew
+[ -d "$HOME/.nvm" ] \
+&& export NVM_DIR="$HOME/.nvm"
+
+[ -s "$NVM_DIR/nvm.sh" ] \
+&& \. "$NVM_DIR/nvm.sh"  # This loads nvm without brew
+
+[ -s "$BREW_HOME" ] \
+&& [ -s "$BREW_HOME/opt/nvm/nvm.sh" ] \
+&& \. "$BREW_HOME/opt/nvm/nvm.sh"  # This loads nvm with brew
+
 autoload -U add-zsh-hook
 load-nvmrc() {
   local nvmrc_path
@@ -199,27 +280,33 @@ load-nvmrc() {
 add-zsh-hook chpwd load-nvmrc
 load-nvmrc
 
-# rust
-[ -s "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
-
-# ruby (for some pre-commit hooks)
-[ -s "$BREW_HOME" ] && [ -s "$BREW_HOME/opt/ruby/bin" ] && export PATH="$BREW_HOME/opt/ruby/bin:$PATH"
-
-# code
-[ -s "/Applications/Cursor.app" ] && export PATH="$PATH:/Applications/Cursor.app/Contents/Resources/app/bin"
+# powerlevel10k
+[ -s "$HOME/.p10k.zsh" ] \
+&& source $HOME/.p10k.zsh
 
 # rancher desktop
-[ -s "$HOME/.rd/bin" ] && export PATH="$PATH:$HOME/.rd/bin"
+[ -s "$HOME/.rd/bin" ] \
+&& export PATH="$PATH:$HOME/.rd/bin"
 
-# enable iterm2 shell integration
-[ -s "$HOME/.iterm2_shell_integration.zsh" ] && source "$HOME/.iterm2_shell_integration.zsh"
+# rust
+[ -s "$HOME/.cargo/env" ] \
+&& source "$HOME/.cargo/env"
 
-# expo / android studio / jvm
-[ -s "/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home" ] && export JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home
-[ -s "$HOME/Library/Android/sdk" ] && export ANDROID_HOME="$HOME/Library/Android/sdk" && export PATH=$PATH:$ANDROID_HOME/emulator && export PATH=$PATH:$ANDROID_HOME/platform-tools
+# ruby (for some pre-commit hooks)
+[ -s "$BREW_HOME" ] \
+&& [ -s "$BREW_HOME/opt/ruby/bin" ] \
+&& export PATH="$BREW_HOME/opt/ruby/bin:$PATH"
 
-# asdf
-[ -s "$BREW_HOME" ] && [ -s "$BREW_HOME/opt/asdf/libexec/asdf.sh" ] && source "$BREW_HOME/opt/asdf/libexec/asdf.sh"
+# opentofu / terraform
+if type "terraform" > /dev/null; then
+  alias tf="terraform"
+  alias tfa="terraform apply"
+  alias tfp="terraform plan"
+  alias tfi="terraform init"
+  alias tfd="terraform destroy"
+  alias tff="terraform fmt"
+  alias tft="terraform validate"
+fi
 
 # ---
 # This should only run on mac:
