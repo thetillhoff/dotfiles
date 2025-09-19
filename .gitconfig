@@ -25,3 +25,5 @@
     conflictstyle = diff3
 [diff]
     colorMoved = default
+[tag]
+	sort = -v:refname

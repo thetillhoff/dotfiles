@@ -84,7 +84,6 @@ plugins=(
 [ -s "/home/linuxbrew/.linuxbrew/bin/brew" ] && export BREW_HOME="/home/linuxbrew/.linuxbrew" # linux
 [ -s "/opt/homebrew/bin/brew" ] && export BREW_HOME="/opt/homebrew" # mac
 
-
 # Enable autocompletions of homebrew
 [ -s "$BREW_HOME" ] \
 && [ -s "$BREW_HOME" ] \
@@ -165,29 +164,34 @@ if type "git" > /dev/null; then
 fi
 
 # kubectl
-alias k="kubectl"
-alias kg="kubectl get"
-alias kga="kubectl get -A"
-alias kgar="kubectl api-resources --verbs=list --namespaced -o name | xargs -n 1 kubectl get --show-kind --ignore-not-found"
+if type "kubectl" > /dev/null; then
+  alias k="kubectl"
+  alias kg="kubectl get"
+  alias kga="kubectl get -A"
+  alias kgar="kubectl api-resources --verbs=list --namespaced -o name | xargs -n 1 kubectl get --show-kind --ignore-not-found"
 
-# kubectx
-alias kctx="kubectx"
+  # kubectx
+  alias kctx="kubectx"
 
-# kubens
-alias kns="kubens"
+  # kubens
+  alias kns="kubens"
 
-# kubectl apply
-alias kaf="kubectl apply -f"
-alias kak="kubectl apply -k"
+  # kubectl apply
+  alias kaf="kubectl apply -f"
+  alias kak="kubectl apply -k"
 
-# kubectl delete
-alias kdelf="kubectl delete -f"
-alias kdelk="kubectl delete -k"
+  # kubectl delete
+  alias kdelf="kubectl delete -f"
+  alias kdelk="kubectl delete -k"
+fi
 
 # flux
-alias f="flux"
-# alias fg="flux get" # `fg` is an existing command for putting a background job in the foreground
-# alias fga="flux get -A" # This could be confusing, as `fg` is already not allowed
+if type "flux" > /dev/null; then
+  . <(flux completion zsh)
+  alias f="flux"
+  # alias fg="flux get" # `fg` is an existing command for putting a background job in the foreground
+  # alias fga="flux get -A" # This could be confusing, as `fg` is already not allowed
+fi
 
 # go
 [ -d "$HOME/go" ] \
@@ -198,11 +202,8 @@ alias f="flux"
 alias assume=". assume"
 
 # homebrew
-[ -s "/home/linuxbrew/.linuxbrew/bin/brew" ] \
-&& eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" # linux
-
-[ -s "/opt/homebrew/bin/brew" ] \
-&& eval "$(/opt/homebrew/bin/brew shellenv)" # mac
+[ -s "$BREW_HOME/bin/brew" ] \
+&& eval "$($BREW_HOME/bin/brew shellenv)"
 
 # kubectl
 if type "kubectl" > /dev/null; then
@@ -230,13 +231,6 @@ if type "kubens" > /dev/null; then
   alias kns="kubens"
 fi
 
-# flux
-if type "flux" > /dev/null; then
-  . <(flux completion zsh)
-  alias fg="flux get"
-  alias fga="flux get -A"
-fi
-
 # enable iterm2 shell integration
 [ -s "$HOME/.iterm2_shell_integration.zsh" ] \
 && source "$HOME/.iterm2_shell_integration.zsh"
@@ -259,6 +253,7 @@ fi
 && [ -s "$BREW_HOME/opt/nvm/nvm.sh" ] \
 && \. "$BREW_HOME/opt/nvm/nvm.sh"  # This loads nvm with brew
 
+# nvm / nvmrc
 autoload -U add-zsh-hook
 load-nvmrc() {
   local nvmrc_path
@@ -291,11 +286,17 @@ load-nvmrc
 # rust
 [ -s "$HOME/.cargo/env" ] \
 && source "$HOME/.cargo/env"
+[ -d "$HOME/.cargo/bin" ] \
+&& export PATH="$PATH:$HOME/.cargo/bin"
 
 # ruby (for some pre-commit hooks)
 [ -s "$BREW_HOME" ] \
 && [ -s "$BREW_HOME/opt/ruby/bin" ] \
 && export PATH="$BREW_HOME/opt/ruby/bin:$PATH"
+
+# task (taskfile.dev)
+[ -s "$BREW_HOME/bin/task" ] \
+&& eval "$(task --completion zsh)"
 
 # opentofu / terraform
 if type "terraform" > /dev/null; then

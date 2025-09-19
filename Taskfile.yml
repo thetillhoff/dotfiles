@@ -61,9 +61,23 @@ tasks:
       - |
         git ls-remote --get-url
   flush-dns:
-    desc: Flush DNS
+    desc: Flush DNS on macOS
     dir: '{{.USER_WORKING_DIR}}'
     cmds:
       - |
         sudo dscacheutil -flushcache
         sudo killall -HUP mDNSResponder
+  renew-dhcp:
+    desc: Renew DHCP on macOS
+    dir: '{{.USER_WORKING_DIR}}'
+    cmds:
+      - |
+        sudo ipconfig set en0 BOOTP
+        sudo ipconfig set en0 DHCP
+  whatsmyip:
+    desc: Show current public ip (v4 & v6)
+    dir: '{{.USER_WORKING_DIR}}'
+    cmds:
+      - |
+        dig @ns.sslip.io txt ip.sslip.io +short -4 | tr -d '"' # forces IPv4 lookup
+        dig @ns.sslip.io txt ip.sslip.io +short -6 | tr -d '"' # forces IPv6 lookup

@@ -65,6 +65,8 @@
 
 .k8slens/
 
+.kiro/
+
 .kube/
 
 .kuberlr/
@@ -91,6 +93,8 @@
 
 .postman/
 
+.pulumi/
+
 .python_history
 
 .rd/
@@ -101,6 +105,8 @@
 !.ssh/config
 
 .sudo_as_admin_successful
+
+.talos/
 
 .terraform.d/
 
