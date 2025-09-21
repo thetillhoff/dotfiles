@@ -1,0 +1,95 @@
+# prompt separator: >
+# prompt separator by color as well
+# bg:#303030
+
+# A minimal left prompt
+format = """
+[╭─](fg:#505050)\
+[\u0020$directory](bg:#303030 fg:#06aef9 bold)\
+[\ueb70](fg:#303030)\
+\
+[$fill](fg:#505050)\
+\
+([\ueb6f](fg:#303030)[\
+( $git_branch $git_status)\
+( [\ueab5](bg:#303030 fg:#838383) $kubernetes)\
+( [\ueab5](bg:#303030 fg:#838383) $pulumi)\
+( [\ueab5](bg:#303030 fg:#838383) $terraform)\
+( [\ueab5](bg:#303030 fg:#838383) $golang)\
+( [\ueab5](bg:#303030 fg:#838383) $nodejs)\
+( [\ueab5](bg:#303030 fg:#838383) $rust)\
+( [\ueab5](bg:#303030 fg:#838383) $cmd_duration)\
+](bg:#303030))\
+\
+(\n[├ ](fg:#505050)$aws)\
+\
+\n\
+[╰─](fg:#505050)\
+$character
+"""
+
+# Disable newlines between sections
+add_newline = false
+
+# A continuation prompt that displays two filled-in arrows
+continuation_prompt = '[❯ ](bold)'
+
+[directory]
+style = 'bg:#303030 fg:#09abf0 bold'
+truncate_to_repo = false
+
+[fill]
+symbol = '·'
+
+[character]
+success_symbol = '[❯](bold fg:#00c202)'
+error_symbol = '[✗](bold red)'
+
+[cmd_duration]
+style = 'bg:#303030 fg:yellow bold'
+
+[git_status]
+format = '([\[$all_status$ahead_behind\]]($style))'
+style = 'bg:#303030 fg:yellow'
+
+[git_branch]
+format = '[$symbol$branch(:$remote_branch)]($style)'
+style = 'bg:#303030 fg:#00c202'
+
+[aws]
+# TODO adjust to use aws logo
+symbol = '[AWS](bold fg:#d16d0e)'
+format = '[$symbol ( $profile)( \($region\))( \[$duration\] )]($style)'
+style = 'fg:#d16d0e'
+
+# TODO sort module configs
+
+[kubernetes]
+symbol = ' ☸'
+format = '[$symbol$context( \($namespace\))]($style)'
+style = 'bg:#303030 fg:blue'
+
+[pulumi]
+symbol = ' \ue873'
+format = '[$symbol($username@)$stack]($style)'
+style = 'bg:#303030 fg:yellow'
+
+[terraform]
+symbol = ' \ue8bd'
+format = '[$symbol $workspace]($style)'
+style = 'bg:#303030 fg:105'
+
+[golang]
+symbol = '🐹'
+format = '[$symbol ($version)]($style)'
+style = 'bg:#303030 fg:cyan'
+
+[nodejs]
+# symbol = ' \ue719'
+format = '[$symbol($version)]($style)'
+style = 'bg:#303030 fg:green'
+
+[rust]
+symbol = ' \ue7a8'
+format = '[$symbol ($version)]($style)'
+style = 'bg:#303030 fg:red'

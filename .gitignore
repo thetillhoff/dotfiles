@@ -29,7 +29,10 @@
 
 .cdk/
 
-.config/
+.config/configstore/
+.config/gh/
+.config/iterm2/
+.config/packer/
 
 .cups/
 
@@ -137,6 +140,7 @@ Applications/
 # !code/*.*
 # !code/*
 code/.DS_Store
+code/*/
 
 Desktop/
 

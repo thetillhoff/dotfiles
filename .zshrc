@@ -1,15 +1,17 @@
-# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
-# Initialization code that may require console input (password prompts, [y/n]
-# confirmations, etc.) must go above this block; everything else may go below.
-if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
-fi
+# TODO remove
+# # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+# # Initialization code that may require console input (password prompts, [y/n]
+# # confirmations, etc.) must go above this block; everything else may go below.
+# if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+#   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+# fi
 
 # Path to your oh-my-zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
 
+# TODO remove
 # See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
-ZSH_THEME="powerlevel10k/powerlevel10k"
+# ZSH_THEME="powerlevel10k/powerlevel10k"
 
 # Uncomment the following line to use case-sensitive completion.
 # CASE_SENSITIVE="true"
@@ -66,18 +68,18 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(
-    aws
-    colorize
-    dotenv
-    git
-    helm
-    history
-    kubectl
-    kubectx
-    macos
-    npm
-    nvm
-    zsh-syntax-highlighting
+  # aws
+  # colorize
+  # dotenv
+  # git
+  # helm
+  # history
+  # kubectl
+  # kubectx
+  # macos
+  # npm
+  # nvm
+  # zsh-syntax-highlighting
 )
 
 # Homebrew home path
@@ -275,9 +277,10 @@ load-nvmrc() {
 add-zsh-hook chpwd load-nvmrc
 load-nvmrc
 
+# TODO remove
 # powerlevel10k
-[ -s "$HOME/.p10k.zsh" ] \
-&& source $HOME/.p10k.zsh
+# [ -s "$HOME/.p10k.zsh" ] \
+# && source $HOME/.p10k.zsh
 
 # rancher desktop
 [ -s "$HOME/.rd/bin" ] \
@@ -318,5 +321,9 @@ fi
 # ensure nerdfonts are installed
 # [ -s "$BREW_HOME" ] && [ -s "$BREW_HOME/Caskroom/font-meslo-lg-nerd-font" ] || brew install --cask font-meslo-lg-nerd-font
 
+# TODO remove
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+# [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+# TODO enable
+eval "$(starship init zsh)"
