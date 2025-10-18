@@ -106,7 +106,7 @@ source $ZSH/oh-my-zsh.sh
 # else
 #   export EDITOR='nvim'
 # fi
-export EDITOR="code --wait"
+export EDITOR="cursor --wait"
 
 # Compilation flags
 # export ARCHFLAGS="-arch $(uname -m)"
@@ -157,6 +157,7 @@ alias cd..="cd .."
 # code/cursor
 [ -s "/Applications/Cursor.app" ] \
 && export PATH="$PATH:/Applications/Cursor.app/Contents/Resources/app/bin"
+alias code="cursor"
 
 # git
 if type "git" > /dev/null; then
