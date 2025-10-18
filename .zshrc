@@ -306,6 +306,20 @@ load-nvmrc
 && [ -s "$BREW_HOME/opt/ruby/bin" ] \
 && export PATH="$BREW_HOME/opt/ruby/bin:$PATH"
 
+# sops wrapper function
+sops() {
+  local age_keys_file="$HOME/.config/sops/age/keys.txt"
+  
+  if [[ ! -f "$age_keys_file" ]]; then
+    echo "⚠️  Warning: Age keys file not found at $age_keys_file"
+    echo "   Please ensure your SOPS age keys are properly configured before using sops."
+    return 1
+  fi
+  
+  # Call the actual sops command with all arguments
+  command sops "$@"
+}
+
 # task (taskfile.dev)
 [ -s "$BREW_HOME/bin/task" ] \
 && eval "$(task --completion zsh)"
