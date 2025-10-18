@@ -146,7 +146,7 @@ export EDITOR="cursor --wait"
 && complete -C "$BREW_HOME/bin/aws_completer" aws
 
 # brew
-alias brew="brew list --installed-on-request > .brew-list && brew"
+alias brew="brew list --installed-on-request > $HOME/.brew-list && brew"
 
 # clear
 alias cls="clear"

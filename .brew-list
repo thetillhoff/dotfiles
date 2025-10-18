@@ -1,7 +1,14 @@
+flux
 gcc
 go
 go-task
+helm
+kubectx
+kubernetes-cli
 node
 nvm
+packer
 pulumi
+sops
 starship
+talosctl
