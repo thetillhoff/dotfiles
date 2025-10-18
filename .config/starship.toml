@@ -70,7 +70,7 @@ format = '[$symbol$context( \($namespace\))]($style)'
 style = 'bg:#303030 fg:blue'
 
 [pulumi]
-symbol = ' \ue873'
+symbol = ' pulumi'
 format = '[$symbol($username@)$stack]($style)'
 style = 'bg:#303030 fg:yellow'
 
