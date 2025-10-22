@@ -90,6 +90,6 @@ format = '[$symbol($version)]($style)'
 style = 'bg:#303030 fg:green'
 
 [rust]
-symbol = ' \ue7a8'
+symbol = ' rust'
 format = '[$symbol ($version)]($style)'
 style = 'bg:#303030 fg:red'
