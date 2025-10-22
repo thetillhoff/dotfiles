@@ -169,7 +169,8 @@ if type "git" > /dev/null; then
   alias gst="git status"
   alias gsw="git switch"
   alias gswc="git switch -c"
-  alias "git push -f"="git push --force-with-lease"
+  alias "git push -f"="echo "Aliased to git push --force-with-lease" && git push --force-with-lease"
+  alias "git pull"="echo "Aliased to git pull --rebase" && git pull --rebase"
 fi
 
 # kubectl
