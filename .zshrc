@@ -289,6 +289,38 @@ load-nvmrc
 && [ -s "$BREW_HOME/opt/ruby/bin" ] \
 && export PATH="$BREW_HOME/opt/ruby/bin:$PATH"
 
+search-file() {
+  # $1 is the path to search in
+  # $2 is the search string
+
+  # Check if fd is installed and use it, otherwise fall back to find
+  if command -v fd >/dev/null 2>&1; then
+    # Use fd with case-insensitive search
+    fd -i "$2" "$1" "${@:3}"
+  else
+    # Fall back to find with case-insensitive search
+    command find "$1" -iname "*$2*" "${@:3}"
+  fi
+}
+
+search-in-file() {
+  # $1 is the path to search in
+  # $2 is the search string
+
+  # Check if ripgrep (rg) is installed and use it, otherwise fall back to grep
+  if command -v rg >/dev/null 2>&1; then
+    # Use ripgrep with case-insensitive search
+    rg -i "$2" "$1" "${@:3}"
+  else
+    # Fall back to grep with case-insensitive search
+    command grep -ril "${@:3}" --binary-files=without-match "$2" "$1"
+  fi
+}
+
+copy() {
+  command rsync -aP --append-verify "$@"
+}
+
 # sops wrapper function
 sops() {
   local age_keys_file="$HOME/.config/sops/age/keys.txt"
