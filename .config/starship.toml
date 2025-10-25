@@ -6,11 +6,11 @@
 format = """
 [╭─](fg:#505050)\
 [\u0020$directory](bg:#303030 fg:#06aef9 bold)\
-[\ueb70](fg:#303030)\
+[\ue0b0](fg:#303030)\
 \
 [$fill](fg:#505050)\
 \
-([\ueb6f](fg:#303030)[\
+([\ue0b2](fg:#303030)[\
 ( $git_branch $git_status)\
 ( [\ueab5](bg:#303030 fg:#838383) $kubernetes)\
 ( [\ueab5](bg:#303030 fg:#838383) $pulumi)\
