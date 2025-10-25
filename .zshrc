@@ -87,9 +87,8 @@ plugins=(
 [ -s "/opt/homebrew/bin/brew" ] && export BREW_HOME="/opt/homebrew" # mac
 
 # Enable autocompletions of homebrew
-[ -s "$BREW_HOME" ] \
-&& [ -s "$BREW_HOME" ] \
-&& export FPATH="$BREW_HOMEshare/zsh/site-functions:${FPATH}"
+[ -s "$BREW_HOME/share/zsh/site-functions" ] \
+&& export FPATH="$BREW_HOME/share/zsh/site-functions:${FPATH}"
 
 source $ZSH/oh-my-zsh.sh
 
@@ -146,7 +145,9 @@ export EDITOR="cursor --wait"
 && complete -C "$BREW_HOME/bin/aws_completer" aws
 
 # brew
-alias brew="brew list --installed-on-request > $HOME/.brew-list && brew"
+if command -v brew >/dev/null 2>&1; then
+  alias brew="brew list --installed-on-request > $HOME/.brew-list && brew"
+fi
 
 # clear
 alias cls="clear"
@@ -157,10 +158,12 @@ alias cd..="cd .."
 # code/cursor
 [ -s "/Applications/Cursor.app" ] \
 && export PATH="$PATH:/Applications/Cursor.app/Contents/Resources/app/bin"
-alias code="cursor"
+if command -v cursor >/dev/null 2>&1; then
+  alias code="cursor"
+fi
 
 # git
-if type "git" > /dev/null; then
+if command -v git >/dev/null 2>&1; then
   alias gc="git checkout"
   alias gcb="git checkout -b"
   alias gcm="git commit -m"
@@ -174,50 +177,30 @@ if type "git" > /dev/null; then
   alias "git pull"="echo "Aliased to git pull --rebase" && git pull --rebase"
 fi
 
-# kubectl
-if type "kubectl" > /dev/null; then
-  alias k="kubectl"
-  alias kg="kubectl get"
-  alias kga="kubectl get -A"
-  alias kgar="kubectl api-resources --verbs=list --namespaced -o name | xargs -n 1 kubectl get --show-kind --ignore-not-found"
-
-  # kubectx
-  alias kctx="kubectx"
-
-  # kubens
-  alias kns="kubens"
-
-  # kubectl apply
-  alias kaf="kubectl apply -f"
-  alias kak="kubectl apply -k"
-
-  # kubectl delete
-  alias kdelf="kubectl delete -f"
-  alias kdelk="kubectl delete -k"
-fi
-
-# flux
-if type "flux" > /dev/null; then
-  . <(flux completion zsh)
-  alias f="flux"
-  # alias fg="flux get" # `fg` is an existing command for putting a background job in the foreground
-  # alias fga="flux get -A" # This could be confusing, as `fg` is already not allowed
-fi
-
 # go
 [ -d "$HOME/go" ] \
 && export GOPATH=$HOME/go \
 && export PATH=$GOPATH/bin:$PATH
 
 # granted / assume
-alias assume=". assume"
+if command -v assume >/dev/null 2>&1; then
+  alias assume=". assume"
+fi
 
 # homebrew
 [ -s "$BREW_HOME/bin/brew" ] \
 && eval "$($BREW_HOME/bin/brew shellenv)"
 
+# flux
+if command -v flux >/dev/null 2>&1; then
+  . <(flux completion zsh)
+  alias f="flux"
+  # alias fg="flux get" # `fg` is an existing command for putting a background job in the foreground
+  # alias fga="flux get -A" # This could be confusing, as `fg` is already not allowed
+fi
+
 # kubectl
-if type "kubectl" > /dev/null; then
+if command -v kubectl >/dev/null 2>&1; then
   alias k="kubectl"
   alias kg="kubectl get"
   alias kga="kubectl get -A"
@@ -233,12 +216,12 @@ if type "kubectl" > /dev/null; then
 fi
 
 # kubectx
-if type "kubectx" > /dev/null; then
+if command -v kubectx >/dev/null 2>&1; then
   alias kctx="kubectx"
 fi
 
 # kubens
-if type "kubens" > /dev/null; then
+if command -v kubens >/dev/null 2>&1; then
   alias kns="kubens"
 fi
 
@@ -325,7 +308,7 @@ sops() {
 && eval "$(task --completion zsh)"
 
 # opentofu / terraform
-if type "terraform" > /dev/null; then
+if command -v terraform >/dev/null 2>&1; then
   alias tf="terraform"
   alias tfa="terraform apply"
   alias tfp="terraform plan"
