@@ -59,7 +59,6 @@
 .gradle/
 
 .granted/*
-!.granted/config
 
 .idea/
 
