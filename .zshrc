@@ -290,30 +290,99 @@ load-nvmrc
 && export PATH="$BREW_HOME/opt/ruby/bin:$PATH"
 
 search-file() {
-  # $1 is the path to search in
-  # $2 is the search string
+  # If no arguments provided, show help
+  if [ $# -eq 0 ]; then
+    echo "Usage: search-file <searchstring> [path]"
+    echo "  searchstring: The string to search for in filenames"
+    echo "  path: Optional path to search in (defaults to current directory)"
+    return 0
+  fi
+
+  # Set default path to current directory if not provided
+  local search_string="$1"
+  local search_path="${2:-.}"
+  local absolute_search_path=$(cd "$search_path" && pwd)
 
   # Check if fd is installed and use it, otherwise fall back to find
   if command -v fd >/dev/null 2>&1; then
-    # Use fd with case-insensitive search
-    fd -i "$2" "$1" "${@:3}"
+    if [[ "$absolute_search_path" == "$HOME" ]]; then
+      command fd -HI "$search_string" "$search_path" --exclude '/Library/' ${@:3}
+    else
+      command fd -HI "$search_string" "$search_path" ${@:3}
+    fi
   else
-    # Fall back to find with case-insensitive search
-    command find "$1" -iname "*$2*" "${@:3}"
+    if [[ "$absolute_search_path" == "$HOME" ]]; then
+      command find "$search_path" -path "$search_path/Library" -prune -o -iname "*$search_string*" -print ${@:3}
+    else
+      command find "$search_path" -iname "*$search_string*" -print ${@:3}
+    fi
   fi
 }
 
 search-in-file() {
-  # $1 is the path to search in
-  # $2 is the search string
+  # If no arguments provided, show help
+  if [ $# -eq 0 ]; then
+    echo "Usage: search-in-file <searchstring> [path] [--ext <extension>] [args...]"
+    echo "  searchstring: The string to search for"
+    echo "  path: Optional path to search in (defaults to current directory)"
+    echo "  --ext: Optional file extension filter (e.g., --ext js)"
+    echo "  args: Additional arguments passed to rg/grep"
+    return 0
+  fi
+
+  local search_string="$1"
+  local search_path="."
+  local file_extension=""
+  local remaining_args=()
+
+  # If $2 exists and doesn't start with --, it's the path
+  if [ $# -ge 2 ] && [[ "$2" != "--"* ]]; then
+    search_path="$2"
+    local start_idx=3
+  else
+    local start_idx=2
+  fi
+
+  # Look for --ext flag in remaining arguments
+  local i=$start_idx
+  while [ $i -le $# ]; do
+    if [[ "${@[$i]}" == "--ext" ]] && [ $i -lt $# ]; then
+      # Found --ext, get the next argument as extension
+      ((i++))
+      file_extension="${@[$i]}"
+      file_extension="${file_extension#.}"  # Remove leading dot if present
+    else
+      # Keep other arguments
+      remaining_args+=("${@[$i]}")
+    fi
+    ((i++))
+  done
+
+  local absolute_search_path=$(cd "$search_path" && pwd)
 
   # Check if ripgrep (rg) is installed and use it, otherwise fall back to grep
   if command -v rg >/dev/null 2>&1; then
     # Use ripgrep with case-insensitive search
-    rg -i "$2" "$1" "${@:3}"
+    local rg_args=(-i --hidden --no-ignore)
+    if [[ -n "$file_extension" ]]; then
+      rg_args+=(-g "*.${file_extension}")
+    fi
+    # Exclude Library directory when searching from home
+    if [[ "$absolute_search_path" == "$HOME" ]]; then
+      rg_args+=(-g "!Library/**")
+    fi
+    command rg "${rg_args[@]}" "$search_string" "$search_path" "${remaining_args[@]}"
   else
     # Fall back to grep with case-insensitive search
-    command grep -ril "${@:3}" --binary-files=without-match "$2" "$1"
+    local grep_args=(-ril --binary-files=without-match)
+    if [[ -n "$file_extension" ]]; then
+      grep_args+=(--include="*.${file_extension}")
+    fi
+    # Exclude Library directory when searching from home
+    if [[ "$absolute_search_path" == "$HOME" ]]; then
+      grep_args+=(--exclude-dir=Library)
+    fi
+    command grep "${grep_args[@]}" "${remaining_args[@]}" "$search_path" "$search_string"
   fi
 }
 
@@ -324,13 +393,13 @@ copy() {
 # sops wrapper function
 sops() {
   local age_keys_file="$HOME/.config/sops/age/keys.txt"
-  
+
   if [[ ! -f "$age_keys_file" ]]; then
     echo "⚠️  Warning: Age keys file not found at $age_keys_file"
     echo "   Please ensure your SOPS age keys are properly configured before using sops."
     return 1
   fi
-  
+
   # Call the actual sops command with all arguments
   command sops "$@"
 }
