@@ -19,6 +19,7 @@ helm
 jq
 kind
 kubectx
+libpq
 make
 mysql-client
 ncdu
@@ -36,6 +37,7 @@ rust
 sops
 sqlc
 starship
+staticcheck
 talosctl
 telnet
 terraform
