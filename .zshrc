@@ -330,6 +330,11 @@ search-in-file() {
     echo "  path: Optional path to search in (defaults to current directory)"
     echo "  --ext: Optional file extension filter (e.g., --ext js)"
     echo "  args: Additional arguments passed to rg/grep"
+    echo "    `-l` for just printing the files that contain the string, instead of the specific lines"
+    echo "    `-n` for printing the line number of the match"
+    echo "    `-B <N>` for lines before the match"
+    echo "    `-A <N>` for lines after the match"
+    echo "    `-C <N>` for lines before and after the match"
     return 0
   fi
 
