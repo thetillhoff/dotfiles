@@ -269,6 +269,9 @@ load-nvmrc() {
 add-zsh-hook chpwd load-nvmrc
 load-nvmrc
 
+[ -d "$BREW_HOME/opt/libpq/bin" ] \
+&& export PATH="$PATH:$BREW_HOME/opt/libpq/bin"
+
 # TODO remove
 # powerlevel10k
 # [ -s "$HOME/.p10k.zsh" ] \
