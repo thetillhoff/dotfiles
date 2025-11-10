@@ -233,8 +233,8 @@ fi
 [ -d "/usr/local/opt/mysql-client/bin" ] \
 && export PATH="$PATH:/usr/local/opt/mysql-client/bin"
 
-[ -d "/opt/homebrew/opt/mysql-client/bin" ] \
-&& export PATH="$PATH:/opt/homebrew/opt/mysql-client/bin"
+[ -d "$BREW_HOME/opt/mysql-client/bin" ] \
+&& export PATH="$PATH:$BREW_HOME/opt/mysql-client/bin"
 
 # nvm with nvmrc
 [ -d "$HOME/.nvm" ] \
