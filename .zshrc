@@ -379,6 +379,11 @@ search-in-file() {
     if [[ "$absolute_search_path" == "$HOME" ]]; then
       rg_args+=(-g "!Library/**")
     fi
+    # Exclude node_modules folders
+    rg_args+=(-g "!**/node_modules/**")
+    # Exclude cdk.out folders
+    rg_args+=(-g "!**/cdk.out/**")
+
     command rg "${rg_args[@]}" "$search_string" "$search_path" "${remaining_args[@]}"
   else
     # Fall back to grep with case-insensitive search
@@ -390,6 +395,11 @@ search-in-file() {
     if [[ "$absolute_search_path" == "$HOME" ]]; then
       grep_args+=(--exclude-dir=Library)
     fi
+    # Exclude node_modules folders
+    grep_args+=(--exclude-dir=node_modules)
+    # Exclude cdk.out folders
+    grep_args+=(--exclude-dir=cdk.out)
+
     command grep "${grep_args[@]}" "${remaining_args[@]}" "$search_path" "$search_string"
   fi
 }
