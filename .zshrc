@@ -240,6 +240,11 @@ fi
 [ -d "$BREW_HOME/opt/mysql-client/bin" ] \
 && export PATH="$PATH:$BREW_HOME/opt/mysql-client/bin"
 
+# nmap
+if command -v nmap >/dev/null 2>&1; then
+  alias portscan="nmap -sT -T4 -vv -p-"
+fi
+
 # nvm with nvmrc
 [ -d "$HOME/.nvm" ] \
 && export NVM_DIR="$HOME/.nvm"
