@@ -225,6 +225,10 @@ if command -v kubens >/dev/null 2>&1; then
   alias kns="kubens"
 fi
 
+# libpq
+[ -d "$BREW_HOME/opt/libpq/bin" ] \
+&& export PATH="$PATH:$BREW_HOME/opt/libpq/bin"
+
 # enable iterm2 shell integration
 [ -s "$HOME/.iterm2_shell_integration.zsh" ] \
 && source "$HOME/.iterm2_shell_integration.zsh"
@@ -268,9 +272,6 @@ load-nvmrc() {
 }
 add-zsh-hook chpwd load-nvmrc
 load-nvmrc
-
-[ -d "$BREW_HOME/opt/libpq/bin" ] \
-&& export PATH="$PATH:$BREW_HOME/opt/libpq/bin"
 
 # TODO remove
 # powerlevel10k
