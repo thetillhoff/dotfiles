@@ -11,11 +11,13 @@ flux
 gh
 git-delta
 gnu-sed
+gnupg
 go
 go-task
 golangci-lint
 granted
 helm
+iproute2mac
 jq
 kind
 kubectx
@@ -37,9 +39,9 @@ rust
 sops
 sqlc
 starship
-staticcheck
 talosctl
 telnet
+temingo
 terraform
 tflint
 tmpreaper
