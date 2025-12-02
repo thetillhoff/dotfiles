@@ -443,8 +443,27 @@ if command -v terraform >/dev/null 2>&1; then
   alias tft="terraform validate"
 fi
 
+# whatsmyip
+whatsmyip() {
+  # --- Local IPs with CIDR (exclude loopback) ---
+  local ipv4_cidr ipv6_cidr
+  ipv4_cidr=$(ip -4 addr show | awk '/inet / {ip=$2; if (ip !~ /^127\./) {print ip; exit}}')
+  ipv6_cidr=$(ip -6 addr show | awk '/inet6 / {ip=$2; if (ip !~ /^::1/ && ip !~ /^fe80:/) {print ip; exit}}')
+
+  # --- Public IPs ---
+  local public_ipv4 public_ipv6
+  public_ipv4="$(curl -4 -s https://icanhazip.com 2>/dev/null || echo "none")"
+  public_ipv6="$(curl -6 -s https://icanhazip.com 2>/dev/null || echo "none")"
+
+  # --- Output ---
+  print "Local IPv4: $ipv4_cidr"
+  print "Local IPv6: ${ipv6_cidr:-none}"
+  print "Public IPv4: $public_ipv4"
+  print "Public IPv6: $public_ipv6"
+}
+
 # ---
-# This should only run on mac:
+# This should only run on mac (    $(uname -s) == "Darwin"    ):
 
 # download zsh-syntax-highlighting plugin
 # [ -s "$HOME/.oh-my-zsh" ] && ( [ -s "$HOME/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting" ] || git clone --depth=1 https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting)
