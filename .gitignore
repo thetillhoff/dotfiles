@@ -33,6 +33,7 @@
 .config/gh/
 .config/iterm2/
 .config/packer/
+.config/sops/
 
 .cups/
 
