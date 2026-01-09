@@ -87,3 +87,24 @@ tasks:
     cmds:
       - |
         node -v > .nvmrc
+  backup:
+    desc: Backup home dir
+    cmds:
+      - |
+        TIMESTAMP=$(date +%Y-%m-%d-%H-%M-%S)
+        ssh -i ~/.ssh/id_backup-macbook-superluminar backup-macbook-superluminar@blackhole.local "mkdir -p /mnt/cold/backup-macbook-superluminar/$TIMESTAMP/"
+        rsync -chaxP --info=progress2 \
+          -e "ssh -i ~/.ssh/id_backup-macbook-superluminar" \
+          --exclude=.cache/ \
+          --exclude=.cursor/ \
+          --exclude=.kube/cache/ \
+          --exclude=.pulumi/plugins/ \
+          --exclude=.vscode/extensions/ \
+          --exclude=.npm/ \
+          --exclude=.nvm/ \
+          --exclude=.rd/ \
+          --exclude=Library/ \
+          --exclude=Pictures/ \
+          --exclude=go/ \
+          /Users/$(whoami)/ \
+          backup-macbook-superluminar@blackhole.local:/mnt/cold/backup-macbook-superluminar/$TIMESTAMP/
