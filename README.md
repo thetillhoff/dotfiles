@@ -7,6 +7,11 @@ git branch --set-upstream-to=origin/main main
 git pull
 git checkout main # not sure if needed
 
+ brew tap thetillhoff/homebrew-tap
+ brew tap hashicorp/tap
+cat .brew-list | xargs brew install
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" # Install oh-my-zsh
 git reset --hard
 git checkout main -f
