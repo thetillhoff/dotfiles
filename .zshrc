@@ -162,6 +162,11 @@ if command -v cursor >/dev/null 2>&1; then
   alias code="cursor"
 fi
 
+# docker/podman
+if command -v podman >/dev/null 2>&1 && ! command -v docker >/dev/null 2>&1; then
+  ln -sf "$(command -v podman)" "$HOME/.local/bin/docker"
+fi
+
 # git
 if command -v git >/dev/null 2>&1; then
   alias gc="git checkout"
