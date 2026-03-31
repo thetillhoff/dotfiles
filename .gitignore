@@ -12,6 +12,8 @@
 
 .ansible/
 
+AppImages/
+
 .atlas/
 
 .aws/
@@ -29,17 +31,50 @@
 
 .cdk/
 
+.config/autostart/
 .config/configstore/
+.config/Cursor/
+.config/dconf/
+.config/fcitx/
+.config/fcitx5/
+.config/fontconfig/
 .config/gh/
+.config/glow/
+.config/gtk-3.0/
+.config/gtk-4.0/
+.config/ibus/
+.config/kate/
+.config/KDE/
+.config/kdeconnect/
+.config/kdedefaults/
+.config/libaccounts-glib/
+.config/lutris/
+.config/MangoHud/
+.config/menus/
+.config/onedrive/
+.config/org.gnome.Ptyxis/
+.config/plasma-workspace/
+.config/pulse/
+.config/qtvirtualkeyboard/
+.config/session/
+.config/sops/
+.config/systemd/
+.config/user-tmpfiles.d/
+.config/vkBasalt/
+.config/wireplumber/
+.config/xsettingsd/
+.config/*
+
 .config/iterm2/
 .config/packer/
-.config/sops/
 
 .cups/
 
 .cursor/
 .cursor-tutor/
 .cursor-server/
+
+Data/
 
 .docker/*
 !.docker/daemon.json
@@ -49,6 +84,8 @@
 .DS_Store
 
 .expo/
+
+Games/
 
 .gem/
 
@@ -60,6 +97,8 @@
 .gradle/
 
 .granted/*
+
+.gtkrc-2.0
 
 .idea/
 
@@ -94,6 +133,10 @@
 
 .oh-my-zsh/
 
+OneDrive/
+
+.pki/
+
 .postman/
 
 .pulumi/
@@ -107,6 +150,10 @@
 .ssh/*
 !.ssh/config
 
+.steam/
+.steampath
+.steampid
+
 .sudo_as_admin_successful
 
 .talos/
@@ -116,6 +163,10 @@
 .th-client/
 
 .Trash/
+
+.var/
+
+Videos/
 
 .viminfo
 
