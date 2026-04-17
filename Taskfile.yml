@@ -87,6 +87,27 @@ tasks:
     cmds:
       - |
         node -v > .nvmrc
+  git-pull-all:
+    desc: Pull updates for all git repos in the current folder
+    dir: '{{.USER_WORKING_DIR}}'
+    cmds:
+      - |
+        for dir in {{.USER_WORKING_DIR}}/*/; do
+          if [ -d "$dir/.git" ]; then
+            if ! git -C "$dir" diff --quiet || ! git -C "$dir" diff --cached --quiet; then
+              echo "⚠ Skipping $dir (uncommitted changes)"
+            else
+              if ! git -C "$dir" ls-remote --exit-code origin &>/dev/null; then
+                echo "⚠ Skipping $dir (remote no longer exists)"
+              else
+                echo "↓ Pulling $dir"
+                git -C "$dir" pull --ff-only || echo "✗ Failed to pull $dir"
+                git -C "$dir" fetch --prune
+                git -C "$dir" branch --merged HEAD | grep -v '^\*\|main\|master\|develop' | xargs -r git -C "$dir" branch -d
+              fi
+            fi
+          fi
+        done
   backup:
     desc: Backup home dir
     cmds:
