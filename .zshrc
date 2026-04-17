@@ -295,6 +295,11 @@ load-nvmrc() {
 add-zsh-hook chpwd load-nvmrc
 load-nvmrc
 
+# pbpaste
+if command -v pbpaste >/dev/null 2>&1; then
+  alias paste="pbpaste"
+fi
+
 # TODO remove
 # powerlevel10k
 # [ -s "$HOME/.p10k.zsh" ] \
