@@ -171,6 +171,14 @@ if command -v podman >/dev/null 2>&1 && ! command -v docker >/dev/null 2>&1; the
   ln -sf "$(command -v podman)" "$HOME/.local/bin/docker"
 fi
 
+# ec2connect
+ec2connect() {
+  aws ec2 describe-instances --output text \
+    --filters "Name=instance-state-name,Values=running" \
+    --query 'Reservations[].Instances[].[Tags[?Key==`Name`].Value|[0],InstanceId]' \
+  | fzf --prompt="Select instance: "  | awk '{print $NF}' | xargs -o aws ssm start-session --target
+}
+
 # git
 if command -v git >/dev/null 2>&1; then
   alias gc="git checkout"
