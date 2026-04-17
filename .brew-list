@@ -3,11 +3,16 @@ age
 asdf
 atlas
 aws-nuke
+aws-sso-cli
 awscli
+awscurl
 cilium-cli
+cmake
+conan
 coreutils
 fd
 flux
+fzf
 gh
 git-delta
 gnu-sed
@@ -29,6 +34,7 @@ nmap
 nvm
 opentofu
 packer
+pnpm
 pre-commit
 pulumi
 python@3.11
