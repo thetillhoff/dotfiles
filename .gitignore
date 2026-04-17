@@ -27,9 +27,15 @@ AppImages/
 
 .cache/
 
+.cagent/
+
 .cargo/
 
 .cdk/
+
+.claude/
+
+.codex/
 
 .config/autostart/
 .config/configstore/
@@ -133,9 +139,9 @@ Games/
 
 .oh-my-zsh/
 
-OneDrive/
-
 .pki/
+
+.pi/
 
 .postman/
 
@@ -203,14 +209,19 @@ go/
 
 Google Drive
 
+Jts/
+
 Library/
 
 Movies/
 
 Music/
 
-# This is a symlink
+ntws/
+
+# This is a symlink and therefore not a folder
 OneDrive - thetillhoff
+OneDrive/
 
 Pictures/
 
