@@ -75,7 +75,7 @@ format = '[$symbol($username@)$stack]($style)'
 style = 'bg:#303030 fg:yellow'
 
 [terraform]
-symbol = ' \ue8bd'
+symbol = ' tf'
 format = '[$symbol $workspace]($style)'
 style = 'bg:#303030 fg:105'
 
