@@ -9,6 +9,7 @@ git checkout main # not sure if needed
 
  brew tap thetillhoff/homebrew-tap
  brew tap hashicorp/tap
+ brew tap fluxcd/tap
 cat .brew-list | xargs brew install
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 
