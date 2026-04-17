@@ -155,6 +155,10 @@ alias cls="clear"
 # cd
 alias cd..="cd .."
 
+# claude code
+[ -s "$HOME/.local/bin/claude" ] \
+&& export PATH="$PATH:$HOME/.local/bin"
+
 # code/cursor
 [ -s "/Applications/Cursor.app" ] \
 && export PATH="$PATH:/Applications/Cursor.app/Contents/Resources/app/bin"
