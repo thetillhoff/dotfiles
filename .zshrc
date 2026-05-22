@@ -451,6 +451,58 @@ sops() {
   command sops "$@"
 }
 
+tailscale() {
+  if [[ "$1" == "exitnode" ]]; then
+    shift
+    if [[ "$1" == "-h" || "$1" == "--help" || "$1" == "help" ]]; then
+      cat <<'EOF'
+Usage: tailscale exitnode [none|help]
+
+  tailscale exitnode         Pick an exit node interactively via fzf.
+  tailscale exitnode none    Disable the current exit node.
+  tailscale exitnode help    Show this help.
+
+All other 'tailscale ...' subcommands are passed through to the real
+tailscale binary unchanged (e.g. 'tailscale up', 'tailscale down',
+'tailscale status').
+EOF
+      return 0
+    fi
+    if [[ "$1" == "none" ]]; then
+      command tailscale set --exit-node=""
+      return $?
+    fi
+
+    if ! command -v fzf >/dev/null 2>&1; then
+      echo "fzf is required for 'tailscale exitnode' selection." >&2
+      return 1
+    fi
+
+    local selection
+    selection="$(command tailscale exit-node list \
+      | grep -E '^\s*[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' \
+      | fzf --prompt="Select exit node> " --height=40% --reverse)"
+
+    if [[ -z "$selection" ]]; then
+      echo "No exit node selected."
+      return 1
+    fi
+
+    local hostname
+    hostname="$(echo "$selection" | awk '{print $2}')"
+
+    if [[ -z "$hostname" ]]; then
+      echo "Could not determine hostname from selection." >&2
+      return 1
+    fi
+
+    command tailscale set --exit-node="$hostname"
+    return $?
+  fi
+
+  command tailscale "$@"
+}
+
 # task (taskfile.dev)
 [ -s "$BREW_HOME/bin/task" ] \
 && eval "$(task --completion zsh)"
