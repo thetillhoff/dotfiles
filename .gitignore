@@ -25,6 +25,10 @@ AppImages/
 
 .bash_history
 
+.bash_logout
+
+.bash_profile
+
 .bundle/
 
 .cache/
