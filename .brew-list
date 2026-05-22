@@ -6,6 +6,7 @@ aws-nuke
 aws-sso-cli
 awscli
 awscurl
+biome
 cilium-cli
 cmake
 conan

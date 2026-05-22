@@ -105,7 +105,7 @@ source $ZSH/oh-my-zsh.sh
 # else
 #   export EDITOR='nvim'
 # fi
-export EDITOR="cursor --wait"
+export EDITOR="code --wait"
 
 # Compilation flags
 # export ARCHFLAGS="-arch $(uname -m)"
@@ -162,9 +162,9 @@ alias cd..="cd .."
 # code/cursor
 [ -s "/Applications/Cursor.app" ] \
 && export PATH="$PATH:/Applications/Cursor.app/Contents/Resources/app/bin"
-if command -v cursor >/dev/null 2>&1; then
-  alias code="cursor"
-fi
+# if command -v cursor >/dev/null 2>&1; then
+#   alias code="cursor"
+# fi
 
 # docker/podman
 if command -v podman >/dev/null 2>&1 && ! command -v docker >/dev/null 2>&1; then
@@ -176,7 +176,8 @@ ec2connect() {
   aws ec2 describe-instances --output text \
     --filters "Name=instance-state-name,Values=running" \
     --query 'Reservations[].Instances[].[Tags[?Key==`Name`].Value|[0],InstanceId]' \
-  | fzf --prompt="Select instance: "  | awk '{print $NF}' | xargs -o aws ssm start-session --target
+  | fzf --prompt="Select instance: " --query="$1" --select-1 \
+  | awk '{print $NF}' | xargs -o aws ssm start-session --target
 }
 
 # git
@@ -320,10 +321,10 @@ fi
 && [ -s "$BREW_HOME/opt/ruby/bin" ] \
 && export PATH="$BREW_HOME/opt/ruby/bin:$PATH"
 
-search-file() {
+find-file() {
   # If no arguments provided, show help
   if [ $# -eq 0 ]; then
-    echo "Usage: search-file <searchstring> [path]"
+    echo "Usage: find-file <searchstring> [path]"
     echo "  searchstring: The string to search for in filenames"
     echo "  path: Optional path to search in (defaults to current directory)"
     return 0
@@ -350,10 +351,10 @@ search-file() {
   fi
 }
 
-search-in-file() {
+find-in-file() {
   # If no arguments provided, show help
   if [ $# -eq 0 ]; then
-    echo "Usage: search-in-file <searchstring> [path] [--ext <extension>] [args...]"
+    echo "Usage: find-in-file <searchstring> [path] [--ext <extension>] [args...]"
     echo "  searchstring: The string to search for"
     echo "  path: Optional path to search in (defaults to current directory)"
     echo "  --ext: Optional file extension filter (e.g., --ext js)"
@@ -465,6 +466,12 @@ if command -v terraform >/dev/null 2>&1; then
   alias tft="terraform validate"
 fi
 
+# vscode/code
+# Prepended so VSCode's `code` takes precedence over Cursor's `code` binary,
+# which also lives in Cursor's bin directory.
+[ -d "/Applications/Visual Studio Code.app" ] \
+&& export PATH="/Applications/Visual Studio Code.app/Contents/Resources/app/bin:$PATH"
+
 # whatsmyip
 whatsmyip() {
   # --- Local IPs with CIDR (exclude loopback) ---
@@ -489,7 +496,7 @@ command_not_found_handle() {
   if [ ! -e /run/.containerenv ] && [ ! -e /.dockerenv ]; then
     exit 127
   fi
-  
+
   distrobox-host-exec "${@}"
 }
 if [ -n "${ZSH_VERSION-}" ]; then
@@ -513,3 +520,5 @@ fi
 
 # TODO enable
 eval "$(starship init zsh)"
+
+eval "$(direnv hook zsh)"

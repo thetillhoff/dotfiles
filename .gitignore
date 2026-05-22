@@ -18,6 +18,8 @@ AppImages/
 
 .aws/
 .aws
+.aws-sso/
+!.aws-sso/config.yaml
 
 .azure
 
@@ -74,6 +76,8 @@ AppImages/
 .config/iterm2/
 .config/packer/
 
+.copilot/
+
 .cups/
 
 .cursor/
@@ -106,6 +110,8 @@ Games/
 
 .gtkrc-2.0
 
+.hwid
+
 .idea/
 
 .iterm2/
@@ -131,13 +137,19 @@ Games/
 
 .netrc
 
+.nix-profile
+
 .node_repl_history
 
 .npm/
 
+.npmrc
+
 .nvm/
 
 .oh-my-zsh/
+
+.openshot_qt/
 
 .pki/
 
@@ -166,6 +178,8 @@ Games/
 
 .terraform.d/
 
+.thumbnails/
+
 .th-client/
 
 .Trash/
@@ -178,6 +192,7 @@ Videos/
 
 .vscode/
 .vscode-remote-containers/
+.vscode-shared/
 
 # For wsl
 .vscode-server/
@@ -228,5 +243,3 @@ Pictures/
 Postman/
 
 Public/
-
-tillhoffmann
