@@ -31,6 +31,8 @@ AppImages/
 
 .bundle/
 
+.brain/
+
 .cache/
 
 .cagent/
@@ -39,7 +41,8 @@ AppImages/
 
 .cdk/
 
-.claude/
+.claude/*
+!.claude/skills
 
 .codex/
 
@@ -152,6 +155,9 @@ Games/
 .nvm/
 
 .oh-my-zsh/
+
+.ollama/*
+!.ollama/config.json
 
 .openshot_qt/
 
