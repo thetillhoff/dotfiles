@@ -224,6 +224,8 @@ Applications/
 code/.DS_Store
 code/*/
 
+contexts/
+
 Desktop/
 
 Documents/

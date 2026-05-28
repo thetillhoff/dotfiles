@@ -1,17 +1,7 @@
-# TODO remove
-# # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
-# # Initialization code that may require console input (password prompts, [y/n]
-# # confirmations, etc.) must go above this block; everything else may go below.
-# if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-#   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
-# fi
+export XDG_CACHE_HOME=$HOME/.cache
 
 # Path to your Oh My Zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
-
-# TODO remove
-# See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
-# ZSH_THEME="powerlevel10k/powerlevel10k"
 
 # Uncomment the following line to use case-sensitive completion.
 # CASE_SENSITIVE="true"
@@ -99,13 +89,7 @@ source $ZSH/oh-my-zsh.sh
 # You may need to manually set your language environment
 # export LANG=en_US.UTF-8
 
-# Preferred editor for local and remote sessions
-# if [[ -n $SSH_CONNECTION ]]; then
-#   export EDITOR='vim'
-# else
-#   export EDITOR='nvim'
-# fi
-export EDITOR="code --wait"
+# Preferred editor for local and remote sessions — set in the vscode/cursor section below
 
 # Compilation flags
 # export ARCHFLAGS="-arch $(uname -m)"
@@ -155,21 +139,9 @@ alias cls="clear"
 # cd
 alias cd..="cd .."
 
-# claude code
-[ -s "$HOME/.local/bin/claude" ] \
+[ -d "$HOME/.local/bin" ] \
 && export PATH="$PATH:$HOME/.local/bin"
 
-# code/cursor
-[ -s "/Applications/Cursor.app" ] \
-&& export PATH="$PATH:/Applications/Cursor.app/Contents/Resources/app/bin"
-# if command -v cursor >/dev/null 2>&1; then
-#   alias code="cursor"
-# fi
-
-# docker/podman
-if command -v podman >/dev/null 2>&1 && ! command -v docker >/dev/null 2>&1; then
-  ln -sf "$(command -v podman)" "$HOME/.local/bin/docker"
-fi
 
 # ec2connect
 ec2connect() {
@@ -447,8 +419,11 @@ sops() {
     return 1
   fi
 
-  # Call the actual sops command with all arguments
-  command sops "$@"
+  # flatpak's filesystems=host excludes /tmp — each sandbox instance gets a private /tmp,
+  # so VSCode can't find sops' temp file. Use a $HOME-based dir, which all sandboxes share.
+  local sops_tmpdir="${XDG_CACHE_HOME:-$HOME/.cache}/sops-tmp"
+  mkdir -p "$sops_tmpdir"
+  TMPDIR="$sops_tmpdir" command sops "$@"
 }
 
 tailscale() {
@@ -518,11 +493,28 @@ if command -v terraform >/dev/null 2>&1; then
   alias tft="terraform validate"
 fi
 
-# vscode/code
-# Prepended so VSCode's `code` takes precedence over Cursor's `code` binary,
-# which also lives in Cursor's bin directory.
+# vscode / cursor
+# macOS: VSCode prepended so its `code` takes precedence over Cursor's `code` binary.
 [ -d "/Applications/Visual Studio Code.app" ] \
-&& export PATH="/Applications/Visual Studio Code.app/Contents/Resources/app/bin:$PATH"
+  && export PATH="/Applications/Visual Studio Code.app/Contents/Resources/app/bin:$PATH"
+[ -d "/Applications/Cursor.app" ] \
+  && export PATH="$PATH:/Applications/Cursor.app/Contents/Resources/app/bin"
+
+# EDITOR: VSCode only (macOS .app or Linux flatpak), fall back to vim
+if [ -d "/Applications/Visual Studio Code.app" ]; then
+  export EDITOR="code --wait"
+elif [ -f "/var/lib/flatpak/exports/bin/com.visualstudio.code" ]; then
+  export EDITOR="flatpak run com.visualstudio.code --wait"
+  code() {
+    if [ $# -eq 1 ] && [ -d "$1" ]; then
+      flatpak run com.visualstudio.code --new-window "$@"
+    else
+      flatpak run com.visualstudio.code --reuse-window "$@"
+    fi
+  }
+else
+  export EDITOR="vim"
+fi
 
 # whatsmyip
 whatsmyip() {
