@@ -129,3 +129,14 @@ tasks:
           --exclude=go/ \
           /Users/$(whoami)/ \
           backup-macbook-superluminar@blackhole.local:/mnt/cold/backup-macbook-superluminar/$TIMESTAMP/
+
+  pull-file:
+    desc: Pull a specific file from upstream without touching other uncommitted changes (`task pull-file -- .zshrc`)
+    cmds:
+      - git -C "$HOME" fetch origin
+      - git -C "$HOME" checkout origin/main -- {{.CLI_ARGS}}
+
+  local-claude:
+    desc: Start claude with local ai
+    cms:
+      - ollama launch claude
