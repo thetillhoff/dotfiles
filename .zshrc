@@ -167,6 +167,13 @@ if command -v git >/dev/null 2>&1; then
   alias "git pull"="echo "Aliased to git pull --rebase" && git pull --rebase"
 fi
 
+# git-delta
+if command -v delta >/dev/null 2>&1; then
+  export GIT_PAGER=delta
+else
+  export GIT_PAGER=less
+fi
+
 # go
 [ -d "$HOME/go" ] \
 && export GOPATH=$HOME/go \
