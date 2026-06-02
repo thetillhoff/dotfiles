@@ -108,6 +108,64 @@ tasks:
             fi
           fi
         done
+  clean:
+    desc: Remove temporary/reproducible dirs from all subfolders of a path (`task clean -- ~/code`). Pass DRY=1 to preview. Use `ncdu <path>` to discover new patterns.
+    dir: '{{.USER_WORKING_DIR}}'
+    vars:
+      TARGET: '{{if .CLI_ARGS}}{{.CLI_ARGS}}{{else}}{{.USER_WORKING_DIR}}{{end}}'
+    cmds:
+      - |
+        PATTERNS=(
+          node_modules
+          .terraform
+          cdk.out
+        )
+        echo "{{if .DRY}}[dry run] Would clean{{else}}Cleaning{{end}} in: {{.TARGET}}"
+        for pattern in "${PATTERNS[@]}"; do
+          if [ -n "{{.DRY}}" ]; then
+            find "{{.TARGET}}" -type d -name "$pattern" -prune -print
+          else
+            find "{{.TARGET}}" -type d -name "$pattern" -prune -print0 | xargs -0 rm -rf
+          fi
+        done
+  zsh:
+    desc: List functions defined in ~/.zshrc
+    dir: '{{.USER_WORKING_DIR}}'
+    cmds:
+      - |
+        grep -E '^[a-zA-Z_-][a-zA-Z0-9_-]*\(\)' ~/.zshrc | sed 's/() {.*//'
+  ncdu:
+    desc: Interactive disk usage analyzer (`task ncdu -- <path>`, defaults to ~)
+    dir: '{{.USER_WORKING_DIR}}'
+    cmds:
+      - |
+        ncdu {{if .CLI_ARGS}}{{.CLI_ARGS}}{{else}}~{{end}}
+  btop:
+    desc: Interactive resource monitor (CPU, memory, processes, network, disk)
+    dir: '{{.USER_WORKING_DIR}}'
+    cmds:
+      - |
+        btop
+  portscan:
+    desc: Full TCP port scan of a target (`task portscan -- <host|ip>`)
+    dir: '{{.USER_WORKING_DIR}}'
+    cmds:
+      - |
+        nmap -sT -T4 -vv -p- {{.CLI_ARGS}}
+  ip:
+    desc: Show local IPs, public IP, and open ports
+    dir: '{{.USER_WORKING_DIR}}'
+    cmds:
+      - |
+        echo "=== Local IPs ==="
+        ifconfig | grep "inet " | grep -v 127.0.0.1
+        echo ""
+        echo "=== Public IP ==="
+        dig @ns.sslip.io txt ip.sslip.io +short -4 | tr -d '"'
+        dig @ns.sslip.io txt ip.sslip.io +short -6 | tr -d '"'
+        echo ""
+        echo "=== Open Ports ==="
+        lsof -i -P -n | grep LISTEN
   backup:
     desc: Backup home dir
     cmds:
