@@ -1,14 +1,14 @@
 # Knowledge Ingestion
 
-Ingest knowledge from any source into the mcp-brain Second Brain vault. Uses one subagent per item to keep the main context lean.
+Ingest knowledge from any source into the mcp-brain Second Brain vault. Uses subagents for parallel composition, then sequential review with dedup checks.
 
 Example sources: note-taking apps (Apple Notes, Notion, etc.), todo apps (MS Todo, Todoist, etc.), local files, URLs, saved posts from social platforms. The user will tell you what to ingest and where to read from at runtime.
 
 ## Core Principle
 
-**Main agent orchestrates. Subagents process. Full item content never accumulates in the main context.**
+**Main agent orchestrates. Subagents compose. Full item content never accumulates in the main context.**
 
-**Review before submit.** Subagents compose notes but never save them. The main agent shows each note as formatted markdown for user approval, then saves it. This keeps the user in control of what enters the vault.
+**Review before submit.** Subagents compose notes but never save them. The main agent reviews all composed notes sequentially for user approval, deduplication, and cross-item linking before saving.
 
 ## Sources
 
@@ -21,37 +21,57 @@ Use whatever MCP tools or built-in tools (Read, WebFetch) are available to acces
 2. List all items from the source (titles/IDs only — do not read full content)
 3. created_note_titles = []
    deletion_queue = []
+   embedding_failures = false
 
-4. Call ToolSearch "select:mcp__brain__create_note" once → load schema for later use
+4. Call ToolSearch "select:mcp__brain__create_note,mcp__brain__define_tag,mcp__brain__get_embedding,mcp__brain__find_similar" once → load schemas
 
-5. For each item sequentially:
-   a. Fetch the item content
-   b. Dispatch a subagent (see Subagent Instructions below)
-      passing: item_content, tag_list, created_note_titles
-   c. If STATUS: NEEDS_CLARIFICATION
-        → ask the user (show QUESTION + CONTEXT)
-        → re-dispatch with clarification_answer appended
-   d. If STATUS: REVIEW_PENDING (one or more blocks)
-        → if NEW_TAGS present:
-           - show proposed tags to user: "Subagent suggests new tags: <name> — <description>. Define them?"
-           - if approved: call mcp__brain__define_tag for each, add to tag_list
-           - if rejected: remove those tags from NOTE_TAGS, substitute closest existing tag
-        → for each note block sequentially:
-           - render as formatted markdown (see Review Display below)
-           - ask: "Save this note? (yes / no / <edit instructions>)"
-           - if yes: call mcp__brain__create_note, add title to created_note_titles
-           - if no: skip this note
-           - if edit instructions: apply edits, show updated version, ask again
-        → after all blocks: use INGESTION_COVERAGE from the last block to decide deletion_queue
-   e. If STATUS: DONE
-        → append NOTES_CREATED to created_note_titles
-        → if INGESTION_COVERAGE: full → add item to deletion_queue
+--- COMPOSE PHASE (parallel) ---
 
-6. Present deletion_queue to user in one batch:
+5. Fetch all item contents in parallel (or batched if source requires)
+6. Dispatch one subagent per item in parallel (see Subagent Instructions below)
+   passing: item_content, tag_list (initial snapshot)
+   Collect results: array of { item_id, status, notes[], new_tags[], ingestion_coverage }
+
+7. Collect all NEEDS_CLARIFICATION items. Present them to the user in one batch:
+   show QUESTION + CONTEXT for each. Re-dispatch those items with clarification_answer.
+
+--- REVIEW PHASE (sequential) ---
+
+8. For each composed result (in order):
+   a. If STATUS: SKIP → continue
+   b. If STATUS: REVIEW_PENDING (one or more note blocks):
+      For each note block sequentially:
+        i.  DEDUP CHECK: call mcp__brain__get_embedding with the note title + content,
+            then call mcp__brain__find_similar with the returned vector (limit 3).
+            If the closest match exists (any distance — always show it):
+              Show the user: "Closest existing note: [[Title]] (distance: X.XX)"
+              Let them decide: "Save anyway / Skip / Merge into existing"
+        ii. CROSS-ITEM LINKING: check if any title in created_note_titles is clearly
+            related — if so, add [[wikilinks]] or suggest links.
+        iii. TAG DEDUP: if any proposed NEW_TAG is semantically similar to an existing
+             tag (check via mcp__brain__find_similar_tags or manual comparison), suggest
+             using the existing tag instead.
+        iv. Render the note as formatted markdown (see Review Display below)
+            - if NEW_TAGS present: show them inline as "New tags: name — description"
+        v.  Ask: "Save this note? (yes / no / <edit instructions>)"
+        vi. If yes:
+              * call mcp__brain__create_note with tags and new_tags
+              * add title to created_note_titles
+              * merge new tags into tag_list
+              * if create_note response has embedding_status: "pending":
+                embedding_failures = true
+        vii. If no: skip this note
+        viii. If edit instructions: apply edits, show updated version, ask again
+   c. After all blocks for an item: use INGESTION_COVERAGE to decide deletion_queue
+
+9. Present deletion_queue to user in one batch:
    "These items were fully ingested. Which ones should I delete from the source?"
    Delete only confirmed items.
 
-7. Report summary (see Summary Report section)
+10. If embedding_failures = true:
+    Call mcp__brain__resync to recover any notes that failed to embed during ingestion.
+
+11. Report summary (see Summary Report section)
 ```
 
 ## Subagent Instructions
@@ -72,13 +92,6 @@ MCP tools are available but deferred — call ToolSearch first to load any schem
 **Existing tags** (prefer these; only define new ones if nothing fits):
 {{TAG_LIST}}
 
-**Notes created this session** (use for wikilinks if clearly relevant):
-{{CREATED_NOTE_TITLES}}
-
-{{#if CLARIFICATION_ANSWER}}
-**Clarification from user:** {{CLARIFICATION_ANSWER}}
-{{/if}}
-
 ### Decision
 
 Classify this item as one of:
@@ -86,8 +99,6 @@ Classify this item as one of:
 - **SKIP** — personal todos unrelated to any project, empty/trivial content, contacts, pure shopping lists
 - **INGEST** — tech notes, ideas, observations, reference material, career/leadership insights, political/societal thoughts, work context, project specs, story/book ideas (including adult content)
 - **NEEDS_CLARIFICATION** — brief items (1–5 lines) mentioning a recognizable project, client, employer, technology, or work context where the purpose is genuinely unclear
-
-If a CLARIFICATION_ANSWER is present, use it to resolve any prior NEEDS_CLARIFICATION — do not return NEEDS_CLARIFICATION again.
 
 ### Actions
 
@@ -98,7 +109,7 @@ NOTES_CREATED: []
 INGESTION_COVERAGE: full
 ```
 
-**If NEEDS_CLARIFICATION (no clarification answer provided):**
+**If NEEDS_CLARIFICATION:**
 ```
 STATUS: NEEDS_CLARIFICATION
 QUESTION: <what to ask the user>
@@ -118,7 +129,6 @@ CONTEXT: <relevant excerpt from the item>
 2. For each note: pick 1 PARA tag + 1–2 topic tags from the tag list
 3. Compose the note body — do NOT call `mcp__brain__create_note`
    - Write the full markdown body, structured clearly with headings where useful
-   - Add `[[Title]]` wikilinks to notes in CREATED_NOTE_TITLES where clearly relevant — do not guess titles
 4. Assess: did you capture ALL meaningful content from the source item (full) or only part (partial)?
 5. Return one block per note. Repeat the block for each note; only the last block includes INGESTION_COVERAGE:
 ```
@@ -139,9 +149,7 @@ INGESTION_COVERAGE: full | partial
 
 ### Tags
 
-Use tags from the **Existing tags** list above. If no existing tag fits a major theme of the item, propose a new tag:
-- Append a `NEW_TAGS` block with name + description for each proposed tag
-- The main agent will ask the user for approval and call `mcp__brain__define_tag` before saving
+Use tags from the **Existing tags** list above. If no existing tag fits a major theme of the item, include the new tag name directly in NOTE_TAGS and declare it in a NEW_TAGS block with a description:
 
 ```
 NEW_TAGS:
@@ -167,6 +175,9 @@ links:
 <NOTE_CONTENT>
 ~~~
 
+If NEW_TAGS are present, show them below the frontmatter block:
+> **New tags:** `machine-learning` — Machine learning notes; `llm` — Large language model topics
+
 Show the source item title above so the user knows what's being ingested. Ask for approval on one line after the block: `Save this note? (yes / no / edit instructions)`
 
 If the user provides edit instructions, apply them inline, re-render the updated note, and ask again — do not re-dispatch the subagent.
@@ -175,6 +186,7 @@ If the user provides edit instructions, apply them inline, re-render the updated
 
 After all items and deletions are handled, report:
 - Notes ingested (count + titles)
+- New tags created (name + description)
 - Items skipped (brief reason: trivial, personal, unclear)
 - Items partially ingested (user may want to review originals manually)
 - Deletions performed
