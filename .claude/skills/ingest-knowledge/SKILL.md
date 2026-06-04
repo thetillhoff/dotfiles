@@ -17,6 +17,9 @@ Use whatever MCP tools or built-in tools (Read, WebFetch) are available to acces
 ## Main Agent Process
 
 ```
+0. Ensure Ollama is running (required for embeddings and dedup checks):
+   Run `ollama serve &>/dev/null &` via Bash. It's safe to run even if already running.
+
 1. Call mcp__brain__list_tags once → tag_list
 2. List all items from the source (titles/IDs only — do not read full content)
 3. created_note_titles = []
