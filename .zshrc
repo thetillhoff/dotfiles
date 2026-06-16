@@ -180,9 +180,7 @@ fi
 && export PATH=$GOPATH/bin:$PATH
 
 # granted / assume
-if command -v assume >/dev/null 2>&1; then
-  alias assume=". assume"
-fi
+alias assume=". assume"
 
 # homebrew
 [ -s "$BREW_HOME/bin/brew" ] \
