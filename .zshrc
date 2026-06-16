@@ -130,7 +130,7 @@ source $ZSH/oh-my-zsh.sh
 
 # brew
 if command -v brew >/dev/null 2>&1; then
-  alias brew="brew list --installed-on-request > $HOME/.brew-list && brew"
+  alias brew="brew bundle dump --file=$HOME/.Brewfile --force --no-flatpak --no-npm --no-go --no-cargo --no-uv --no-krew --no-vscode --no-mas --no-winget 2>/dev/null; brew"
 fi
 
 # clear

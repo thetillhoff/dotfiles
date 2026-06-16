@@ -36,6 +36,16 @@ tasks:
         nvm install {{.CLI_ARGS}}
         nvm use {{.CLI_ARGS}}
 
+  brew-install:
+    desc: Install missing packages from ~/.Brewfile
+    cmds:
+      - brew bundle install --file=~/.Brewfile
+
+  brew-dump:
+    desc: Dump installed packages to ~/.Brewfile
+    cmds:
+      - brew bundle dump --file=~/.Brewfile --force --no-flatpak --no-npm --no-go --no-cargo --no-uv --no-krew --no-vscode --no-mas --no-winget
+
   update:
     desc: Update all packages
     dir: '{{.USER_WORKING_DIR}}'
@@ -92,7 +102,7 @@ tasks:
         dig @ns.sslip.io txt ip.sslip.io +short -4 | tr -d '"' # forces IPv4 lookup
         dig @ns.sslip.io txt ip.sslip.io +short -6 | tr -d '"' # forces IPv6 lookup
 
-        create-nvmrc:
+  create-nvmrc:
     desc: Create nvmrc file for current node version
     dir: '{{.USER_WORKING_DIR}}'
     cmds:

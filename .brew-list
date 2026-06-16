@@ -6,6 +6,7 @@ aws-nuke
 aws-sso-cli
 awscli
 awscurl
+bbrew
 biome
 btop
 cilium-cli
@@ -52,7 +53,6 @@ talosctl
 telnet
 temingo
 terraform
-tflint
 tmpreaper
 tokei
 trufflehog

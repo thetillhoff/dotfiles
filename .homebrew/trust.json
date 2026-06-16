@@ -5,7 +5,8 @@
     "go-task/tap",
     "hashicorp/tap",
     "siderolabs/tap",
-    "thetillhoff/tap"
+    "thetillhoff/tap",
+    "valkyrie00/bbrew"
   ],
   "trustedformulae": [
     "ariga/tap/atlas",
