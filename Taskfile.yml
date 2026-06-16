@@ -208,4 +208,4 @@ tasks:
   local-claude:
     desc: Start claude with local ai
     cmds:
-      - ollama launch claude
+      - ollama launch claude --model qwen2.5-coder:7b
