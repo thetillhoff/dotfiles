@@ -38,6 +38,24 @@ Scan staged diff for changed source files. Skip for: docs, config, CI/CD, build 
 - Changed file has significant logic but no test counterpart → ask: *"No tests found for `<file>` — add them or proceed?"*
 - Changed file already has tests → run them and confirm they pass.
 
+## Sensitive Content Check
+
+Before committing, check whether the repo is public:
+
+```bash
+gh repo view --json isPrivate --jq '.isPrivate'
+```
+
+If the repo is public (or the check fails and you can't confirm it's private), scan the staged diff for sensitive content. Stop and warn the user — do not commit — if any of the following are found:
+
+- **Private keys** — `-----BEGIN ... PRIVATE KEY-----`, `-----BEGIN EC PRIVATE KEY-----`, etc.
+- **API tokens / credentials** — patterns like `sk-`, `AKIA[A-Z0-9]{16}`, `ghp_`, `gho_`, `xoxb-`, `xoxp-`, `Bearer ey`, `Authorization:` with a value
+- **Hardcoded secrets in config** — assignments like `password =`, `secret =`, `api_key =`, `token =` with a non-placeholder value (i.e. not `""`, `<...>`, `$ENV_VAR`, or `os.getenv`)
+- **`.env` files being staged** — any `.env`, `.env.local`, `.env.production`, etc.
+- **Internal or company-specific material** — internal hostnames, VPN endpoints, internal service URLs, or anything that looks like it identifies internal infrastructure
+
+When in doubt, flag it and ask the user to confirm before proceeding. A false positive is far less costly than an accidental secret leak.
+
 ## Pre-Commit Checks
 
 - Run the `review-comments` skill on the staged diff. Fix any violations before committing — good comments are a commit requirement, not optional. This is always on; don't skip it.
