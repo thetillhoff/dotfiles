@@ -41,7 +41,9 @@ AppImages/
 
 .cdk/
 
+.claude.json
 .claude/*
+!.claude/settings.json
 !.claude/skills
 
 .codex/
