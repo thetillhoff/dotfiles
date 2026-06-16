@@ -36,6 +36,7 @@ repos:
     rev: "v0.13.0"
     hooks:
       - id: yamlfmt
+        args: [-formatter, retain_line_breaks=true]
   - repo: https://github.com/adrienverge/yamllint
     rev: "v1.35.1"
     hooks:

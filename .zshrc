@@ -180,9 +180,7 @@ fi
 && export PATH=$GOPATH/bin:$PATH
 
 # granted / assume
-if command -v assume >/dev/null 2>&1; then
-  alias assume=". assume"
-fi
+alias assume=". assume"
 
 # homebrew
 [ -s "$BREW_HOME/bin/brew" ] \
@@ -542,19 +540,6 @@ whatsmyip() {
   print "Public IPv6: $public_ipv6"
 }
 
-command_not_found_handle() {
-# don't run if not in a container
-  if [ ! -e /run/.containerenv ] && [ ! -e /.dockerenv ]; then
-    exit 127
-  fi
-
-  distrobox-host-exec "${@}"
-}
-if [ -n "${ZSH_VERSION-}" ]; then
-  command_not_found_handler() {
-    command_not_found_handle "$@"
- }
-fi
 
 # ---
 # This should only run on mac (    $(uname -s) == "Darwin"    ):

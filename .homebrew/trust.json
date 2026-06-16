@@ -1,0 +1,14 @@
+{
+  "trustedtaps": [
+    "common-fate/granted",
+    "fluxcd/tap",
+    "go-task/tap",
+    "hashicorp/tap",
+    "siderolabs/tap",
+    "thetillhoff/tap"
+  ],
+  "trustedformulae": [
+    "ariga/tap/atlas",
+    "ekristen/tap/aws-nuke"
+  ]
+}
