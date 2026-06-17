@@ -167,6 +167,78 @@ if command -v git >/dev/null 2>&1; then
   alias "git pull"="echo "Aliased to git pull --rebase" && git pull --rebase"
 fi
 
+# gcai — generate a commit message via claude haiku and commit
+gcai() {
+  if git diff --cached --quiet; then
+    echo "Nothing staged. Stage changes with 'git add' first." >&2
+    return 1
+  fi
+
+  local skill_file="$HOME/.claude/skills/commit/SKILL.md"
+  if [[ ! -f "$skill_file" ]]; then
+    echo "Commit skill not found at $skill_file" >&2
+    return 1
+  fi
+
+  local branch ticket ticket_prefix diff msg
+
+  branch=$(git branch --show-current)
+  ticket=$(echo "$branch" | grep -oE '[A-Za-z]+-[0-9]+' | head -1 | tr '[:lower:]' '[:upper:]')
+  [[ -n "$ticket" ]] && ticket_prefix="$ticket: " || ticket_prefix=""
+
+  diff=$(git diff --cached)
+
+  msg=$(claude -p --model claude-haiku-4-5-20251001 --output-format text \
+    "Generate a single git commit message for the staged diff below.
+Follow the commit message rules in this skill guide:
+
+$(cat "$skill_file")
+
+Current branch: $branch
+$([ -n "$ticket_prefix" ] && echo "Ticket prefix (from branch): $ticket_prefix — include it verbatim at the start")
+
+Output ONLY the commit message, no quotes, no explanation.
+
+Staged diff:
+$diff")
+
+  echo "$msg"
+  echo -n "Commit? [Y/n] "
+  read -r answer
+  [[ "$answer" =~ ^[Nn] ]] && return 0
+  git commit -m "$msg"
+}
+
+# tools — list brew tools and zsh functions with descriptions
+tools() {
+  local brewfile="$HOME/.Brewfile"
+  local zshrc="$HOME/.zshrc"
+  local col=24
+
+  printf "Brew\n"
+  awk -v col="$col" '
+    /^#/ { desc = substr($0, 3); next }
+    /^brew / {
+      match($0, /"([^"]+)"/, arr); name = arr[1]
+      sub(/.*\//, "", name)
+      printf "  %-*s %s\n", col, name, desc
+      desc = ""; next
+    }
+    { desc = "" }
+  ' "$brewfile"
+
+  printf "\nZsh functions\n"
+  awk -v col="$col" '
+    /^#/ { desc = substr($0, 3); next }
+    /^[a-zA-Z_][a-zA-Z0-9_-]*\(\)/ {
+      name = $1; gsub(/\(\).*/, "", name)
+      printf "  %-*s %s\n", col, name, desc
+      desc = ""; next
+    }
+    { desc = "" }
+  ' "$zshrc"
+}
+
 # git-delta
 if command -v delta >/dev/null 2>&1; then
   export GIT_PAGER=delta
@@ -540,6 +612,20 @@ whatsmyip() {
   print "Public IPv6: $public_ipv6"
 }
 
+
+# cenv — pick a ~/code/* project and source its .envrc
+cenv() {
+  local name
+  name=$(ls -d "$HOME/code"/*/ 2>/dev/null | sed "s|$HOME/code/||;s|/$||" \
+    | fzf --prompt="Select context: ") || return 0
+  [[ -z "$name" ]] && return 0
+  local envrc="$HOME/code/$name/.envrc"
+  if [[ ! -f "$envrc" ]]; then
+    echo "No .envrc in $HOME/code/$name" >&2
+    return 1
+  fi
+  source "$envrc"
+}
 
 # ---
 # This should only run on mac (    $(uname -s) == "Darwin"    ):
