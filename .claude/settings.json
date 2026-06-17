@@ -24,6 +24,7 @@
       "Bash(npm install *)",
       "Bash(npm run *)",
       "Bash(npx tsc *)",
+      "Bash(npx markdownlint-cli *)",
       "Bash(make)",
       "Bash(make *)",
       "Bash(curl -s *)",
