@@ -617,7 +617,7 @@ whatsmyip() {
 cenv() {
   local name
   name=$(ls -d "$HOME/code"/*/ 2>/dev/null | sed "s|$HOME/code/||;s|/$||" \
-    | fzf --prompt="Select context: ") || return 0
+    | fzf --prompt="Select context: " --query="${1:-}" --select-1) || return 0
   [[ -z "$name" ]] && return 0
   local envrc="$HOME/code/$name/.envrc"
   if [[ ! -f "$envrc" ]]; then
