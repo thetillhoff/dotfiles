@@ -72,13 +72,21 @@ Never amend, reword, squash, reorder, or otherwise rewrite a commit that has alr
 
 ## Local History Review
 
-Before creating a new commit, check whether the staged change belongs with an existing unpushed commit:
+Before committing, look in both directions: should staged changes be split, and should any of them be merged into an existing unpushed commit?
 
 ```bash
 git log origin/<branch>..HEAD --oneline
 ```
 
 Use `main` (or the relevant base branch) if there is no tracking branch yet.
+
+### Splitting staged changes
+
+If the staged diff touches multiple independent concerns, split it into separate commits — one per concern. Stage only the files (or hunks) for the first concern, commit, then stage the next group.
+
+Also apply this to existing unpushed commits: if a local commit contains more than one logical concern, split it using `git reset --soft` to the commit before it, then re-commit in focused groups. **Ask the user before splitting an existing commit** — unlike squashing, splitting is harder to undo and the user may have split it intentionally.
+
+### Merging staged changes into an existing commit
 
 **Amend** — staged change is a direct follow-up to the last commit (missed file, typo, forgotten rename) and that commit is not pushed.
 
