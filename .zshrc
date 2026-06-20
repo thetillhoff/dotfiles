@@ -174,9 +174,9 @@ gcai() {
     return 1
   fi
 
-  local skill_file="$HOME/.claude/skills/commit/SKILL.md"
+  local skill_file="$HOME/.claude/skills/git/SKILL.md"
   if [[ ! -f "$skill_file" ]]; then
-    echo "Commit skill not found at $skill_file" >&2
+    echo "Git skill not found at $skill_file" >&2
     return 1
   fi
 
@@ -207,6 +207,12 @@ $diff")
   read -r answer
   [[ "$answer" =~ ^[Nn] ]] && return 0
   git commit -m "$msg"
+}
+
+# ask — quick one-shot question via claude
+ask() {
+  [[ $# -eq 0 ]] && { echo "Usage: ask <question>" >&2; return 1; }
+  claude -p --model claude-haiku-4-5-20251001 --output-format text "$*"
 }
 
 # tools — list brew tools and zsh functions with descriptions
