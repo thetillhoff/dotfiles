@@ -24,6 +24,8 @@ brew "awscurl"
 brew "biome"
 # Resource monitor. C++ version and continuation of bashtop and bpytop
 brew "btop"
+# Incredibly fast JavaScript runtime, bundler, test runner, and package manager
+brew "bun"
 # CLI to install, manage & troubleshoot Kubernetes clusters running Cilium
 brew "cilium-cli"
 # Cross-platform make
@@ -36,6 +38,8 @@ brew "coreutils"
 brew "direnv"
 # Simple, fast and user-friendly alternative to find
 brew "fd"
+# Play, record, convert, and stream select audio and video codecs
+brew "ffmpeg"
 # Command-line fuzzy finder written in Go
 brew "fzf"
 # GitHub command-line tool
