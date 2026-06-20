@@ -71,6 +71,14 @@ tasks:
       - |
         networkQuality
 
+  git-nuke-local:
+    desc: Hard reset and remove all untracked files/dirs in current repo
+    dir: '{{.USER_WORKING_DIR}}'
+    cmds:
+      - |
+        git reset --hard
+        git clean -fd
+
   git-show-origin:
     desc: Show origin of current git repo
     dir: '{{.USER_WORKING_DIR}}'
