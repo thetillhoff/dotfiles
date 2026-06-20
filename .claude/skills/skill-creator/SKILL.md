@@ -1,6 +1,6 @@
 ---
 name: skill-creator
-description: Create, update, and optimize skills. Use when users want to create a skill from scratch, edit or refine an existing skill, run evals to test a skill, benchmark skill performance, or optimize a skill's description for better triggering accuracy.
+description: Create, update, and optimize skills. Use when users want to create a skill from scratch, edit or refine an existing skill, review or audit an existing skill, run evals to test a skill, benchmark skill performance, or optimize a skill's description for better triggering accuracy. Also trigger when the user says "update the X skill", "look at the X skill", "improve the X skill", "add Y to the X skill", or any request that involves reading, changing, or evaluating a skill file.
 ---
 
 # Skill Creator
@@ -19,7 +19,13 @@ At a high level, the process goes like this:
 - Repeat until you're satisfied
 - Expand the test set and try again at larger scale
 
-Your job when using this skill is to figure out where the user is in this process and then jump in and help them progress through these stages. So for instance, maybe they're like "I want to make a skill for X". You can help narrow down what they mean, write a draft, write the test cases, figure out how they want to evaluate, run all the prompts, and repeat.
+Your job when using this skill is to figure out where the user is in this process and then jump in and help them progress through these stages. This includes:
+
+- **Creating** a new skill from scratch
+- **Updating** an existing skill (adding behaviour, fixing issues, changing instructions)
+- **Reviewing** an existing skill (reading and understanding it, auditing its coverage, spotting gaps — without necessarily changing anything)
+
+For updates and reviews, start by reading the current `SKILL.md`. For updates, edit in place (or copy to `/tmp/` first if the path may be read-only). For reviews, summarize what the skill does, what it covers well, and any gaps or issues you notice — then ask the user what they want to do next. So for instance, maybe they're like "I want to make a skill for X". You can help narrow down what they mean, write a draft, write the test cases, figure out how they want to evaluate, run all the prompts, and repeat.
 
 On the other hand, maybe they already have a draft of the skill. In this case you can go straight to the eval/iterate part of the loop.
 
@@ -150,6 +156,28 @@ Output: feat(auth): implement JWT-based authentication
 - **Stay general.** Don't overfit to the examples you tested. Write for the million prompts you haven't seen.
 
 Start by writing a draft and then look at it with fresh eyes and improve it.
+
+#### Leading words
+
+The biggest lever on how a skill behaves is the vocabulary it leans on. A *leading word* is a compact concept already living in the model's pretraining — name it and you recruit a whole cluster of priors with a few tokens, instead of spelling out the behavior in a paragraph. Pick a word the model already associates with the behavior you want ("fast, deterministic, low-overhead" lives under *tight*; "a loop you believe in" under *red*). The same word then anchors both execution (consistent behavior every time it appears) and invocation (shared language across the description, the body, and the user's prompts). When a stretch of instructions feels long, the fix is often a better leading word, not more sentences.
+
+#### The no-op test
+
+The model already does a lot by default — it's smart. A line earns its place only if it changes behavior *versus that default*. Read the draft sentence by sentence and ask: would removing this change what the model does? If not, it's a no-op — delete it, don't trim it. Restating what a good leading word already implies, or what the model would do unprompted, is the most common form of skill bloat. Keep each fact in exactly one authoritative place, and keep a concept's definition, rules, and caveats co-located so they don't drift apart.
+
+#### Aim for predictability
+
+What you're optimizing for is the model taking the same *process* every run — not producing byte-identical output. When the skill defines ordered steps, give each one a completion criterion the model can actually check (done vs. not-done) and that's exhaustive ("every modified file accounted for", not "the main ones"). Fuzzy criteria invite *premature completion* — the model declaring victory before the work is real. If later steps keep tempting the model to wrap up early, that's a signal to split them so the post-work is hidden behind its own step rather than dangling in view.
+
+#### Failure modes to watch for
+
+When a skill misbehaves, it's usually one of these — name it, then apply the remedy:
+
+- **Premature completion** — stops before the work is genuinely done. Sharpen the completion criterion; split off later steps.
+- **Duplication** — the same meaning stated in several places, which drift apart over edits. Collapse to one source of truth, often via a shared leading word.
+- **Sediment** — stale layers left behind by past edits. Prune actively; the no-op test catches most of it.
+- **Sprawl** — too long even though every line is unique. Push reference detail behind context pointers; split by branch.
+- **No-op** — lines the model would obey anyway. A stronger leading word fixes these, not more rules.
 
 ### Test Cases
 
