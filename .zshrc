@@ -121,11 +121,10 @@ source $ZSH/oh-my-zsh.sh
 && source "$BREW_HOME/opt/asdf/libexec/asdf.sh"
 
 # aws
+# compinit already run by oh-my-zsh.sh above; only bashcompinit is needed for `complete -C`
 [ -s "$BREW_HOME/bin/aws_completer" ] \
 && autoload bashcompinit \
 && bashcompinit \
-&& autoload -Uz compinit \
-&& compinit \
 && complete -C "$BREW_HOME/bin/aws_completer" aws
 
 # brew
@@ -322,12 +321,8 @@ fi
 [ -d "$HOME/.nvm" ] \
 && export NVM_DIR="$HOME/.nvm"
 
-[ -s "$NVM_DIR/nvm.sh" ] \
-&& \. "$NVM_DIR/nvm.sh"  # This loads nvm without brew
-
-[ -s "$BREW_HOME" ] \
-&& [ -s "$BREW_HOME/opt/nvm/nvm.sh" ] \
-&& \. "$BREW_HOME/opt/nvm/nvm.sh"  # This loads nvm with brew
+# --no-use skips slow version resolution at startup; load-nvmrc (chpwd hook) switches on demand
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" --no-use
 
 # nvm / nvmrc
 autoload -U add-zsh-hook
