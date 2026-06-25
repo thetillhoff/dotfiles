@@ -43,6 +43,7 @@ AppImages/
 
 .claude.json
 .claude/*
+!.claude/CLAUDE.md
 !.claude/settings.json
 !.claude/skills
 
