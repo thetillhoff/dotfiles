@@ -101,3 +101,49 @@ Cloud/infra subjects suit a cool slate-navy ground, a warm amber value-accent
 a monospace face (console vernacular reinforces "hard numbers"), narrative in a
 serif, structure in system sans. Don't reuse this for an unrelated subject —
 re-derive from whatever the repos are actually about.
+
+## Make it PDF-exportable (customers will print it)
+
+These reports get printed and emailed, so design for paper from the start.
+
+**Keep the whole page light.** A dark hero/band with light text looks great on
+screen but turns into an unreadable black blob in PDF the moment the print path
+drops background graphics — which hosted viewers do. Use a light ground with
+dark ink everywhere; carry brand colour with rules, accents and one pale-tint
+band, not full dark fills. (If you want a dark on-screen look, you must add a
+`@media print` block that flips those bands to light — one more thing to
+maintain. Light-everywhere is simpler and prints identically.)
+
+**Add a print stylesheet that only paginates** — the design is already light,
+so print just needs page behaviour:
+
+```css
+@media print{
+  @page{ margin:12mm; }
+  html,body{ background:#fff !important; }
+  *{ -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+  .wrap{ max-width:none; padding:0; }
+  /* keep ATOMIC cards whole; NEVER break-inside a grid CONTAINER
+     (.kpis/.caps/.people) — a grid too tall to fit gets clipped, not flowed.
+     That single mistake reads as "the section is cut off". */
+  .kpi,.cap,.person,.wave,.tablewrap,.statement,.chart{ break-inside:avoid; }
+  h2{ break-after:avoid; }
+  .head-stat{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px 18px; }
+  .bar .val{ opacity:1; }   /* hover-only chart labels must show in print */
+}
+```
+
+**Export by rendering the standalone HTML, not via the hosted viewer.**
+Browser-printing a hosted artifact page clips to ~one viewport and prints the
+app's own chrome (toolbar, URL). Render the raw HTML headless instead:
+
+```bash
+npm i playwright && npx playwright install chromium   # once
+node -e 'const{chromium}=require("playwright");(async()=>{const b=await chromium.launch();const p=await b.newPage();await p.goto("file://ABS/PATH/report.html",{waitUntil:"networkidle"});await p.pdf({path:"out.pdf",printBackground:true,format:"Letter",preferCSSPageSize:true});await b.close()})()'
+```
+
+**Verify the PDF, don't assume.** Convert pages to images and actually look —
+`pdftoppm -png -r 80 out.pdf page` then read `page-*.png`. Check: nothing
+clipped, no section cut at a page edge, dark-text-on-light everywhere, chart
+values visible. The screen render and the PDF fail differently; only the PDF
+tells you about pagination.

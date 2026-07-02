@@ -174,7 +174,7 @@ slop-test gates, hero enrichment recipe.
 If you want Hallmark to override any preserved item, say so.
 ```
 
-**Persistence.** Write the findings to `.hallmark/preflight.json` once. On subsequent runs, *re-use* the cached findings unless either:
+**Persistence.** Write the findings to `.hallmark/preflight.json` once. On subsequent runs, *reuse* the cached findings unless either:
 - the user says "refresh pre-flight" (or "scan again", "re-scan"), or
 - `package.json` / `tailwind.config.*` mtimes are newer than `preflight.json`.
 

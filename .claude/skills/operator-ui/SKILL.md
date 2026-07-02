@@ -91,6 +91,9 @@ Words in the UI are design material. Be consistent:
   person Y (3 samples)".
 - Names of entities (track, scene, person, source) stay the same
   across pages. No synonym pile.
+- Labels describe the concept, not the value. "Status: Disabled" reads
+  cleanly; "Enabled: Disabled" is a contradiction. Pick a label that
+  stays true for all possible values of the field.
 - Empty states are short, useful sentences ("No proposals at the
   current threshold. Lower the slider or scan more files."), not
   decoration.

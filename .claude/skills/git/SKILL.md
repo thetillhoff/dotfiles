@@ -79,8 +79,25 @@ feat: add IPv6 support to SIP signaling
 ### Pre-Commit Checks
 
 1. Run the `review-comments` skill on the staged diff. Fix violations before committing.
-2. `.pre-commit-config.yaml` or `.git/hooks/pre-commit` exists → run `pre-commit run --files <changed files>`, fix failures.
-3. Other linters (eslint, prettier, markdownlint) → ask whether to run them.
+2. Run `codespell` on changed files (default) or all tracked files (when the user asks to
+   verify/check/review/sweep the whole repo):
+
+   ```bash
+   # Default — changed files only (pre-commit)
+   git diff --name-only HEAD | xargs codespell
+
+   # Full sweep — all tracked files
+   git ls-files | xargs codespell
+   ```
+
+   Review every flagged word — most will need fixing, but some are false positives (proper nouns,
+   abbreviations, intentional non-standard words). Fix real typos, ignore the rest. Do **not** add
+   false positives to a word list; just leave them. If `codespell` is not installed, warn:
+
+   > `codespell` not found — install it with `brew install codespell`, then re-run.
+
+3. `.pre-commit-config.yaml` or `.git/hooks/pre-commit` exists → run `pre-commit run --files <changed files>`, fix failures.
+4. Other linters (eslint, prettier, markdownlint) → ask whether to run them.
 
 ### Sensitive Content Check
 

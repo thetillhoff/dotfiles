@@ -7,6 +7,19 @@
 - Use `cd <path> && git <cmd>`, never `git -C <path> <cmd>`.
 - Superpowers skills must never run git commands.
 
+## Principles
+
+- **DRY** (Don't Repeat Yourself) — one source of truth; extract only after 3+ identical uses, not before.
+- **KISS** (Keep It Simple, Stupid) — simplest solution that works; never clever for clever's sake.
+- **YAGNI** (You Ain't Gonna Need It) — don't build for hypothetical future needs; later can scaffold for itself.
+- **SRP** (Single Responsibility Principle) — one unit does one job; split when a second unrelated reason to change appears.
+- **CoC** (Convention over Configuration) — follow existing patterns before inventing new ones.
+- **Fail fast** — surface errors at the boundary; don't swallow and continue silently.
+
+## Scaffolding Over Manual File Creation
+
+Prefer scaffolding commands (`npm create`, `cargo new`, `go mod init`, `docker init`, framework CLIs, etc.) over writing boilerplate by hand. Only write files manually when no scaffolding command covers it.
+
 ## Dev Environment
 
 ### Docker for Python and system-level runtimes
@@ -17,6 +30,14 @@ Always run Python in Docker - never install Python packages on the host. Node.js
 
 Already stated above under Git. Repeated here as a reminder for hook sections below.
 
+### Kubernetes manifests: one resource per file
+
+One k8s manifest per file - never bundle multiple resources with `---` separators. Name files `<kind>-<name>.yaml` (e.g. `serviceAccount-trading-worker.yaml`), matching the existing dir convention. Wire each into `kustomization.yaml`.
+
+## Memory
+
+Never write project-specific memory to `~/.claude/projects/*/memory/` — those files are machine-local and invisible to colleagues or other machines. Put project context in the repo's `CLAUDE.md` instead (checked in, portable, always present). The auto-memory system is fine for truly global preferences (user style, cross-repo workflow rules) but not for anything repo-specific.
+
 ## Finishing Work (leave it closeable)
 
 End a piece of work with the repo in a state a fresh session could close - no implied follow-up:
@@ -25,6 +46,7 @@ End a piece of work with the repo in a state a fresh session could close - no im
 - Capture next steps and known gaps in `TODO.md` so nothing lives only in chat.
 - Commit completed work with a written message; never leave a coherent change uncommitted or half-applied. (Push only when asked.)
 - Write down anything deliberately deferred (a `TODO.md` entry or a `ponytail:` comment) instead of leaving it implicit.
+- Persist all session learnings to files — never rely on memory. Each learning that's reusable across repos (a workflow rule, a tool quirk, a preference) goes in this global CLAUDE.md or a global skill; each one specific to a repo goes in that repo's `CLAUDE.md`, docs, or a repo-local skill. This means editing existing skills and CLAUDE.md sections, not just adding new ones — if a skill or CLAUDE.md section was wrong, incomplete, or out of date during the session, correct it in place before finishing. Treat "I'll remember this" as a bug: if it isn't in a file, it didn't happen.
 
 Stop because the work is at a clean point, not because the turn ran out. If a follow-up prompt would obviously just be "now tidy up / update the docs / commit", do that now.
 
@@ -57,13 +79,14 @@ Stop because the work is at a clean point, not because the turn ran out. If a fo
 
 ## Markdown Linting
 
-After creating or editing any markdown file, lint it with:
+After creating or editing any markdown file, auto-fix the mechanical issues first, then lint:
 
 ```sh
+npx markdownlint-cli --fix --disable MD013 -- <file.md>
 npx markdownlint-cli --disable MD013 -- <file.md>
 ```
 
-Fix all reported errors before considering the task done.
+`--fix` handles tables, bare URLs, list/heading spacing, etc. automatically. Fix any remaining reported errors (e.g. MD040 fenced-code language, which it can't infer) by hand before considering the task done.
 
 ## Markdown Writing Style
 

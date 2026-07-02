@@ -89,6 +89,22 @@ skill-name/
     └── assets/     - Files used in output (templates, icons, fonts)
 ```
 
+#### YAML frontmatter rules
+
+Both `name:` and `description:` are required. Missing either causes a startup error (`description is required`).
+
+Any description value containing `: ` (colon-space) — e.g., `Triggers on: "..."` — causes a YAML parse error (`Nested mappings are not allowed in compact mappings`) if written as a plain string. Use `>` (folded) or `|` (literal) block scalar instead:
+
+```yaml
+---
+name: my-skill
+description: >
+  Do X. Triggers on: "some phrase", "another phrase". Also use when...
+---
+```
+
+`>` joins lines into one paragraph (newlines become spaces). `|` preserves line breaks. Either works for descriptions; `>` is usually the right choice.
+
 #### Progressive Disclosure
 
 Skills use a three-level loading system:

@@ -1,6 +1,7 @@
 ---
 name: cli-naming
-description: Generate and rank short CLI tool names. Use whenever the user is naming a CLI tool, terminal app, developer utility, or any command-line project and wants name suggestions. Triggers on: "name this tool", "what should I call it", "suggest a name", "help me name", naming a CLI/terminal/dev tool, or when a user describes a project and asks for name ideas. Also triggers when the user is unhappy with current name suggestions and wants more.
+description: >
+  Generate and rank short CLI tool names. Use whenever the user is naming a CLI tool, terminal app, developer utility, or any command-line project and wants name suggestions. Triggers on: "name this tool", "what should I call it", "suggest a name", "help me name", naming a CLI/terminal/dev tool, or when a user describes a project and asks for name ideas. Also triggers when the user is unhappy with current name suggestions and wants more.
 ---
 
 # CLI Naming
