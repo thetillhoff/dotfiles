@@ -47,7 +47,7 @@ Every topic MUST start with a one-sentence description as a plain paragraph dire
 - **On-point.** Describe the outcome, not the exploration. "Wire `video_compute_stats` writes." not "Investigate whether we can log timing metrics."
 - **Completed items disappear.** Delete the bullet. Do not strike-through, do not move to a "Done" section. Git history is the record.
 - **Open questions travel with the topic.** If a question is scoped to one topic, put it there as `**Open:**`. If it spans topics or has no home, put it in an "Open questions" section at the end.
-- **Open questions are framed as questions with options, not open-ended prompts.** Every `**Open:**` bullet phrases a specific question (ending in `?`) and lists 2-4 candidate answers as one-level sub-bullets: `**A:** …`, `**B:** …`, `**C:** …`. Each candidate carries a one-line trade-off. When there's a clear best option, append a `Recommendation: **X**. <reason>` line beneath the candidates. This replaces free-form Opens - if you can only think of one candidate, the item is not an Open yet; either resolve it inline or ask the operator to elaborate. This subsumes the older stand-alone "Options & Recommendation" section; only promote to a top-level section when the decision spans multiple topics.
+- **Open questions are framed as questions with options, not open-ended prompts.** Every `**Open:**` bullet phrases a specific question (ending in `?`) and lists **as many candidate answers as the question genuinely has**, minimum two, as one-level sub-bullets: `**A:** …`, `**B:** …`, `**C:** …`. Each candidate carries a one-line trade-off. When there's a clear best option, append a `Recommendation: **X**. <reason>` line beneath the candidates. This replaces free-form Opens - if you can only think of one candidate, the item is not an Open yet; either resolve it inline or ask the operator to elaborate. This subsumes the older stand-alone "Options & Recommendation" section; only promote to a top-level section when the decision spans multiple topics. **Do NOT invent extra candidates to hit a fixed count** - fabricated options waste the operator's time and imply choices that don't exist. Two real options beats four with padding.
 - **No dates unless they matter** (freeze windows, deadlines). Absolute date, not relative.
 - **No assignees / owners.** This is not a ticket tracker.
 
@@ -76,8 +76,8 @@ When the operator asks you to "guide through design passes" of `Not ready` items
 **Per topic, in one reply:**
 
 - Name the topic + its single-sentence description.
-- List the blocking questions for THIS topic (as many as needed - one topic can have several).
-- For each question: 2-4 candidate answers as sub-bullets with one-line trade-offs, plus a Recommendation when a clear default exists.
+- List the blocking questions for THIS topic. **As many as the topic genuinely has - could be one, could be six, could be zero if the topic is already tight enough to promote.** Never inflate the count to look thorough.
+- For each question: candidate answers as sub-bullets with one-line trade-offs, plus a Recommendation when a clear default exists. **Two answers is the minimum; the maximum is however many real distinct options exist.** Don't manufacture a third or fourth to fill space.
 - Nothing about the other topics in the same reply.
 
 **Then hand back and wait.** The operator's answers to this topic drive it toward Ready (or reveal that it needs a split). Only once the current topic is resolved (folded, marked Ready, or explicitly deferred) do you move to the next one.
@@ -129,6 +129,7 @@ TODO.md is the shared queue. Updates ping-pong between the operator and the assi
    - Delete each `**Open:**` bullet whose `->` answer is a resolution. Fold the resolution into the design bullets above so the answer becomes design, not history.
    - Convert follow-up questions from the operator (embedded in a `->` reply) into new `**Open:**` bullets when they still block progress; drop them if the assistant can answer inline.
    - Answer any question the operator directed at the assistant (`what do you think?`, `is this right?`) in the response text, and reflect the resolution in the file.
+   - **Propagate the resolution to every related artefact.** If a spec exists for this topic, update it in the same turn as the TODO fold. Same for any README section, ADR, CHANGELOG entry, or inline `ponytail:` comment the resolution invalidates. The TODO bullet is a pointer - the spec is the authoritative record; a stale spec is worse than no spec.
    - Re-evaluate the Definition of Ready for every touched item and update the **Ready to build.** marker.
    - Delete items the operator rejected or that are shipped.
    - Report back: what's now Ready, what's still open, what needs the operator next. Never leave `->` markers in the file after folding - the file is a live spec, not a chat log.
@@ -157,7 +158,7 @@ Each arrow:
 
 - **TODO → spec** - open questions are answered (`**Open:**` bullets emptied or moved to spec as decisions). Write the design doc (see below), commit it, then the TODO item points at the spec instead of restating it.
 - **prototype step** - only for uncertain work. Ships to a scratch branch or a `spike/` directory. Not merged as-is.
-- **spec → implementation** - build against the spec. If reality forces a change, update the spec, then the code.
+- **spec → implementation** - build against the spec. If reality forces a change, update the spec, then the code. The spec is a living doc: every ping-pong turn that alters the design (see Collaboration flow above) updates the spec in-place, not just at first write. Same for the operator's `->` answers - fold each resolution into both the TODO bullet AND the spec on the same turn.
 - **implementation → docs** - touch every doc the change affects (README, EXAMPLES, CHANGELOG if the repo keeps one, spec/design docs). Don't touch docs the change didn't affect.
 - **docs → TODO deleted** - the bullet is gone. Anything deliberately deferred is captured as a new TODO bullet or a `ponytail:` comment before the item is removed.
 
@@ -186,11 +187,25 @@ Which flow applies:
 
 If none of those directories exist and the work is small, skip the spec artefact and go straight from TODO to implementation - but only when a single sentence in the TODO bullet is enough to describe the design. If you'd need a paragraph, write a spec.
 
+## Keeping the spec in sync
+
+The spec is the authoritative description of **current state**, not the history of how the code got there. Two rules that fall out of this:
+
+- **Present tense, current shape only.** No iteration notes, no "used to be X, now Y", no "was renamed from foo → bar", no "added in v2", no "later we might…". If a field, endpoint, or behaviour exists today, describe it as if it always did. If it doesn't exist today, delete the description entirely. Git history is the record of change; the spec is the record of *what is*. A reader picking up the spec cold should learn the system, not its résumé.
+- **The spec must always match the code.** The normal flow is TODO → spec → implementation, but the opposite path is legitimate too: sometimes an implementation lands first (a quick fix, a spike that became the final code, a change that shipped before anyone wrote a design). Whenever that happens, the spec MUST catch up on the same turn, or the item is not done. "Spec update deferred" is not a valid ending state; either update it now or open a follow-up TODO that names it explicitly.
+
+**Split when a doc gets too big or too mixed; merge when a feature is gone.** The signals mirror the topic-splitting rules for TODO.md itself (see the earlier "When a topic gets too big or too mixed" section):
+
+- **Split** when a single spec file has grown past what fits comfortably in one mental model - the section headings no longer summarise the content, subsystems that were adjacent grew into siblings, or the file is long enough that the reader can't skim it to find the section they need. Propose the split (two to four target filenames + what stays where), get the operator's OK, then move the content in one edit. Update every cross-reference (relative links, `see also` bullets, the top-level index doc if one exists) as part of the same edit.
+- **Merge** when a feature was removed and its former section becomes a thin husk (a paragraph or two that no longer justifies its own file), or two docs converged onto the same subject after a refactor. Fold the survivor's content into the neighbouring doc, delete the empty file, and re-point cross-references.
+
+Both moves are spec-level refactors; treat them like code refactors — no drive-by rewording of the surviving content, just moving/deleting. Content changes get their own commit.
+
 ## Adding items
 
 - If the topic exists, append the bullet there.
 - If the topic doesn't exist, add a new level-2 section. Place near a related topic; ordering isn't strict.
-- If the item is a question, use `**Open:** <question>?` under the relevant topic, followed by 2-4 candidate answers as sub-bullets (see Framing Open questions above). A one-sentence Open with no candidates is not acceptable - if you can't imagine two plausible answers, the item isn't ripe enough to be an Open yet.
+- If the item is a question, use `**Open:** <question>?` under the relevant topic, followed by at least two candidate answers as sub-bullets (see Framing Open questions above). No upper cap - use exactly as many as real distinct options exist. A one-sentence Open with no candidates is not acceptable - if you can't imagine two plausible answers, the item isn't ripe enough to be an Open yet.
 
 ## Removing items
 
@@ -248,3 +263,4 @@ Never create a commit whose only purpose is TODO.md churn *and* whose TODO.md wa
 - Leaving `->` reply markers in the file after folding the operator's answer. Fold and delete.
 - `**Open:** <one-sentence question with no candidates>`. Every Open must ship with candidate answers.
 - A topic heading with no one-sentence description underneath. The description is the topic's elevator pitch; without it the reader has to read every bullet to know what the topic is.
+- Anchoring on a fixed number of Opens per topic (e.g. always 4 questions) or a fixed number of candidate answers per Open (e.g. always A/B/C/D). Both counts are content-driven, never quota-driven. Padding with fake alternatives to look thorough wastes the operator's time and manufactures decisions that don't exist.
