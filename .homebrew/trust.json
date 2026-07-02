@@ -10,6 +10,7 @@
   ],
   "trustedformulae": [
     "ariga/tap/atlas",
-    "ekristen/tap/aws-nuke"
+    "ekristen/tap/aws-nuke",
+    "thetillhoff/tap/kern"
   ]
 }
