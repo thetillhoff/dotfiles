@@ -37,6 +37,8 @@ continuation_prompt = '[❯ ](bold)'
 [directory]
 style = 'bg:#303030 fg:#09abf0 bold'
 truncate_to_repo = false
+truncation_length = 8
+truncation_symbol = '…/'
 
 [fill]
 symbol = '·'
