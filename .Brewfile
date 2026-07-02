@@ -82,6 +82,8 @@ brew "nvm"
 brew "opentofu"
 # Fast, disk space efficient package manager
 brew "pnpm"
+# PDF rendering library (based on the xpdf-3.0 code base)
+brew "poppler"
 # Framework for managing multi-language pre-commit hooks
 brew "pre-commit"
 # Cloud native development platform
@@ -144,6 +146,8 @@ brew "hashicorp/tap/packer"
 brew "hashicorp/tap/terraform"
 # CLI for out-of-band management of Kubernetes nodes created by Talos
 brew "siderolabs/tap/talosctl"
+# Pi coding agent harness with model routing, bash safety, and subagent delegation
+brew "thetillhoff/tap/kern", trusted: true
 # Minimal golang templater for websites
 brew "thetillhoff/tap/temingo"
 # Verifies web things
