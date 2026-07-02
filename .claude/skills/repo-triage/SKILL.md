@@ -9,7 +9,11 @@ Scan GitHub repositories for open PRs, issues, and Renovate Dependency Dashboard
 
 ## Step 1: Determine scope
 
-- **Own repos (default):** `thetillhoff` — use `gh repo list thetillhoff`
+- **Own repos (default):** resolve the authenticated GitHub user, then list their repos:
+  ```bash
+  owner=$(gh api user --jq '.login')
+  gh repo list "$owner" --limit 100 ...
+  ```
 - **Contributing to others:** ask the user for the owner/repo list, or derive from local clones (`git remote get-url origin`)
 - If the user specifies a subset (e.g. "just my Go repos", "just webscan"), filter accordingly
 
@@ -128,9 +132,11 @@ git push origin main
 ```
 If security alerts/fixes are enabled and the user wants to keep them, leave the Dependabot config but add `open-pull-requests-limit: 0` to each ecosystem entry instead.
 
-## Notes from thetillhoff's repo setup
+## Renovate conventions (assumed defaults)
 
-- GitHub handle: `thetillhoff`
-- Repos cloned to: `~/code/<repo-name>/` or `~/code/*/<repo-name>/`
-- Renovate config pattern: `config:best-practices`, `automergeType: "branch"`, no `dependencyDashboardApproval`, schedule: every weekend
-- Archived repos (skip): filter with `isArchived == false`
+The categorisation in Step 5 assumes a typical Renovate setup. Verify with the user if results look off:
+
+- `automergeType: "branch"` — Renovate auto-merges patch/minor updates that pass CI without opening a PR first
+- No `dependencyDashboardApproval` — Renovate creates PRs on schedule without waiting for manual approval; "Pending Approval" items in the dashboard auto-unblock on the next run
+- Weekend schedule — pending items resolve over the weekend; no action needed mid-week unless the user wants to unblock early
+- Archived repos excluded — filter with `isArchived == false` (already in Step 2)
