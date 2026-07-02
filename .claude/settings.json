@@ -66,5 +66,6 @@
     }
   },
   "theme": "auto",
-  "skipWorkflowUsageWarning": true
+  "skipWorkflowUsageWarning": true,
+  "skipAutoPermissionPrompt": true
 }
