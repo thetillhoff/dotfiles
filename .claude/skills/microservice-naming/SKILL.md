@@ -1,19 +1,59 @@
 ---
 name: microservice-naming
 description: >
-  Name new microservices, rename existing ones, and audit an existing service catalog for naming smells. Use whenever the user is adding a service to a docker-compose/k8s cluster, splitting a monolith, choosing between candidate names ("should this be X or Y"), reviewing a service list for consistency, or complaining about naming sprawl. Triggers: "name this service", "microservice naming", "service naming convention", "rename service X", "what should we call the X service", "audit our service names", "new service for X", plus adding entries to `docker-compose.yml`, `services/*/`, k8s manifests, or a service registry.
+  Name microservices, workers, functions, methods, RPC verbs, and Lambda/serverless handlers. Also renames existing ones and audits a service catalog for naming smells. Use whenever the user is adding a service to a docker-compose/k8s cluster, splitting a monolith, naming a specialist ML worker, naming a serverless function or Lambda handler, naming a class method or RPC verb, choosing between candidate names ("should this be X or Y"), reviewing a service list for consistency, or complaining about naming sprawl. Triggers: "name this service", "name this function", "microservice naming", "service naming convention", "rename service X", "what should we call the X service", "audit our service names", "new service for X", "name this worker", "name this Lambda", plus adding entries to `docker-compose.yml`, `services/*/`, k8s manifests, `functions/`, Lambda handlers, or a service registry.
 ---
 
-# Microservice Naming
+# Microservice + Function Naming
 
-Service names show up in more places than people expect - DNS, k8s manifests, Redis queue keys, log filters, Grafana dashboards, PagerDuty rotas, muscle memory of everyone who's ever been on-call for it. Treat naming as a one-shot decision. Renaming post-hoc costs a migration.
+Names show up in more places than people expect - DNS, k8s manifests, Redis queue keys, log filters, Grafana dashboards, PagerDuty rotas, code call sites, IDE autocomplete, muscle memory of everyone who's ever been on-call for it or read the code. Treat naming as a one-shot decision. Renaming post-hoc costs a migration.
 
-## Format
+## Two registers: services vs functions
+
+The same "name a thing that does work" question has two very different answers depending on the register.
+
+- **Service register — noun form**: `face-detection`, `body-fingerprint`, `object-detection`. The thing is a **long-lived capability** that many callers query. It sits in DNS as a stable address. It's named for **what it is** — the capability it exposes.
+- **Function register — verb form**: `detect_faces()`, `fingerprint_body()`, `enrol_source()`. The thing is an **action** invoked in code, one call at a time. It's named for **what it does** in this call.
+
+Rough rule: if it has an IP address, it's a service (noun). If you call it and get a return value in the same process (or via one RPC hop with strong verb semantics), it's a function (verb).
+
+Applies to:
+
+- **Service register**: docker-compose services, k8s Services + Deployments, HTTP microservices, gRPC servers, Kafka Connect connectors, ML inference endpoints (Seldon, KServe, BentoML), long-running background workers with a stable queue name.
+- **Function register**: class methods, module-level functions, RPC verbs / handler names, AWS Lambda / GCP Cloud Function handlers, event handlers, CLI subcommands, workflow steps (Airflow tasks, Prefect flows), Kafka Streams operators.
+
+The rest of this skill covers both. **Section headers say [SERVICE] or [FUNCTION] where the rule differs.**
+
+## Format [SERVICE]
 
 - **kebab-case, lowercase.** Works in DNS labels, k8s resource names, docker-compose service keys, `grep`-friendly logs. `snake_case` breaks DNS. `camelCase` breaks case-insensitive tooling. Mixed case is where "which service is this?" confusion starts.
 - **One canonical string per service.** Same identifier in DNS, k8s Service, docker-compose key, Redis queue key (`queue:<name>`), log prefix, dashboard title, on-call rota. Every divergence (`svc-orders` here, `order_svc` there, `OrdersService` in code) is technical debt.
-- **Role suffixes for multi-deployable domains.** `orders-api`, `orders-worker`, `orders-scheduler`, `orders-consumer`. Bare `orders` for a single-shape service. Only allowed suffixes: `-api | -worker | -scheduler | -consumer | -cron | -gateway`. If it doesn't map to one of those, drop it.
+- **Noun form, not agent noun.** `face-detection`, not `face-detector`. `body-fingerprint`, not `body-fingerprinter`. Agent-noun form (`-er`/`-or`/`-ist`) belongs to the function register. Real ML platforms (Seldon Core: `income`, `income-drift`, `income-explainer`; KServe: `sklearn-irisv2`; Kafka Connect: `debezium-source`) use noun form for services.
+- **Same-domain disambiguation: noun-form suffix naming the axis of variation.** When two services share a domain (`pose-estimation` via rtmw + `pose-estimation` via rtmo), suffix with the axis: `pose-estimation-precise` + `pose-estimation-fast`. Seldon Core does this: `income` (primary model) + `income-drift` + `income-outlier` + `income-explainer` on the same domain. The suffix is a **noun that names what varies** (drift, outlier, explainer, precise, fast), never the agent form (`drifter`, `outlier-detector`, `explainer-service`).
+- **Role suffixes for multi-deployable domains.** `orders-api`, `orders-worker`, `orders-scheduler`, `orders-consumer`. Bare `orders` for a single-shape service. Only allowed suffixes: `-api | -worker | -scheduler | -consumer | -cron | -gateway | -source | -sink`. (`-source`/`-sink` come from the Kafka Connect convention where direction is the axis of variation.) If it doesn't map to one of those, drop it.
 - **Prefix policy: pick one, enforce it.** Either always `svc-<name>` or never. Do NOT mix `service-orders`, `orders`, and `orders-api` in the same repo. Default recommendation: **no prefix** on the service identifier itself; use role suffix for disambiguation. (`service-orders` in docker-compose is fine as the compose key convention; the identifier the code passes around is `orders`.)
+- **Avoid `-service` / `-server` suffix inside a cluster.** `face-detection-service` is verbose noise inside a k8s Service — the fact that it's a service is already carried by the resource type. `-service`/`-server` are fine on published product repos (`BentoOCR`, `stable-diffusion-server`) but drop them inside internal manifests.
+
+## Format [FUNCTION]
+
+- **snake_case in Python/Ruby; camelCase in JS/TS/Go/Java.** Match the language's convention — this is inside the code, not on the wire.
+- **Verb-object form, action first.** `detect_faces`, `fingerprint_body`, `enrol_source`, `resize_image`, `send_notification`. Reads as an imperative — matches how it's called (`detect_faces(image)`).
+- **Agent-noun form is a smell for functions.** `face_detector(image)` reads as a factory that returns a detector; `detect_faces(image)` reads as "do this now". Prefer the imperative.
+- **Return-typed variants stay verb-first.** `get_face_count`, not `face_count_getter`. `list_users`, not `user_lister`.
+- **Handler / callback / Lambda names follow the same rule.** AWS Lambda / GCP Cloud Function handlers are function-register: `process_order_handler`, `resize_uploaded_image`, `on_payment_failed`. Not `order-processor` (that would name a service).
+
+## Register cheat-sheet
+
+| Same capability | Service form (noun) | Function form (verb) |
+| --- | --- | --- |
+| Face detection | `face-detection` | `detect_faces()` |
+| Body embedding | `body-fingerprint` | `fingerprint_body()` |
+| Object detection | `object-detection` | `detect_objects()` |
+| Order processing | `orders` (broad domain) or `order-processing` | `process_order()` |
+| Image resize | `image-resize` (if it's a service) | `resize_image()` (if it's a function/Lambda) |
+| Email send | `email-delivery` (service) | `send_email()` (function) |
+
+Same capability, two names, one register each. The service name lives on the wire; the function name lives at call sites in the code.
 
 ## Semantic
 
@@ -34,12 +74,14 @@ Service names show up in more places than people expect - DNS, k8s manifests, Re
 - **Ephemeral data leaking into names.** Instance IDs, container hashes, pod ordinals in anything customer-facing become de-facto contracts.
 - **Generic dispatcher/orchestrator names.** `orchestrator`, `dispatcher`, `coordinator`, `manager`, `router` on their own name nothing. If a service really is a coordinator, name what it coordinates: `checkout-workflow`, `order-router`. Bare `orchestrator` invites feature-creep because "well, it orchestrates things".
 
-## Bad → Good
+## Bad → Good [SERVICE]
 
 | Bad | Good | Why |
 | --- | --- | --- |
 | `postgres-adapter` | `orders` | Domain, not storage tech |
-| `yolov8-detector` | `object-detection` | Capability, not model |
+| `yolov8-detector` | `object-detection` | Capability, not model; noun form |
+| `face-detector` | `face-detection` | Noun form for services; agent noun is function-register |
+| `body-fingerprinter` | `body-fingerprint` | Same — noun form for the wire identifier |
 | `BillingServiceV2` | `billing` + `/v2/` API | Version the API, not the service |
 | `NewSearchEngine` | `search` | Status word will lie in six months |
 | `data-aggregator` | `order-analytics` | What business function specifically |
@@ -48,6 +90,19 @@ Service names show up in more places than people expect - DNS, k8s manifests, Re
 | `orders-prod-us-east` | `orders` | Env/region in DNS, not identifier |
 | `orchestrator` | `checkout-workflow` | Name what it coordinates |
 | `body-reid` | `body-fingerprint` | Model term inside; capability outside |
+| `pose` (with `rtmo` sibling) | `pose-estimation-precise` + `pose-estimation-fast` | Axis-of-variation suffix, not model name |
+| `face-detection-service` | `face-detection` | `-service` suffix redundant inside a k8s Service |
+
+## Bad → Good [FUNCTION]
+
+| Bad | Good | Why |
+| --- | --- | --- |
+| `face_detector(img)` | `detect_faces(img)` | Verb first — reads as imperative at call site |
+| `body_fingerprinting(img)` | `fingerprint_body(img)` | Gerund → imperative verb |
+| `order_processor(o)` | `process_order(o)` | Same |
+| `data_aggregator()` | `aggregate_daily_orders()` | Also name the object, not just the action |
+| `handle(evt)` | `on_payment_failed(evt)` | Handler name should carry the event |
+| `resize_image_handler` | `resize_image` (or `on_upload_resize`) | Drop `_handler` filler; if it's an event handler, name the event |
 
 ## Renaming cost (why to get it right the first time)
 
@@ -66,16 +121,21 @@ Every one of these carries the old name and needs migration:
 
 ## Decision heuristic
 
-For each candidate name, ask in order:
+**Step 0: Register check.** Does the thing being named have a stable network address (DNS, k8s Service, HTTP endpoint, Kafka topic name, long-lived queue key)? → **service register**, noun form. Or is it a code call site — method, function, Lambda handler, RPC verb, workflow step? → **function register**, verb form. Every subsequent check applies to the chosen register.
 
-1. **Domain check.** Does the name describe the business capability, or the technology / model / storage? Reject stack-leaking names.
-2. **Bounded context check.** Does exactly one team own this capability? If two teams would ship features here, split first, then name.
-3. **Longevity check.** Will this name still be true in three years? Reject anything with `v1/v2`, `new/legacy`, team names, or current-implementation flavour.
-4. **Role check.** Is this one deployable or multiple? If multiple (api + worker + scheduler), pick from the allowed role suffixes.
-5. **Grep check.** Type the name into your log tool. Does it uniquely identify this service, or does it collide with a common noun (`worker`, `service`, `handler`)?
-6. **DNS check.** Lowercase, kebab-case, <= 63 chars per label, valid DNS label characters.
+Then, for each candidate name, ask in order:
 
-If a candidate fails 1-4, throw it out. If it fails 5-6, edit the format.
+1. **Domain check.** Does the name describe the business capability, or the technology / model / storage? Reject stack-leaking names in both registers.
+2. **Form check.** Service → noun (`face-detection`). Function → verb (`detect_faces`). Reject the wrong form for the register.
+3. **Bounded context check [SERVICE].** Does exactly one team own this capability? If two teams would ship features here, split first, then name.
+4. **Same-domain disambiguation check [SERVICE].** If another service on this domain already exists, does the suffix name the actual axis of variation (drift, outlier, precise, fast, source, sink)? If it's just decoration (`-v2`, `-new`, `-processor`), reject.
+5. **Longevity check.** Will this name still be true in three years? Reject anything with `v1/v2`, `new/legacy`, team names, or current-implementation flavour.
+6. **Role check [SERVICE].** Is this one deployable or multiple? If multiple (api + worker + scheduler), pick from the allowed role suffixes.
+7. **Grep check.** Type the name into your log tool / IDE search. Does it uniquely identify this thing, or does it collide with a common noun/verb (`worker`, `service`, `handler`, `process`, `handle`)?
+8. **DNS check [SERVICE].** Lowercase, kebab-case, <= 63 chars per label, valid DNS label characters.
+9. **Call-site check [FUNCTION].** Read the name at three real call sites. Does the code read as a sentence? `if detect_faces(image):` reads; `if face_detector(image):` reads oddly (looks like a class instantiation).
+
+If a candidate fails 1-6, throw it out. If it fails 7-9, edit the format.
 
 ## Auditing an existing catalog
 
@@ -91,17 +151,27 @@ Report per finding: `<name> → <suggested rename>: <one-line reason>`. Don't pr
 
 ## When sources disagree
 
+- **Noun vs agent-noun for services.** FaaS/Lambda ecosystem popularised the verb-noun and agent-noun form (`process-order`, `face-detector`). Production ML platforms (Seldon Core, KServe, Kafka Connect) settled on **noun form** for services (`face-detection`, `income-drift`, `debezium-source`). Rule: agent noun belongs to the function register, not the service register. `detect_faces()` is a function; `face-detection` is a service; both are correct in their register.
 - **Prefix (`svc-`, `service-`).** Some orgs use it uniformly, some skip it. Both work if enforced. Default: skip in the identifier; role suffix carries the disambiguation.
 - **Codenames vs descriptive.** Fine for public products with docs; bad for internal services past ~50 count. Watermark: if a new hire needs a glossary to route a page, you've outgrown codenames.
 - **Version in identifier.** Some tutorials still recommend it. Industry post-mortems (Uber, most SaaS at scale) all say don't. Version the API contract instead.
 - **Per-domain prefix (`Cart-CheckoutService`).** Only useful if your service registry actually groups by domain. Otherwise it's another filler word.
+- **`-service` / `-server` suffix.** Common in published product/repo names (`BentoOCR`, `stable-diffusion-server`, `face-detection-service` in GitHub repos). Rare inside k8s manifests where the resource type already carries "service". Rule: fine on the outside (public repos, marketing), drop on the inside (cluster identifiers).
 
 ## Format for suggestions
 
-When asked to name a new service, respond with **2-3 ranked candidates**, not a list of 10. For each: one-line reason it fits, one-line trade-off. Example:
+When asked to name a new thing, first confirm the register (service or function), then respond with **2-3 ranked candidates**, not a list of 10. For each: one-line reason it fits, one-line trade-off.
 
-> 1. **`payments`** (best) — bare domain name; role suffix not needed since only one deployable exists. Trade-off: if a background worker is added later, requires rename to `payments-api` + new `payments-worker`.
+Service example:
+
+> 1. **`payments`** (best) — bare domain noun; role suffix not needed since only one deployable exists. Trade-off: if a background worker is added later, requires rename to `payments-api` + new `payments-worker`.
 > 2. **`payments-api`** — explicit role suffix leaves room for future workers without rename. Trade-off: slight verbosity when only one deployable exists today.
 > 3. **`billing`** — worth considering if the domain is actually broader (invoicing, refunds, subscription lifecycle) rather than just payment execution. Trade-off: broader scope = more team coordination.
+
+Function example:
+
+> 1. **`process_payment(order)`** (best) — imperative verb-object; reads as "do this now" at call sites. Trade-off: covers the happy path; edge cases (refunds, retries) need sibling functions (`refund_payment`, `retry_payment`).
+> 2. **`charge_card(order)`** — narrower verb; better if the function really only hits the card processor and doesn't handle non-card flows.
+> 3. **`handle_payment(order)`** — generic verb; only use if the body genuinely handles the whole lifecycle and you can't decompose.
 
 End with a recommendation, not a shrug.
