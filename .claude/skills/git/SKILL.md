@@ -1,7 +1,7 @@
 ---
 name: git
 description: >
-  All git and GitHub operations: committing, PR creation/editing, reviewing PR comments/CI, pushing, tagging, branch history cleanup, CHANGELOG updates. Use whenever the user stages changes, asks to commit, create/update a PR, check PR feedback, fix failing CI, push a tag, squash/regroup local commits, or run any git or gh command. Also triggers on: "check the PR", "what did reviewers say", "why is CI failing", "squash these commits", "clean up history", "tag and push".
+  All git and GitHub operations: committing, PR creation/editing, reviewing PR comments/CI, pushing, tagging, branch history cleanup, CHANGELOG updates. Use whenever the user stages changes, asks to commit, create/update a PR, check PR feedback, fix failing CI, push a tag, squash/regroup local commits, or run any git or gh command. Also triggers on: "check the PR", "what did reviewers say", "why is CI failing", "squash these commits", "clean up history", "tag and push". Scope is the repo you're working in - a single PR, commit, or its CI; to sweep many repos for what needs attention, use repo-triage.
 permissions:
   allow:
     - "Bash(git status)"

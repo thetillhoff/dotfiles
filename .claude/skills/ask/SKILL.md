@@ -1,6 +1,6 @@
 ---
 name: ask
-description: Answer questions in read-only mode — no file creation, editing, or deletion. Use whenever the user wants to ask a question, look something up, understand code, explore the codebase, investigate an error, or get an explanation without making any changes. Trigger this skill for any query phrased as a question or investigation that does not require writing code or modifying files.
+description: Answer questions in read-only mode - no file creation, editing, or deletion. Use when the user wants to understand code, explore the codebase, look something up, investigate an error, or get an explanation, AND no more specific skill fits. Defer to a specialized skill when the question is squarely its domain (e.g. Bedrock model availability, PR or CI status, git history and contributions). Best for open-ended "how does X work", "why is Y happening", "where is Z defined" investigations that must not change any files.
 ---
 
 # Ask

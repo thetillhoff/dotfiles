@@ -2,6 +2,7 @@
 name: review-comments
 description: >
   Reviews code comments and inline documentation in changed files for quality and correctness.
+  This covers comments and docstrings only - for full-diff correctness review use the code-review skill, and for PR mechanics use git.
   Use this skill whenever the user asks to review, audit, or clean up comments, docstrings, or
   inline documentation — or when finishing a PR and checking code quality.
   Flags: comments that describe WHAT instead of WHY; comments that describe history or process
