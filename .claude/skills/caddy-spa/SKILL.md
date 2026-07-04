@@ -1,6 +1,6 @@
 ---
 name: caddy-spa
-description: Apply when writing a Caddyfile for a single-page app that also reverse-proxies an API. Prevents try_files from intercepting API routes.
+description: Apply when writing or debugging a Caddyfile for a single-page app (SPA) that also reverse-proxies an API - e.g. a React/Vue/Svelte frontend served alongside an /api backend. Use when the user mentions Caddy plus SPA routing, API requests wrongly returning index.html, or try_files intercepting API routes. Fixes it with explicit handle blocks so try_files stops swallowing the proxy routes.
 ---
 
 # Caddy SPA + API proxy

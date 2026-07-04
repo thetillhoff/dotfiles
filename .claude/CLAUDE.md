@@ -99,3 +99,18 @@ When writing or editing markdown documents (ADRs, design docs, architecture docs
 - **Per-option: only what's unique** — Shared traits go in a shared section. Each option describes only its delta.
 - **Short advantages/disadvantages** — One line per point. No preamble.
 - **Living lists use plain bullets** — `TODO.md`, backlogs, roadmaps, next-steps: unordered `-` only — never ordered `1. 2. 3.` and never checkboxes `- [ ]`. When an item is done, delete it; don't mark it complete or keep a "done" list (git history is the record). Adding/removing an item must not renumber or churn the rest. Ordered lists are only for genuinely sequential procedures where the numbers carry meaning.
+
+## Skill Routing - UI/design cluster
+
+Several skills overlap on UI/design work. Route by intent:
+
+| Intent | Skill |
+| -------- | ------- |
+| Visual/aesthetic direction - new page, redesign, AI-slop audit | hallmark (also frontend-design) |
+| Implementation & polish - components, animation, a11y | interface-kit |
+| UX principles, critique, operator/internal/admin tools | ui-ux-best-practices (absorbed operator-ui) |
+| HTMX server-rendered patterns | htmx |
+| Charts / data viz | dataviz |
+| DESIGN.md spec documents | design-system |
+
+If this cluster changes - a skill is added, removed, renamed, or merged - this table goes stale. Tell me so I can update it.

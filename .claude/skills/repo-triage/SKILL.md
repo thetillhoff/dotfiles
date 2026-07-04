@@ -1,6 +1,6 @@
 ---
 name: repo-triage
-description: Triage open PRs, issues, and Renovate Dependency Dashboards across GitHub repositories. Use when the user asks to check, review, or triage their repos, open PRs, pending updates, or dependency dashboards. Also use for phrases like "check my repos", "what needs attention", "any open PRs", "check renovate", or "what's pending".
+description: Triage open PRs, issues, and Renovate Dependency Dashboards across GitHub repositories. Use when the user asks to check, review, or triage their repos, open PRs, pending updates, or dependency dashboards. Also use for phrases like "check my repos", "what needs attention", "any open PRs", "check renovate", or "what's pending". This sweeps across many repos at once, not the single PR you're actively working on - that is the git skill.
 ---
 
 # Repo Triage
