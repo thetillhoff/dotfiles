@@ -98,6 +98,21 @@ feat: add IPv6 support to SIP signaling
 
 3. `.pre-commit-config.yaml` or `.git/hooks/pre-commit` exists → run `pre-commit run --files <changed files>`, fix failures.
 4. Other linters (eslint, prettier, markdownlint) → ask whether to run them.
+5. **No `.pre-commit-config.yaml` but CI runs linters/formatters?** Proactively propose adding one. Use `local` hooks that mirror CI exactly — no external repo dependency. Example for a bun/biome project:
+
+   ```yaml
+   repos:
+     - repo: local
+       hooks:
+         - id: biome-check
+           name: biome check
+           language: system
+           entry: bash -c 'cd extensions && bunx biome check .'
+           pass_filenames: false
+           files: ^extensions/
+   ```
+
+   Adapt the `entry`, `files` filter, and hook list to match what CI actually runs. Verify with `pre-commit run --all-files` before committing.
 
 ### Sensitive Content Check
 
@@ -199,6 +214,7 @@ If `.github/workflows/` has tag-triggered workflows:
 
 1. `gh run list --limit 5` — check for runs triggered by the tag.
 2. On failure: `gh run view <id> --log-failed` — report the failing step.
+3. If the failure is a linter, formatter, or type-checker (biome, eslint, tsc, prettier…) **and `.pre-commit-config.yaml` is absent**, proactively propose adding pre-commit hooks that mirror the failing CI step (see Pre-Commit Checks §5 above). Catching these locally before push saves a round-trip.
 
 ---
 
