@@ -74,13 +74,20 @@ poll a partial endpoint.
 
 Keep polling fragments small. Poll only the changing region, not the whole page.
 
+**One polling loop per region — never nest polls.** A polling element inside an
+already-polling fragment is torn down and rebuilt on every outer swap; the two
+race, and if the inner one returns `HX-Redirect` on a transient not-running
+state the whole page navigates away and stable elements vanish. Fold the inner
+poll's content into the outer template. Give every stable element a fixed `id`
+so idiomorph preserves it across swaps.
+
 ## The animated-element gotcha
 
 **Problem:** if a spinner or progress bar sits inside a polled fragment, every
 poll replaces the DOM node and restarts its CSS animation from frame 0. The
 spinner stutters visibly; a progress bar snaps instead of advancing smoothly.
 
-**Two fixes:**
+**Three fixes:**
 
 1. **Move the animated element outside the swap target.** The polled fragment
    updates its sibling; the spinner lives in a parent that HTMX never touches.
@@ -98,9 +105,34 @@ spinner stutters visibly; a progress bar snaps instead of advancing smoothly.
 
    Only the non-preserved children get replaced. The spinner node is reused.
 
-Prefer option 1 when the layout allows it — it is simpler and has no id
-management overhead. Use `hx-preserve` when the animated element must live
-inside the polled region for layout reasons.
+3. **Global `requestAnimationFrame` tick.** When the animated element must live
+   inside the polled region and CSS `@keyframes` still reset even with
+   `hx-preserve` (a fresh DOM node restarts at 0°), drive rotation from one
+   global rAF loop anchored to wall-clock time. CSS keeps the spinner's
+   appearance; JS owns its motion, so a freshly inserted node picks up the
+   current phase on the next frame — no visible reset.
+
+   ```html
+   <script>
+   (function () {
+     const PERIOD = 1500;
+     function tick(now) {
+       const deg = ((now % PERIOD) / PERIOD) * 360;
+       const els = document.getElementsByClassName('spinner');
+       for (let i = 0; i < els.length; i++) {
+         els[i].style.transform = 'rotate(' + deg + 'deg)';
+       }
+       requestAnimationFrame(tick);
+     }
+     requestAnimationFrame(tick);
+   })();
+   </script>
+   ```
+
+Prefer option 1 when the layout allows it — simplest, no id management. Use
+`hx-preserve` (option 2) when the element must live inside the polled region.
+Reach for the rAF tick (option 3) only when `hx-preserve` alone still resets the
+animation.
 
 ## Nav + status widget
 

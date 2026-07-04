@@ -201,12 +201,11 @@ and 5 s ticks reads as broken sync. Both fast or both slow, never mixed. Ship a
 / 30 s`), persisted per-page in localStorage: novices get a sensible default,
 power users slow it down to inspect stable state or turn it off.
 
-**One polling `hx-trigger` per swap region.** Nested polls (2 s outer + 1 s
-inner) tear each other down every swap; if the inner ever returns `HX-Redirect`
-on a transient not-running state, the whole page navigates and buttons vanish
-(symptom: a button that flickers every other second). Fold the inner poll into
-the outer template, and give every stable element a fixed `id` so idiomorph
-preserves it across swaps.
+**One poll per region — never nest polls.** A second polling loop inside an
+already-polling fragment gets torn down and rebuilt on every swap, and can
+navigate the whole page away if it redirects on a transient state (symptom: a
+button that flickers every other second). One polling loop per fragment. See the
+**htmx** skill for the mechanism.
 
 Toasts name the actual entities ("Merged track #5 into #3"), not just "Success".
 The operator should be able to undo manually from that information alone.
@@ -268,31 +267,10 @@ to read.
 
 #### Spinner that survives polled swaps
 
-CSS `@keyframes` restarts to 0° every time HTMX replaces an ancestor element —
-even with `hx-preserve` on a fresh DOM node. The result is a stuttering spinner
-that resets every poll. Drive rotation from a single global
-`requestAnimationFrame` tick instead:
-
-```html
-<script>
-(function () {
-  const PERIOD = 1500;
-  function tick(now) {
-    const deg = ((now % PERIOD) / PERIOD) * 360;
-    const els = document.getElementsByClassName('spinner');
-    for (let i = 0; i < els.length; i++) {
-      els[i].style.transform = 'rotate(' + deg + 'deg)';
-    }
-    requestAnimationFrame(tick);
-  }
-  requestAnimationFrame(tick);
-})();
-</script>
-```
-
-Anchor rotation to wall-clock time so freshly inserted spinners pick up the
-current phase on the next frame — no visible reset. CSS keeps the spinner's
-appearance (size, border, color); JS owns its motion.
+A spinner or progress bar inside a polled fragment must not restart its
+animation on each swap — a spinner that resets every poll reads as "stuck". See
+the **htmx** skill's "animated-element gotcha" for the three fixes (move it
+outside the swap target, `hx-preserve`, or a global rAF tick).
 
 ### Design system specifics
 
