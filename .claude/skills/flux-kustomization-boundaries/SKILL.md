@@ -35,6 +35,15 @@ per-app Kustomizations          (each app its own; healthChecks scoped to that a
 - A shared **base** Kustomization for cluster-scoped prerequisites (CRDs, namespaces, PriorityClasses). Apps `dependsOn` it → prerequisites exist and are healthy before dependents apply (also fixes ordering races).
 - Each app/component: its own Kustomization, `path` at its own dir (which has its own `kustomization.yaml`), `wait: true`, `prune: true`, and `healthChecks` scoped to *its* critical resources.
 
+## Flat vs layered topology
+
+Isolation always lives at the **leaf** (one Kustomization per app/component). Layering only adds a grouping/ordering **parent** on top - it never provides isolation.
+
+- **Flat** (bootstrap discovers every leaf directly): simplest, full isolation, no extra node to bottleneck. "Operate on all apps" via label selectors (`flux get ks -l ...`); cross-tier ordering via per-leaf `dependsOn`. **Default for small/moderate fleets.**
+- **Layered** (an umbrella `apps` Kustomization whose *resources are child Kustomization CRs* - "app-of-apps"): buys one `dependsOn` edge per tier and a handle to suspend/reconcile a whole tier. Worth it for many apps/tenants.
+
+**Layering trap:** an umbrella with `wait: true` health-gates on its children → a broken child freezes the umbrella's `lastAppliedRevision`, stalling **roster changes** (adding/updating leaves), though already-applied leaves keep reconciling. If you layer, set the **umbrella `wait: false`** (it only *applies* children); leaves keep `wait: true` + scoped `healthChecks` and do the real gating. Rule: layering = optional grouping/ordering sugar, never the source of isolation.
+
 ## Critical gotcha: `dependsOn` transmits the wedge
 
 `dependsOn` waits for the dependency to be **Ready**. If app X `dependsOn` a *monolithic* `infrastructure-resources` that also contains a broken `monitoring`, then `infrastructure-resources` never goes Ready → **X never applies**. Splitting apps is pointless unless you also split what they depend on and depend only on the **specific** component needed (e.g. `dependsOn: gateways`, not `dependsOn: infrastructure-resources`).
