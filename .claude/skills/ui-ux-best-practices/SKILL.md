@@ -195,6 +195,19 @@ working" signal; the word names the work.
 Polling widgets (1–2 s) for anything long-running: job progress, service
 status, host load. They tell the operator nothing is stuck.
 
+Every polling fragment on the same page uses the **same interval** — mixing 2 s
+and 5 s ticks reads as broken sync. Both fast or both slow, never mixed. Ship a
+`↻ refresh now` button beside a cadence dropdown (`off / 1 s / 2 s / 5 s / 10 s
+/ 30 s`), persisted per-page in localStorage: novices get a sensible default,
+power users slow it down to inspect stable state or turn it off.
+
+**One polling `hx-trigger` per swap region.** Nested polls (2 s outer + 1 s
+inner) tear each other down every swap; if the inner ever returns `HX-Redirect`
+on a transient not-running state, the whole page navigates and buttons vanish
+(symptom: a button that flickers every other second). Fold the inner poll into
+the outer template, and give every stable element a fixed `id` so idiomorph
+preserves it across swaps.
+
 Toasts name the actual entities ("Merged track #5 into #3"), not just "Success".
 The operator should be able to undo manually from that information alone.
 
@@ -213,6 +226,37 @@ When a multi-stage pipeline can't report fine-grained progress for the current
 stage, display just the stage name + elapsed time. Don't write "worker hasn't
 reported per-frame progress yet" — that reads as malfunction. Absence of a
 progress bar with a named stage already means "this stage is opaque".
+
+#### Multi-phase runners: phase chip beside the counter, never instead of
+
+A runner with several internal phases (scene-detect → sample → per-frame ML →
+post-processing) resets its frame counter on each phase. If the phase chip only
+renders as a fallback when no counter exists, the operator watches the bar go
+95% → 0% mid-file and reads "runner restarted" as a bug. Any `stage` / `phase` /
+`step` key renders as a chip whenever present, *alongside* the frame/byte
+counter — the chip carries the "same file, new sub-stage" signal.
+
+#### Time values name their axis and render human-readable
+
+Progress rows often show two seconds-valued times side by side — wall-clock
+("how long running") and media-timeline position ("where in the source file").
+A raw `1175.3s … t_sec=979.8` gives no way to tell them apart. Prefix a noun
+that names the axis (`elapsed 19m 35s`, `remaining …`), render `hh:mm:ss` via
+the shared `humantime` formatter, and pair a media-timeline value with its total
+(`video 16m 19s / 24m 03s`) to match the scrubber shape. Never leak an internal
+key like `t_sec` into the UI — the template maps it to the labelled version.
+
+#### Inventory shows only what needs a click
+
+Filter the pending-work table to **actionable** states — `new` + `failed`.
+Hide `in_progress` (already visible in the service-status rows), `completed`
+(lives on the entity detail page), and `outdated` / `incomplete` (surface via a
+state-pill counter: `outdated 3 · incomplete 1`). Keep the full state-counts
+pill row (`new 42 · failed 3 · in_progress 7 · completed 118`) as the true
+denominator; the table below is the filtered click-list. **Failed rows are
+treated as new for retry** — the primary action clears whatever partial state
+the last attempt left (Redis keys, sidecar files, sqlite rows) and re-fires
+from scratch. No separate "retry" verb.
 
 #### Pipeline snapshot: prefer the stage with real progress
 
@@ -546,6 +590,18 @@ the **Operator UI** items apply when the audience is a single-operator workflow.
   slide. Stable elements inside the polled fragment (spinners, progress bars) are
   not restarted on each swap — drive rotation from a global rAF tick, not CSS
   keyframes.
+- Every polling fragment on the page uses the same interval — no mix of 2 s +
+  5 s ticks. Operator can change cadence (dropdown + `↻ refresh now`, persisted
+  per-page), and at most one polling trigger fires per swap region.
+- Every time value carries an axis-naming label (`elapsed …`, `remaining …`,
+  `video … / …`) — never a bare number; media-timeline position pairs with its
+  total.
+- Multi-phase runners emit a `stage` / `phase` chip that renders alongside
+  frame/byte counters, not only as a fallback when they're absent.
+- Pending-work inventory shows only actionable states (`new` + `failed`);
+  non-actionable states surface via the state-pill counter. Failed rows
+  self-recover — the primary action clears partial state and retries, no
+  separate "retry" verb.
 - No "Welcome back!" greeting or engagement-bait copy anywhere.
 - Spacing, type sizes, and border-radius all come from the locked design-system
   scales — no intermediate values.
