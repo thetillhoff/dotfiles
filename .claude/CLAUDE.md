@@ -26,6 +26,10 @@ Prefer scaffolding commands (`npm create`, `cargo new`, `go mod init`, `docker i
 
 Always run Python in Docker - never install Python packages on the host. Node.js is exempt (dependencies go into `node_modules`). See the `dev-environment` skill for the full rule set and Docker command patterns.
 
+### cd then command, never flag-based directory override
+
+Always `cd <path> && <cmd>` — never use flag-based directory overrides like `git -C <path>`, `npm --prefix <path>`, or similar. The `cd` form matches shell allowlists; flag overrides do not.
+
 ### Git: cd then git, never git -C
 
 Already stated above under Git. Repeated here as a reminder for hook sections below.
