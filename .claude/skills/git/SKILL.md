@@ -240,15 +240,16 @@ Choose type by **user impact**, not internal complexity:
 
 ```markdown
 ## Summary
-[Purpose: what this PR accomplishes and why. 1 paragraph or 3-5 bullets.
-Focus on the outcome, not the implementation. Rough strokes only — the diff shows the details.]
 
-## Context
-[Optional: 1-2 sentences of background if the motivation is non-obvious]
+- [What this PR accomplishes — outcome, not implementation. 3-5 bullets max.]
+- [Each bullet one line. No filler, no narration.]
 
 ## Related
-- Closes #123
+
+- [#123 or owner/repo#123 — one line per reference, terse label]
 ```
+
+`## Related` only when there are linked issues, companion PRs, or prior art worth citing. Omit when empty. `## Summary` uses bullets by default; switch to a short paragraph only when the change is a single coherent idea that reads worse as a list.
 
 ### Branch Workflow
 
