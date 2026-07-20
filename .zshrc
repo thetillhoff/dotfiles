@@ -614,7 +614,7 @@ whatsmyip() {
 }
 
 
-# cenv — pick a ~/code/* project and source its .envrc
+# pick a ~/code/* project and source its .envrc
 cenv() {
   local name
   name=$(ls -d "$HOME/code"/*/ 2>/dev/null | sed "s|$HOME/code/||;s|/$||" \
