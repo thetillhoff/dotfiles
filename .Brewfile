@@ -30,6 +30,8 @@ brew "bun"
 brew "cilium-cli"
 # Cross-platform make
 brew "cmake"
+# Fix common misspellings in source code and text files
+brew "codespell"
 # Distributed, open source, package manager for C/C++
 brew "conan"
 # GNU File, Shell, and Text utilities
