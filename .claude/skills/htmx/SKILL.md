@@ -5,7 +5,7 @@ description: >
   (HX-Redirect, HX-Refresh, fragment swap), polling fragments, stylesheet
   cache-busting, hx-confirm for destructive actions, hx-preserve for stable
   elements, and the animated-element gotcha. Use when building or debugging any
-  HTMX-powered page — polling fragments restarting animations, choosing between
+  HTMX-powered page - polling fragments restarting animations, choosing between
   redirect vs refresh vs in-place swap, wiring up confirmations, or caching
   stylesheets. Pairs with ui-ux-best-practices (operator-UI section) for the
   surrounding design decisions.
@@ -15,7 +15,7 @@ description: >
 
 HTMX layers live-polling and in-place updates onto a fully server-rendered page.
 The server renders a complete, working page first; HTMX is progressive
-enhancement — if it fails, the operator can still see and navigate everything.
+enhancement - if it fails, the operator can still see and navigate everything.
 
 ## Server-rendered first
 
@@ -26,13 +26,44 @@ understand the page.
 ## Form submission patterns
 
 Every form action returns exactly one of three responses. Pick one per action
-and stick to it — mixing them on the same route causes confusing behavior:
+and stick to it - mixing them on the same route causes confusing behavior:
 
 | Response | When to use |
 | --- | --- |
 | `HX-Redirect: /path` | The action changes the canonical resource the operator is on (e.g. created a new record, navigated away). |
 | `HX-Refresh: true` | The action mutates state that affects the whole page but the URL stays the same. |
 | Fragment HTML | The action affects only a known region of the page. Return just that fragment; HTMX swaps it in place. |
+
+**`HX-Refresh: true` discards all client-side state** - scroll position, focus,
+a playing/seeked `<video>`, drawn `<canvas>`/charts, unsaved form edits. On a
+page carrying real client state (a media player, a drawn canvas) it reads as a
+jarring full reload (e.g. the video snaps back to t=0). Prefer a fragment swap
+that updates only the affected region. Reach for `HX-Refresh` only when the
+mutation genuinely invalidates the whole page and there's no client state worth
+keeping.
+
+## Scope `hx-trigger` to the element, not the document
+
+`hx-trigger="change from:input"` does **not** mean "when this form's inputs
+change" - `from:<selector>` is a **document-wide** selector, so the handler
+fires on a `change` from *every* `<input>` on the page. A form wired this way
+fires its POST on every unrelated `<input>` anywhere on the page; if that POST
+returns `HX-Refresh: true`, an unrelated toggle reloads the whole page and wipes
+all client state.
+
+A form's own `change`/`submit` events already **bubble** to the form element, so
+listen on the form with no `from:`:
+
+```html
+<!-- WRONG: fires on every <input> in the document -->
+<form hx-post="/items/{id}/prefs" hx-trigger="change from:input">
+<!-- RIGHT: fires only on this form's own inputs (change bubbles up) -->
+<form hx-post="/items/{id}/prefs" hx-trigger="change">
+```
+
+Use `from:` only when you deliberately want to listen for an event originating
+*elsewhere* in the document - and then make the selector as narrow as possible
+(`from:#specific-id`), never a bare tag name.
 
 ## Stylesheet cache-busting
 
@@ -50,11 +81,11 @@ forget to bump it manually.
 ## Confirmations on destructive actions
 
 Use `hx-confirm` on any action that cannot be undone. The message should name
-the actual target — never a generic "Are you sure?".
+the actual target - never a generic "Are you sure?".
 
 ```html
-<button hx-delete="/tracks/5"
-        hx-confirm="Delete track #5 (3 samples)?">
+<button hx-delete="/items/5"
+        hx-confirm="Delete item #5 (3 records)?">
   Delete
 </button>
 ```
@@ -74,7 +105,7 @@ poll a partial endpoint.
 
 Keep polling fragments small. Poll only the changing region, not the whole page.
 
-**One polling loop per region — never nest polls.** A polling element inside an
+**One polling loop per region - never nest polls.** A polling element inside an
 already-polling fragment is torn down and rebuilt on every outer swap; the two
 race, and if the inner one returns `HX-Redirect` on a transient not-running
 state the whole page navigates away and stable elements vanish. Fold the inner
@@ -110,7 +141,7 @@ spinner stutters visibly; a progress bar snaps instead of advancing smoothly.
    `hx-preserve` (a fresh DOM node restarts at 0°), drive rotation from one
    global rAF loop anchored to wall-clock time. CSS keeps the spinner's
    appearance; JS owns its motion, so a freshly inserted node picks up the
-   current phase on the next frame — no visible reset.
+   current phase on the next frame - no visible reset.
 
    ```html
    <script>
@@ -129,10 +160,24 @@ spinner stutters visibly; a progress bar snaps instead of advancing smoothly.
    </script>
    ```
 
-Prefer option 1 when the layout allows it — simplest, no id management. Use
+Prefer option 1 when the layout allows it - simplest, no id management. Use
 `hx-preserve` (option 2) when the element must live inside the polled region.
 Reach for the rAF tick (option 3) only when `hx-preserve` alone still resets the
 animation.
+
+## Morph over replace to avoid flicker
+
+When an event or poll refreshes a sizeable fragment, prefer a **morph** swap
+(`hx-swap="morph"` / idiomorph) over `innerHTML =` or `hx-swap="innerHTML"`/
+`"outerHTML"`. A full replacement destroys and rebuilds the whole subtree - a
+blank frame (visible flicker) plus loss of any client-rendered or interactive
+state inside it (drawn charts, scroll position, focus, playing media). Morph
+reconciles in place, touching only changed nodes, so an event-driven update
+looks as smooth as the live/incremental update you already do elsewhere.
+
+Idiomorph matches nodes by **`id`**. A child with no `id` can be dropped or
+rebuilt during a morph. Give any element that must survive a swap - or carry
+client state across it - a stable `id`.
 
 ## Nav + status widget
 
@@ -146,7 +191,7 @@ leaving the current view.
 `HX-Redirect: /elsewhere` is only safe when a handler receives **only HTMX
 requests**. A plain `<form method="post">` submission navigates the browser to
 the action URL and renders whatever the server returns. An empty body +
-`HX-Redirect` is invisible — the operator lands on a blank page.
+`HX-Redirect` is invisible - the operator lands on a blank page.
 
 Return a `303` redirect (or a full page response) from any handler that might be
 reached without HTMX.
