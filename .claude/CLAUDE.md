@@ -47,6 +47,10 @@ For shell-based in-place text replacements, use `sed` — never `perl -pi`. (Pre
 
 Already stated above under Git. Repeated here as a reminder for hook sections below.
 
+### Retrieving a command's return code
+
+To get a command's exit status, run a plain `echo $?` on its own — not a per-command `echo "label: $?"` each time. If a label is wanted, print a static `echo` line right before it, never in the same command (a preceding command would overwrite `$?`).
+
 ### Kubernetes manifests: one resource per file
 
 One k8s manifest per file - never bundle multiple resources with `---` separators. Name files `<kind>-<name>.yaml` (e.g. `serviceAccount-trading-worker.yaml`), matching the existing dir convention. Wire each into `kustomization.yaml`.
@@ -107,13 +111,14 @@ npx markdownlint-cli --disable MD013 -- <file.md>
 
 ## Markdown Writing Style
 
-When writing or editing markdown documents (ADRs, design docs, architecture docs):
+When writing or editing markdown documents (READMEs, ADRs, design docs, architecture docs):
 
 - **DRY** — Extract shared information into a single section and reference it. Don't repeat the same facts across options/sections.
 - **Concise** — One sentence where one sentence suffices. No filler, no restating what the reader just read.
 - **Diagrams over paragraphs** — Prefer diagrams to explain architecture, data flow, or component relationships. Always use Mermaid JS for diagrams in markdown files and READMEs (never ASCII art). Each node shows the component name and role on separate lines (e.g., `Kamailio\nSIP Registrar`). Include a color-coded legend inside the diagram (e.g., mermaid subgraph) only when connection types need explanation (e.g., solid = direct, dotted = indirect). The legend describes connection semantics, not components — components are self-described by their node labels.
 - **Tables and bullet lists over paragraphs** — But only when they add clarity. Don't create tables or comparisons for the sake of it. Ask the user if unsure.
 - **Per-option: only what's unique** — Shared traits go in a shared section. Each option describes only its delta.
+- **Benefit over mechanic** — Say what a feature does for the reader, not incidental internals they can't act on (exact poll intervals, thresholds). State such a number once at its canonical spot, never repeat it.
 - **Short advantages/disadvantages** — One line per point. No preamble.
 - **Living lists use plain bullets** — `TODO.md`, backlogs, roadmaps, next-steps: unordered `-` only — never ordered `1. 2. 3.` and never checkboxes `- [ ]`. When an item is done, delete it; don't mark it complete or keep a "done" list (git history is the record). Adding/removing an item must not renumber or churn the rest. Ordered lists are only for genuinely sequential procedures where the numbers carry meaning.
 
