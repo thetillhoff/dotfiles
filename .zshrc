@@ -346,6 +346,11 @@ load-nvmrc() {
 add-zsh-hook chpwd load-nvmrc
 load-nvmrc
 
+# Source per-project shell completions on cd (any repo shipping .completion.zsh)
+_load_dir_completion() { [[ -f .completion.zsh ]] && source .completion.zsh }
+add-zsh-hook chpwd _load_dir_completion
+_load_dir_completion
+
 # pbpaste
 if command -v pbpaste >/dev/null 2>&1; then
   alias paste="pbpaste"
