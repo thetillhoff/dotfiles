@@ -1,12 +1,15 @@
 [user]
 	name = Till Hoffmann
-	email = till@thetillhoff.de
-	signingkey = ~/.ssh/id_ed25519.pub
+	# No global email/signingkey on purpose: commits outside a known org dir
+	# must fail until an includeIf below sets an identity.
+	# Per-org email+signingkey live in ~/.gitconfigs/<org>.
+	# useConfigOnly makes git ERROR on unset email instead of guessing user@host.
+	useConfigOnly = true
 [commit]
 	gpgsign = false
 [init]
 	defaultBranch = main
-	templateDir = /Users/tillhoffmann/.git-template
+	templateDir = ~/.git-template
 [pull]
 	rebase = true
 [gpg]
@@ -27,3 +30,11 @@
     colorMoved = default
 [tag]
 	sort = -v:refname
+
+# gitconfigs
+[includeIf "gitdir:~/"]
+	path = ~/code/thetillhoff/.gitconfig
+# Per-org identity: matched by which ~/code/<org>/ dir the repo lives in.
+# Trailing slash => recursive match of everything inside.
+[includeIf "gitdir:~/code/thetillhoff/"]
+	path = ~/code/thetillhoff/.gitconfig
