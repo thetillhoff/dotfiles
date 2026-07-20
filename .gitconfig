@@ -32,9 +32,12 @@
 	sort = -v:refname
 
 # gitconfigs
+# Identity lives in a per-machine ~/code/.gitconfig (flat layout) and/or a
+# per-owner ~/code/<owner>/.gitconfig. Missing include files are no-ops, so the
+# same config works across machines regardless of which layout is present.
+[includeIf "gitdir:~/"]
+	path = ~/code/.gitconfig
 [includeIf "gitdir:~/"]
 	path = ~/code/thetillhoff/.gitconfig
-# Per-org identity: matched by which ~/code/<org>/ dir the repo lives in.
-# Trailing slash => recursive match of everything inside.
 [includeIf "gitdir:~/code/thetillhoff/"]
 	path = ~/code/thetillhoff/.gitconfig
