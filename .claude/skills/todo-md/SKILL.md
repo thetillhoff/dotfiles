@@ -251,6 +251,7 @@ Never create a commit whose only purpose is TODO.md churn *and* whose TODO.md wa
 - Ephemeral chat context ("remember to test this later this turn"). Use a task tool instead.
 - Rules / conventions / architecture. Those go in CLAUDE.md, ADRs, or design docs.
 - Bug tickets with reproduction steps. Those go in the issue tracker if the project has one.
+- **Deploying a feature you just built** - rollout steps, image bumps, schema re-apply, "deploy X to prod / cluster". Deployment is the natural tail of shipping, not a separate deliverable to track. Two exceptions: the operator explicitly asks to track the deploy, OR a deploy topic already exists (append there instead of restating). Otherwise report the deploy status in your reply and leave TODO alone.
 
 ## Anti-patterns
 

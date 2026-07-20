@@ -11,10 +11,19 @@ description: Apply for any task involving kubectl, kind, k8s manifests, or local
 
 Multiple clusters run in parallel terminals. The default context is unreliable. `use-context` breaks other sessions.
 
+**Use `$KUBECONTEXT` — never hardcode the context name.** Set it once for the session or in `.envrc`:
+
 ```bash
-kubectl get pods -n myapp --context kind-myapp
-kubectl apply -k overlays/kind/ --context kind-myapp
-kubectl rollout restart deployment/web -n myapp --context kind-myapp
+export KUBECONTEXT=kind-myapp   # shell session
+# or: KUBECONTEXT=kind-myapp in .envrc (direnv)
+```
+
+Then every command is portable across projects:
+
+```bash
+kubectl get pods -n myapp --context $KUBECONTEXT
+kubectl apply -k overlays/kind/ --context $KUBECONTEXT
+kubectl rollout restart deployment/web -n myapp --context $KUBECONTEXT
 ```
 
 ---
@@ -32,7 +41,7 @@ kubectl rollout restart deployment/web -n myapp --context kind-myapp
 1. `kind create cluster --name <name> --config kind/kind-config.yaml || true`
 2. Build all cluster images
 3. `kind load docker-image … --name <name>` for each
-4. `kubectl apply -k overlays/kind/ --context kind-<name>`
+4. `kubectl apply -k overlays/kind/ --context $KUBECONTEXT`
 5. Create required secrets
 
 `make down`: `kind delete cluster --name <name>`

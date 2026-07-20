@@ -138,6 +138,13 @@ reuse everywhere — typography scale, color usage, button styles & states,
 spacing, border-radius, animation speed, and shared components (tables, cards,
 grids). This is what makes a product feel like one product.
 
+**Audit decimal CSS values.** For every decimal in the stylesheet, ask: does the
+fractional part produce a visible difference? If the rounding delta is < 1px —
+or sub-pixel on spacing/letter-spacing — the decimal earns nothing and adds
+cognitive noise. Round to the nearest clean value. The exception is
+`cubic-bezier()` and `clamp()` viewport units where precision is intentional and
+meaningful.
+
 ## 10. Least design necessary
 
 Default to the least design code that does the job. Every element, style, and
@@ -544,6 +551,9 @@ the **Operator UI** items apply when the audience is a single-operator workflow.
 - ARIA labels present where HTML semantics are insufficient.
 - Design-system tokens used for all spacing, type sizes, and colors — no ad-hoc
   values.
+- No decimal CSS values without purpose: every fractional value rounds to clean
+  unless the sub-pixel difference is visually meaningful (e.g. `cubic-bezier`,
+  viewport-unit `clamp()`).
 - No AI-slop tells: no gratuitous gradients, decorative blobs, purple-to-pink
   color schemes, emoji icons, shadow-on-everything, or placeholder-sounding copy.
 

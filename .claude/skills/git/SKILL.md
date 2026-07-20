@@ -187,6 +187,40 @@ Don't rebase interactively across merge commits — use `reset --soft`. Don't cr
 
 ---
 
+## Pre-Push Validation
+
+Before any `git push`, validate locally based on what changed. Do **not** push a broken branch.
+
+### Step 1 — Identify changed domains
+
+```bash
+git diff origin/<base>..HEAD --stat
+```
+
+### Step 2 — Find project tooling
+
+Check for `CLAUDE.md`, `./do`, `Makefile`, `Taskfile.yaml`, `package.json` scripts, and CI config (`.github/workflows/`) to know which commands exist. Prefer project-provided commands over invoking tools directly.
+
+### Step 3 — Run per-domain validation
+
+| Changed files | Validation |
+|---|---|
+| TypeScript / JS source | build → test |
+| CDK stacks | `cdk synth` → `cdk diff` (shows infra delta — review before pushing) |
+| Frontend (Svelte, React…) | build → test |
+| C++ / embedded | build |
+| Packer HCL | `packer validate <file>.pkr.hcl` |
+| Shell scripts | `shellcheck <changed files>` |
+| Python | lint → test |
+
+When multiple domains changed, validate all of them. When in doubt, run the project's top-level test/build target.
+
+### Step 4 — Fix all failures before pushing
+
+Don't push to unblock yourself — fix locally. If a failure is pre-existing and unrelated to the change, note it explicitly and confirm with the user before proceeding.
+
+---
+
 ## Pushed Commits Are Immutable
 
 Never amend, reword, squash, reorder, or force-push a commit already pushed to remote — unless the user explicitly asks. Confirm with `git log origin/<branch>..HEAD` that a commit is local-only before touching it.

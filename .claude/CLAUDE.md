@@ -16,6 +16,15 @@
 - **CoC** (Convention over Configuration) — follow existing patterns before inventing new ones.
 - **Fail fast** — surface errors at the boundary; don't swallow and continue silently.
 
+## Research & Debugging Discipline
+
+- **Falsification-first, not narrative-first.** Assume your latest result is wrong; try to break it before reporting. Don't build a story then defend it.
+- **State conclusions with their confounds.** "X, but Y isn't controlled" — never bare "X" when a variable moved alongside.
+- **Control the variable.** Two things changed together (e.g. a multiplier shifting both signal weight and total exposure) = you isolated nothing. Hold confounders constant.
+- **A surprising result is a measurement bug until proven otherwise.** Contradictions (0 trades + high exposure) → distrust the parse/instrument before the system.
+- **Verify the premise before building the fix.** One cheap measurement of the real bottleneck beats a confident assumption. Never optimize an unmeasured cost.
+- **Structured data → real parsers.** pandas for CSVs (fields contain commas); shell arrays for lists. Never `awk -F,` column-splitting; never unquoted `for x in $VAR` / `set -- $x` in zsh (it doesn't word-split — use `${=var}` or arrays).
+
 ## Scaffolding Over Manual File Creation
 
 Prefer scaffolding commands (`npm create`, `cargo new`, `go mod init`, `docker init`, framework CLIs, etc.) over writing boilerplate by hand. Only write files manually when no scaffolding command covers it.
@@ -29,6 +38,10 @@ Always run Python in Docker - never install Python packages on the host. Node.js
 ### cd then command, never flag-based directory override
 
 Always `cd <path> && <cmd>` — never use flag-based directory overrides like `git -C <path>`, `npm --prefix <path>`, or similar. The `cd` form matches shell allowlists; flag overrides do not.
+
+### Text replacements: sed, not perl
+
+For shell-based in-place text replacements, use `sed` — never `perl -pi`. (Prefer the Edit tool over both when editing a known file.)
 
 ### Git: cd then git, never git -C
 
