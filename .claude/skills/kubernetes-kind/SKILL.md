@@ -38,11 +38,27 @@ kubectl rollout restart deployment/web -n myapp --context $KUBECONTEXT
 ## `make up` / `make down`
 
 `make up` must (in order):
+
 1. `kind create cluster --name <name> --config kind/kind-config.yaml || true`
 2. Build all cluster images
 3. `kind load docker-image … --name <name>` for each
 4. `kubectl apply -k overlays/kind/ --context $KUBECONTEXT`
 5. Create required secrets
+
+## Watching a Job to completion
+
+When polling a Job's status, **match `SuccessCriteriaMet`, not just `Complete`.** Modern k8s (1.31+)
+sets the `SuccessCriteriaMet` condition first; a loop that breaks only on `Complete`/`Failed` never
+matches and spins until its own timeout while the Job has actually finished. Prefer `kubectl wait`:
+
+```bash
+kubectl wait --for=condition=complete job/<name> -n <ns> --context=<ctx> --timeout=180s \
+  || kubectl wait --for=condition=failed job/<name> -n <ns> --context=<ctx> --timeout=5s
+```
+
+`kubectl wait --for=condition=complete` handles the condition aliasing; a hand-rolled poll must check
+both condition types. (Jobs with `ttlSecondsAfterFinished` also vanish shortly after finishing —
+capture logs promptly.)
 
 `make down`: `kind delete cluster --name <name>`
 

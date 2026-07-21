@@ -67,6 +67,8 @@ Banned escape hatches — these are the same move and count as new findings: "le
 - **Uniform cadence**: vary deliberately. Follow a long sentence with a short one. Fragments are legal. Don't apply a formula (alternating long/short is its own tell) — read the paragraph aloud and break wherever the rhythm is metronomic.
 - **Low specificity**: replace "many companies" / "studies show" / "recent research" with the actual names, numbers, and dates — **only from the source text, the conversation, or verifiable research you actually do**. Never invent specifics. If the author needs to supply one, leave a marked placeholder: `[ADD: which study?]`.
 - **Stock skeleton**: kill throat-clearing openers ("In today's fast-paced world…"), summary conclusions ("In conclusion… Ultimately…"), and engagement-bait endings ("What do you think?"). Start where the point starts; stop when it's made.
+- **The summary sentence**: a short closing sentence (≤5 words) that restates what the paragraph already showed. "The ceremonies spread. The insight didn't follow." — the paragraph already landed the point; the pithy kicker is slop packaging. Flag any paragraph-closer that echoes the paragraph's theme without adding new information, and cut it.
+- **Research-anxiety specificity**: in opinion/essay writing, hyper-specific numbers (exact years, exact counts) often signal the author covering their bases rather than serving the reader. "In 2001" and "twelve principles" in a personal blog post earn their place only if the number itself is the point. If it's just credential-signaling, make it vague ("in the early 2000s", "a set of principles"). In reference material or journalism, specifics are expected and should stay.
 
 ### What not to do — overcorrection is also slop
 
