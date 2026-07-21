@@ -4,10 +4,11 @@ description: >
   HTMX-specific patterns for server-rendered UIs: form submission strategies
   (HX-Redirect, HX-Refresh, fragment swap), polling fragments, stylesheet
   cache-busting, hx-confirm for destructive actions, hx-preserve for stable
-  elements, and the animated-element gotcha. Use when building or debugging any
-  HTMX-powered page - polling fragments restarting animations, choosing between
-  redirect vs refresh vs in-place swap, wiring up confirmations, or caching
-  stylesheets. Pairs with ui-ux-best-practices (operator-UI section) for the
+  elements, the animated-element gotcha, and server-rendered multi-step
+  wizards. Use when building or debugging any HTMX-powered page - polling
+  fragments restarting animations, choosing between redirect vs refresh vs
+  in-place swap, building a step-by-step form/wizard, wiring up confirmations,
+  or caching stylesheets. Pairs with ui-ux-best-practices (operator-UI section) for the
   surrounding design decisions.
 ---
 
@@ -195,6 +196,25 @@ the action URL and renders whatever the server returns. An empty body +
 
 Return a `303` redirect (or a full page response) from any handler that might be
 reached without HTMX.
+
+## Multi-step flows / wizards
+
+A server-rendered wizard (checkout, onboarding) is just sequential fragment
+swaps - no client state needed. For the UX rules (step count, states, gating),
+see the ui-ux-best-practices "multi-step flows" section; the htmx-specific
+mechanics:
+
+- Each step POSTs to the server. On valid input, return the **next step's
+  fragment**; on invalid input, return the **same step re-rendered with inline
+  errors and the entered values preserved**. Validate server-side - the step
+  gate lives on the server, not in the client.
+- **Never `HX-Refresh` between steps** - it reloads the page and discards
+  everything the user typed. Swap the step fragment instead.
+- Render the **progress tracker outside the swapped region** (in the layout) so
+  it isn't rebuilt each step, or return it in an out-of-band swap
+  (`hx-swap-oob`) when the current-step marker must move. Give it a stable `id`.
+- Keep accumulated answers in the server session (or hidden fields echoed each
+  step), not client memory - a fragment swap carries no client state forward.
 
 ## What to avoid
 

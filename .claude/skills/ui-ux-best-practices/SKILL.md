@@ -3,9 +3,11 @@ name: ui-ux-best-practices
 description: >
   Battle-tested UI and UX principles for any user-facing interface - web,
   mobile, consumer product, or internal operator tool. Covers layout, hierarchy,
-  typography, color, interaction feedback, forms, navigation, accessibility, and
-  operator-specific patterns (density, tables, keyboard-first,
-  decisions-per-minute). Grounded in Nielsen's heuristics, Tog's principles,
+  typography, color, interaction feedback, forms, multi-step flows and progress
+  trackers, responsive images (`<picture>`/srcset), modern CSS techniques,
+  navigation, accessibility, and operator-specific patterns (density, tables,
+  keyboard-first, decisions-per-minute). Grounded in Nielsen's heuristics,
+  Tog's principles,
   Gestalt laws. Use when building a screen, page, form, or component; auditing a
   UI ("why does this feel off", low conversion, accessibility review); stripping
   AI slop; or building an operator tool, admin UI, control panel, queue,
@@ -28,6 +30,8 @@ critique lens when reviewing. Before shipping, re-scan each section's **bold
 lead-ins** - they are the pass/fail gate. For the named theory (Nielsen's 10
 heuristics, Tog's principles, Gestalt laws, color schemes, layout patterns)
 consult `references/frameworks.md` - cite by name when justifying a decision.
+For concrete web implementation recipes (responsive images with `<picture>`,
+modern CSS techniques), consult `references/web-implementation.md`.
 
 ## 1. Start with the user, not the screen
 
@@ -150,20 +154,65 @@ Forms are where users quit. Reduce effort and never punish.
   instead of a blank box the user must fill from memory.
 - **Clear call-to-action**: verb + noun ("Submit form", "Create account"), not a
   bare "Submit" or "OK".
+- **Disable submit after the click.** Swap the button to a working state on
+  submit so an impatient user can't fire it twice - a double-submit creates
+  duplicate records or double charges. (This is a microinteraction: trigger →
+  rule → feedback; see the anatomy in `references/frameworks.md`.)
 
-## 7. Navigation
+## 7. Multi-step flows & progress trackers
+
+A progress tracker shows a fixed path through one linear task (checkout,
+onboarding, a long form). It is not a breadcrumb (that's location in a
+hierarchy) and not a progress bar (that's loading feedback) - don't mix the
+three. For loading/long-job progress bars and spinners, see §12 (operator UIs).
+
+- **Warranted only for 3-7 discrete steps.** Fewer than 3 doesn't need a
+  tracker; more than 7 is a cognitive-load and abandonment risk - split or cut.
+- **"Step X of Y" plus a label per step**, never bare numbers - the count sets
+  scope upfront, the label lets the user prepare for what each step needs. Pair
+  any step icon with words.
+- **Four states, visually distinct and directional**: completed, current
+  (exactly one), upcoming, and error. Use connectors/arrows to signal
+  direction, not position alone. On error, say what's wrong *and* how to fix it
+  - don't just paint the step red.
+- **Gate forward, free backward.** Validate a step before advancing; block
+  skipping incomplete required steps, but always allow revisiting completed
+  ones, going back, and saving progress. Never lock the user in.
+- **Order easiest-first** to build momentum; defer the highest-effort step
+  (e.g. payment) to last, and group related fields within a step.
+- **Orientation**: horizontal on desktop (following the language's reading
+  direction), vertical for narrow/mobile layouts or long step labels. Compact
+  mobile fallback is a "Step X of Y" line or a thin top bar.
+- **Expose step count and current step programmatically**, not by color or
+  position alone - screen-reader users need it too. A `disabled` step isn't
+  announced by assistive tech, so never use `disabled` to convey meaning a user
+  must read.
+- Strip competing nav during the flow, and add a step page-title beneath the
+  tracker so position isn't signalled by the tracker alone.
+
+Server-rendered wizards (each step a fragment swap): see the **htmx** skill.
+
+## 8. Navigation
 
 - **Visible and consistent** - users should always know where they are and how to
   get back. Highlight the current location; use breadcrumbs where depth warrants.
 - **Logo in the nav links to home** (expected everywhere; its absence surprises).
 - **User control & freedom** - always provide undo, cancel, and a clear exit.
 
-## 8. Accessibility (non-negotiable)
+## 9. Accessibility (non-negotiable)
 
 - **Semantic HTML** - use the right element for the job; it gives you keyboard
   and screen-reader behavior for free.
 - **ARIA labels** where semantics are not enough; **alt text** on every
   meaningful image (empty `alt=""` on purely decorative ones).
+- **Label in Name (WCAG)** - a control's visible label text must be contained
+  in its accessible name, so a voice-control user saying the visible label
+  actually activates it. Don't let an `aria-label` diverge from the visible
+  text.
+- **Group related controls programmatically, not just visually.** Proximity
+  groups them for the eye (Gestalt), but assistive tech needs the association
+  too: wrap a set (personal info, payment, consent) in `fieldset`/`legend` or
+  an ARIA group. Same rule for a multi-step tracker's step list.
 - **Scalable, high-contrast fonts**; respect user zoom and reduced-motion.
 - **Full keyboard navigation** - everything reachable and operable without a
   mouse. Never use `outline: none` without providing a visible replacement.
@@ -173,14 +222,14 @@ Forms are where users quit. Reduce effort and never punish.
   interactive control only, never a whole container that also holds copyable
   text.
 
-## 9. Design system
+## 10. Design system
 
 Once past a couple of screens, stop deciding the same thing twice. Define once,
 reuse everywhere - typography scale, color usage, button styles & states,
 spacing, border-radius, animation speed, and shared components (tables, cards,
 grids). This is what makes a product feel like one product.
 
-## 10. Least design necessary
+## 11. Least design necessary
 
 Default to the least design code that does the job. Every element, style, and
 effect must earn its place by serving the user's goal; if removing it changes
@@ -206,7 +255,7 @@ excess is the tell of a generator. When unsure, cut it.
 
 ---
 
-## 11. Operator UIs
+## 12. Operator UIs
 
 An operator tool is not a marketing site. The metric is **decisions per
 minute** - how fast the operator gets through the work the system has

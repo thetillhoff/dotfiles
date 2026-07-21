@@ -82,6 +82,23 @@ Build a palette from one of these relationships, not ad hoc:
 - **Triadic** - three evenly spaced hues. Vibrant, balanced.
 - **Tetradic** - two complementary pairs. Rich but hard to balance; let one hue dominate.
 
+## Microinteraction Anatomy (Dan Saffer)
+
+A single-purpose moment - a toggle flipping, a like animating, a field validating.
+Design each around four parts; naming them stops microinteractions from becoming
+decoration:
+
+1. **Trigger** - the user action or system state change that starts it.
+2. **Rules** - the logic deciding what happens (and what can't).
+3. **Feedback** - the visible/audible/haptic response that tells the user what
+   the rules did.
+4. **Loops & modes** - the meta-rules: how long it runs, whether it repeats, and
+   the state it leaves behind.
+
+Keep them purposeful, subtle, and fast, match motion to the gesture's direction,
+and honor `prefers-reduced-motion`. A microinteraction that blocks the task or
+runs long is worse than none.
+
 ## Design Systems (Figma "Design Systems 101")
 
 A design system is the single source of truth for how a product looks and
@@ -97,3 +114,12 @@ building.
 **Why it pays off:** consistency across platforms, less redundant work, faster
 delivery, easier onboarding, one source of truth. It is a long-term commitment -
 budget for ongoing maintenance, not a one-off build.
+
+**Real-world systems to study** (steal patterns, don't reinvent): Material
+Design (Google), Carbon (IBM), Polaris (Shopify), Atlassian Design System,
+Fluent (Microsoft), Spectrum (Adobe), Lightning (Salesforce), Ant Design, and
+GOV.UK (exemplary for accessible forms and plain language). Browse the curated
+list at <https://github.com/alexpate/awesome-design-systems> for ~100 more with
+live docs. For UX *theory* (not systems), the free
+[Interaction Design Foundation library](https://ixdf.org/library) - articles and
+the HCI encyclopedia - is a solid reference.
