@@ -1,7 +1,7 @@
 ---
 name: git
 description: >
-  All git and GitHub operations: committing, PR creation/editing, reviewing PR comments/CI, pushing, tagging, branch history cleanup, CHANGELOG updates. Use whenever the user stages changes, asks to commit, create/update a PR, check PR feedback, fix failing CI, push a tag, squash/regroup local commits, or run any git or gh command. Also triggers on: "check the PR", "what did reviewers say", "why is CI failing", "squash these commits", "clean up history", "tag and push". Scope is the repo you're working in - a single PR, commit, or its CI; to sweep many repos for what needs attention, use repo-triage.
+  All git and GitHub operations: committing, PR creation/editing, reviewing PR comments/CI, pushing, tagging, cutting releases, branch history cleanup, CHANGELOG updates. Use whenever the user stages changes, asks to commit, create/update a PR, check PR feedback, fix failing CI, push a tag, cut/trigger/publish a release, bump a version, squash/regroup local commits, or run any git or gh command. Also triggers on: "check the PR", "what did reviewers say", "why is CI failing", "squash these commits", "clean up history", "tag and push", "cut a release", "trigger a release", "new release", "bump the version". Scope is the repo you're working in - a single PR, commit, or its CI; to sweep many repos for what needs attention, use repo-triage.
 permissions:
   allow:
     - "Bash(git status)"
@@ -75,6 +75,10 @@ fix: null pointer in session cleanup
 chore: bump LiveKit SIP to v1.8.2
 feat: add IPv6 support to SIP signaling
 ```
+
+### Untracked Files
+
+Before staging anything, check `git status` for untracked files. If any exist, list them and ask the user which to include — don't assume all untracked files belong in the commit. Untracked files are often drafts, generated output, or work-in-progress that the user hasn't explicitly decided to publish yet. Wait for confirmation before running `git add`.
 
 ### Pre-Commit Checks
 
@@ -204,7 +208,7 @@ Check for `CLAUDE.md`, `./do`, `Makefile`, `Taskfile.yaml`, `package.json` scrip
 ### Step 3 — Run per-domain validation
 
 | Changed files | Validation |
-|---|---|
+| --- | --- |
 | TypeScript / JS source | build → test |
 | CDK stacks | `cdk synth` → `cdk diff` (shows infra delta — review before pushing) |
 | Frontend (Svelte, React…) | build → test |
@@ -236,11 +240,24 @@ If `CHANGELOG.md` exists:
 3. Add `## vX.Y.Z` at top, or rename `## Unreleased`. Keep dependency entries generic.
 4. Stage `CHANGELOG.md` with the commit.
 
-After committing, ask: *"Tag as `vX.Y.Z` and push?"* If confirmed:
+### Release tags only ever point at `main` — never a branch
+
+A release tag must point at a commit that is already on `main`. **Never tag a feature branch, and never tag before the change is merged.** A tag on an unmerged commit produces a release whose code is not on `main` — the tag dangles off-branch and `main` lags its own release.
+
+Order the release accordingly:
+
+1. Land the change on `main` first (see Branch Workflow — direct push, or open a PR and **merge it**; for protected `main` the PR merge is the only way).
+2. `git checkout main && git pull` so local `main` is the merged tip.
+3. Only then tag that commit and push the tag.
+
+After the change is merged to `main`, ask: *"Tag as `vX.Y.Z` and push?"* If confirmed:
 
 ```bash
-git tag vX.Y.Z && git push origin <branch> && git push origin vX.Y.Z
+git checkout main && git pull
+git tag vX.Y.Z && git push origin vX.Y.Z
 ```
+
+When `main` is protected, merge the PR with a **merge commit** (not squash/rebase) if a tag was already created on the pre-merge SHA, so that SHA stays reachable from `main`. Better: don't create the tag until after the merge.
 
 ### Pipeline Verification After Tag
 

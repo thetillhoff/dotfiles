@@ -58,6 +58,8 @@ Every negative parallelism gets exactly one of these treatments:
 
 Banned escape hatches — these are the same move and count as new findings: "less about X than Y", "X matters, but Y matters more", "the real X is Y", "the question isn't X, it's Y", "X? Y." (rhetorical-question variant), and the em-dash variant "— not X, but Y".
 
+**Contrast-into-verb technique.** When a two-sentence contrast ("X grew. Y didn't.") is real but the parallel structure is slop, collapse it into a single verb that implies the contrast: "X outgrew Y." The verb carries the meaning; the parallelism disappears. Test: if one verb can hold both halves, use it.
+
 ### Everything else
 
 - **Puffery and inflated vocabulary** (pivotal, seismic, testament, tapestry, landscape, delve…): replace with the plain word, or with the concrete fact the puffery was hiding. "Plays a vital role in" → "does".
@@ -66,7 +68,7 @@ Banned escape hatches — these are the same move and count as new findings: "le
 - **Hedged both-sidesing** ("it's worth noting", auto-counterpoints, "while X, it's also true that Y"): commit. One opinion, stated, owned. A counterpoint stays only if the author genuinely concedes it.
 - **Uniform cadence**: vary deliberately. Follow a long sentence with a short one. Fragments are legal. Don't apply a formula (alternating long/short is its own tell) — read the paragraph aloud and break wherever the rhythm is metronomic.
 - **Low specificity**: replace "many companies" / "studies show" / "recent research" with the actual names, numbers, and dates — **only from the source text, the conversation, or verifiable research you actually do**. Never invent specifics. If the author needs to supply one, leave a marked placeholder: `[ADD: which study?]`.
-- **Stock skeleton**: kill throat-clearing openers ("In today's fast-paced world…"), summary conclusions ("In conclusion… Ultimately…"), and engagement-bait endings ("What do you think?"). Start where the point starts; stop when it's made.
+- **Stock skeleton**: kill throat-clearing openers ("In today's fast-paced world…"), summary conclusions ("In conclusion… Ultimately…"), and engagement-bait endings ("What do you think?"). Start where the point starts; stop when it's made. **Exception: genuine sequel pointers.** A closing sentence that names a specific follow-up the author actually wrote ("That's a different story — one about X") is structure, not slop. Preserve it.
 - **The summary sentence**: a short closing sentence (≤5 words) that restates what the paragraph already showed. "The ceremonies spread. The insight didn't follow." — the paragraph already landed the point; the pithy kicker is slop packaging. Flag any paragraph-closer that echoes the paragraph's theme without adding new information, and cut it.
 - **Research-anxiety specificity**: in opinion/essay writing, hyper-specific numbers (exact years, exact counts) often signal the author covering their bases rather than serving the reader. "In 2001" and "twelve principles" in a personal blog post earn their place only if the number itself is the point. If it's just credential-signaling, make it vague ("in the early 2000s", "a set of principles"). In reference material or journalism, specifics are expected and should stay.
 

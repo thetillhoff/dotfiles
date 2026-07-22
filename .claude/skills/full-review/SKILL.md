@@ -87,9 +87,20 @@ Return findings in EXACTLY this format, one per line, nothing else:
 Because subagents don't inherit CLAUDE.md, if the brief may lead to running Python or
 git, paste the `dev-environment` skill into it.
 
+## Phase 1b - Convergence (main thread)
+
+The area partition gives every reviewer only its own slice, so no one sees that
+two services solve one problem in two shapes. Run the `convergence-audit` skill
+once on the main thread to cover that cross-area structural layer. It's
+report-only and whole-repo, matching this sweep's opt-in cost.
+
+Its findings are structural consolidations - always A-vs-B judgement calls, never
+mechanical. They land in `TODO.md` (Phase 2) and are **never auto-fixed** (Phase 3).
+
 ## Phase 2 - Collect (main thread)
 
 - Dedup across areas: same `path:line` = one entry (merge lenses).
+- Fold in the Phase 1b convergence findings as their own group (structural, cross-area).
 - Append to `TODO.md` grouped by area, severity-sorted (H→M→L). One line per finding.
   No cap on count. Follow the `todo-md` skill's layout. Don't stage/commit `TODO.md`
   unless already tracked.
