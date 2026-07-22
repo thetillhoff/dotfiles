@@ -129,8 +129,7 @@ Several skills overlap on UI/design work. Route by intent:
 | Intent | Skill |
 | -------- | ------- |
 | Visual/aesthetic direction - new page, redesign, AI-slop audit | hallmark (also frontend-design) |
-| Implementation & polish - components, animation, a11y | interface-kit |
-| UX principles, critique, operator/internal/admin tools | ui-ux-best-practices (absorbed operator-ui) |
+| UX principles + implementation craft (components, motion/animation, a11y, performance, responsive/mobile, color/theming), critique, operator/internal/admin tools | ui-ux-best-practices (absorbed operator-ui + interface-kit) |
 | HTMX server-rendered patterns | htmx |
 | Charts / data viz | dataviz |
 | DESIGN.md spec documents | design-system |
