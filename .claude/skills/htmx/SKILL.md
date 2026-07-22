@@ -5,11 +5,17 @@ description: >
   (HX-Redirect, HX-Refresh, fragment swap), polling fragments, stylesheet
   cache-busting, hx-confirm for destructive actions, hx-preserve for stable
   elements, the animated-element gotcha, and server-rendered multi-step
-  wizards. Use when building or debugging any HTMX-powered page - polling
+  wizards. Also covers the common interaction patterns (active search,
+  click-to-edit, inline validation, delete-row, lazy load, infinite scroll,
+  bulk actions), hx-trigger modifiers, out-of-band / multi-region swaps, and
+  which component libraries (daisyUI, Flowbite, Web Awesome) survive fragment
+  swaps. Use when building or debugging any HTMX-powered page - polling
   fragments restarting animations, choosing between redirect vs refresh vs
-  in-place swap, building a step-by-step form/wizard, wiring up confirmations,
-  or caching stylesheets. Pairs with ui-ux-best-practices (operator-UI section) for the
-  surrounding design decisions.
+  in-place swap, building a step-by-step form/wizard, an active-search or
+  click-to-edit UI, wiring up confirmations, updating several regions from one
+  response, or picking an htmx-friendly styling library. Pairs with
+  ui-ux-best-practices (operator-UI section) for the surrounding design
+  decisions.
 ---
 
 # HTMX Patterns
@@ -65,6 +71,24 @@ listen on the form with no `from:`:
 Use `from:` only when you deliberately want to listen for an event originating
 *elsewhere* in the document - and then make the selector as narrow as possible
 (`from:#specific-id`), never a bare tag name.
+
+### `hx-trigger` modifiers - the vocabulary
+
+Most htmx UI patterns are just the right trigger modifier. Learn these:
+
+| Modifier | Effect | Powers |
+| --- | --- | --- |
+| `delay:Nms` | Debounce - resets the timer on each event, fires after quiet | Active search |
+| `changed` | Fire only when the value actually differs | Active search (with `delay`) |
+| `throttle:Nms` | Rate-limit - fire at most once per N | High-frequency events |
+| `once` | Fire a single time | One-shot init |
+| `load` | Fire when the element is inserted | Lazy-load a fragment |
+| `revealed` / `intersect once` | Fire when scrolled into view (`intersect` inside a scroll container) | Infinite scroll, lazy load |
+| `every Ns` | Poll | Progress, live status |
+| `key` filters, e.g. `keyup[altKey&&key=='D']` | Fire on a key combo (JS condition in brackets) | Keyboard shortcuts (add `from:body` for global) |
+
+Combine them: `hx-trigger="input changed delay:400ms"` is the canonical
+type-to-search debounce.
 
 ## Stylesheet cache-busting
 
@@ -215,6 +239,83 @@ mechanics:
   (`hx-swap-oob`) when the current-step marker must move. Give it a stable `id`.
 - Keep accumulated answers in the server session (or hidden fields echoed each
   step), not client memory - a fragment swap carries no client state forward.
+
+## Common interaction patterns
+
+The canonical htmx recipes (full code at <https://htmx.org/examples/>). Each is a
+target + swap + the right trigger:
+
+- **Active search** - `hx-trigger="input changed delay:400ms"`, `hx-target` a
+  results container; server returns the rows/list fragment.
+- **Click-to-edit** - element with `hx-target="this" hx-swap="outerHTML"`; click
+  swaps in an edit form; save `hx-put`s and returns the display markup; cancel
+  `hx-get`s it back. The element cycles display ↔ form.
+- **Inline validation** - field wrapper `hx-post` on `change`, `hx-target="this"
+  hx-swap="outerHTML"`; server returns the wrapper re-classed valid/error with an
+  inline message.
+- **Delete row (with fade)** - `hx-delete`, `hx-target="closest tr"
+  hx-swap="outerHTML swap:1s"`; server returns 200 + **empty body** → row
+  removed; `swap:1s` holds `.htmx-swapping` so a CSS fade runs first.
+- **Lazy load** - placeholder with `hx-trigger="load"` shows a spinner, then
+  swaps in the expensive content.
+- **Infinite scroll vs click-to-load** - identical server shape; the sentinel row
+  uses `hx-trigger="revealed" hx-swap="afterend"` for infinite, or a button with
+  `click` for load-more. Infinite scroll breaks the back button and deep links -
+  prefer click-to-load when position/bookmarkability matters, and pair swaps with
+  `hx-push-url` when a state should be linkable.
+- **Bulk actions** - plain checkboxes as form inputs; POST the form; return only a
+  toast, don't re-render the table (inputs keep their own state).
+- **Keyboard shortcut** - `hx-trigger="keyup[altKey&&key=='D'] from:body"`.
+- **`hx-prompt`** collects a string into the `HX-Prompt` request header (pairs
+  with `hx-confirm`); **`hx-encoding="multipart/form-data"`** enables file upload,
+  with progress read off the `htmx:xhr:progress` event.
+- **Reset a form after a successful POST** -
+  `hx-on::after-request="if(event.detail.successful) this.reset()"`; gate on
+  `successful` so it only clears on a 2xx.
+
+## Updating multiple regions from one action
+
+Four options, simplest first - reach for the higher one only when the lower can't
+express it:
+
+1. **Expand the target** - wrap both regions and return both. Most reliable,
+   truest to HATEOAS. Default choice for adjacent regions.
+2. **Out-of-band swap** - add `hx-swap-oob="true"` (or `="beforeend:#sel"`) to an
+   extra element in the response; htmx routes it to its own id, updating a second
+   region without a second request.
+3. **Server-triggered event** - respond with `HX-Trigger: newContact`; a separate
+   element listens `hx-trigger="newContact from:body" hx-get="/contacts/table"`.
+4. Path-deps extension, for broad dependency fan-out.
+
+## Terminal responses drive lifecycle
+
+The **server** decides when a loop ends, via the returned HTML:
+
+- An **empty 200 body** removes the element (delete-row).
+- A polled fragment that comes back with `hx-trigger="none"` (or no trigger)
+  **stops polling** - swap in a done/terminal fragment to end a progress loop
+  rather than signalling completion client-side. Update `role="progressbar"` +
+  `aria-valuenow` on each poll for accessibility.
+
+## Styling & component libraries
+
+htmx does interaction; it doesn't style. Pair it with a delivery model that
+survives server-rendered fragment swaps (full taxonomy in the
+ui-ux-best-practices `frameworks.md`):
+
+- **CSS-class frameworks** (daisyUI - the most explicitly htmx-oriented -
+  Flowbite, CoreUI): the server emits classed markup, swaps are trivial, zero
+  client state. Best default.
+- **Web components** (Web Awesome / ex-Shoelace): behavior travels in the element,
+  framework-agnostic. Caveat: a swapped-in custom element must (re)initialise -
+  watch attribute-vs-property setting and lifecycle on `htmx:afterSwap`.
+- Avoid React-bound libraries (shadcn, Radix, Kuma) - their behavior is React and
+  won't run in swapped fragments. For custom widget *behavior* (a combobox, a
+  focus trap), port the contracts from `component-behavior.md` instead.
+
+daisyUI's `data-theme` (pure-CSS theming) and Flowbite's `data-*` JS hooks both
+coexist cleanly with htmx swaps - a returned fragment carries its own styling/
+behavior hooks with no re-wiring.
 
 ## What to avoid
 
