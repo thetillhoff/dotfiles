@@ -100,11 +100,13 @@ Stop because the work is at a clean point, not because the turn ran out. If a fo
 
 ## Markdown Linting
 
+**Always run markdownlint with `--ignore node_modules`** (global setting). A `**/*.md` glob otherwise lints dependency markdown and floods the output with errors you don't own. Belt-and-suspenders: keep a `.markdownlintignore` at the repo root containing `node_modules/` and `dist/` - markdownlint-cli auto-respects it.
+
 After creating or editing any markdown file, auto-fix the mechanical issues first, then lint:
 
 ```sh
-npx markdownlint-cli --fix --disable MD013 -- <file.md>
-npx markdownlint-cli --disable MD013 -- <file.md>
+npx markdownlint-cli --fix --disable MD013 --ignore node_modules -- <file.md>
+npx markdownlint-cli --disable MD013 --ignore node_modules -- <file.md>
 ```
 
 `--fix` handles tables, bare URLs, list/heading spacing, etc. automatically. Fix any remaining reported errors (e.g. MD040 fenced-code language, which it can't infer) by hand before considering the task done.
