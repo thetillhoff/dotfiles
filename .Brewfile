@@ -58,6 +58,8 @@ brew "go"
 brew "golangci-lint"
 # Kubernetes package manager
 brew "helm"
+# Tools and libraries to manipulate images in select formats
+brew "imagemagick"
 # CLI wrapper for basic network utilities on macOS - ip command
 brew "iproute2mac"
 # Lightweight and flexible command-line JSON processor
