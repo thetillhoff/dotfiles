@@ -44,7 +44,7 @@ Match lenses to the area:
 
 | Area | Lenses the subagent applies |
 | ---- | --------------------------- |
-| Frontend / UI | ui-ux-best-practices + htmx (if HTMX) + interface-kit |
+| Frontend / UI | ui-ux-best-practices + htmx (if HTMX) |
 | Each service | microservice-architecture |
 | Shared / utils | review-comments |
 | Config / infra | relevant infra skill if one exists |
