@@ -1,6 +1,6 @@
 ---
 name: dev-environment
-description: Apply when running, testing, debugging, or planning code execution - and ALWAYS include verbatim in every subagent brief dispatched via superpowers:subagent-driven-development. Enforces Docker for Python and other system-dep runtimes; enforces cd&&git instead of git -C. Subagents do not inherit CLAUDE.md, so this skill is the only way these constraints reach them.
+description: Use when running, testing, or debugging code. Enforces Docker for Python and other system-dependency runtimes, and `cd && git` over `git -C`. Include verbatim in every subagent brief (superpowers:subagent-driven-development) - subagents don't inherit CLAUDE.md.
 ---
 
 # Dev Environment Constraints
@@ -47,6 +47,10 @@ These rules apply to you and to every subagent you dispatch. Include this sectio
 
 - Mount only what is needed. Do not mount `~` or `/`.
 
+**Volume mounts need the `:z` suffix on SELinux hosts (Fedora, RHEL, Bazzite) with podman** — without it the container cannot write to the mount and fails with "Permission denied", often silently (the expected output file just never appears). See "SELinux volume relabeling" below for why. Note `docker` on these hosts is usually podman (rootless); check `docker --version` — a `5.x` version string is podman.
+
+- Reading stdin via heredoc (`docker run ... python - <<'PY'`) requires `-i` to attach stdin; without it the container reads empty stdin and does nothing. Use `docker run --rm -i ...`.
+
 ---
 
 ## Dockerfile image layering: deps first, then COPY the whole dir
@@ -61,9 +65,11 @@ Never enumerate source files (`COPY a.py b.py …`): a new module gets silently 
 ## SELinux volume relabeling (podman / Fedora / RHEL)
 
 On SELinux hosts a bind-mounted dir is unreadable in the container unless relabeled.
-**Always add the lowercase `:z` suffix to the `-v` source.** It applies a shared label
-readable by any container and back on the host, re-relabels recursively on every mount
-(so stale files self-fix), and is ignored on non-SELinux hosts - always safe.
+**Always add the lowercase `:z` suffix to the `-v` source.** It applies a *shared* label
+readable by any container and back on the host, so multiple containers can share the same
+volume; `:Z` (uppercase) applies a *private* label usable by only one container - use `:z`
+so volumes stay shareable. It re-relabels recursively on every mount (so stale files
+self-fix) and is ignored on non-SELinux hosts (macOS Docker Desktop) - always safe.
 
 ---
 
