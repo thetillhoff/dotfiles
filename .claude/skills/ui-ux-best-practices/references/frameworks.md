@@ -115,11 +115,48 @@ building.
 delivery, easier onboarding, one source of truth. It is a long-term commitment -
 budget for ongoing maintenance, not a one-off build.
 
-**Real-world systems to study** (steal patterns, don't reinvent): Material
+**Commercial systems to study** (steal patterns, don't reinvent): Material
 Design (Google), Carbon (IBM), Polaris (Shopify), Atlassian Design System,
-Fluent (Microsoft), Spectrum (Adobe), Lightning (Salesforce), Ant Design, and
-GOV.UK (exemplary for accessible forms and plain language). Browse the curated
-list at <https://github.com/alexpate/awesome-design-systems> for ~100 more with
-live docs. For UX *theory* (not systems), the free
-[Interaction Design Foundation library](https://ixdf.org/library) - articles and
-the HCI encyclopedia - is a solid reference.
+Fluent (Microsoft), Spectrum (Adobe), Lightning (Salesforce), Ant Design,
+Primer (GitHub).
+
+**Government / public systems** - the gold standard for accessible forms, plain
+language, and service-design flows (see `design-patterns.md` for the patterns
+they pioneered): GOV.UK Design System + Service Manual (UK), USWDS (US),
+NHS (health-specific, exceptional forms), plus strong national systems -
+Scottish, Australian (and NSW), Canada/Ontario, France (DSFR), German
+(opencode.de), Swiss (github.com/swiss), EU (Europa Component Library).
+
+Browse more: <https://github.com/alexpate/awesome-design-systems> (~100
+commercial, live docs) and `ctdesign/gov-design-systems-list` /
+`ctrimm/Government-Design-Systems-List` (government). For UX *theory* rather than
+systems, the free [Interaction Design Foundation library](https://ixdf.org/library)
+
+- articles and the HCI encyclopedia - is a solid reference.
+
+## Component library delivery models
+
+Component libraries differ less in *what* components they offer than in *how*
+they deliver behavior and styling. The model decides whether a library fits a
+server-rendered / htmx / vanilla stack at all. Pick by delivery model first.
+
+| Model | What you get | Server-rendered / htmx fit | Examples |
+| --- | --- | --- | --- |
+| **CSS-class framework** | You write the HTML, they style it; interactivity via a small optional vanilla JS layer keyed off `data-*` | **Best.** Server emits classed markup; swaps are trivial, zero client state | daisyUI, Flowbite, CoreUI (Bootstrap) |
+| **Web components** | Behavior + style encapsulated in custom elements (`<wa-button>`); framework-agnostic by standard | **Excellent** (portable). Caveat: re-init / attribute-vs-property on htmx-swapped nodes | Web Awesome (ex-Shoelace) |
+| **Headless / behavior** | Logic + a11y, no styles; the behavior contracts in `component-behavior.md` | Poor unless React - behavior is framework-bound | React Aria, Radix, Ark, Headless UI, Base UI |
+| **Copy-paste source** | You own the code, no dependency - but the code is React | React only | shadcn/ui |
+| **CSS-in-JS runtime** | Styles authored in JS, tied to the component framework's render | Worst - React-authored even when "zero-runtime" | Kuma UI, most styled-components-likes |
+
+For a server-rendered / htmx / vanilla stack, in order: **Web Awesome**
+(framework-agnostic web components), then **daisyUI** (the most explicitly
+htmx-oriented Tailwind class layer) or **Flowbite**, then **CoreUI** for the
+Bootstrap idiom. `shadcn/ui` only if the stack is React; its citable idea for
+everyone is *delivery-by-copy* - own the source instead of a version-locked
+dependency.
+
+Two portable lessons regardless of stack: **encapsulate behavior in the element,
+not in page-level JS** (why web components survive server rendering), and make
+vanilla component JS **key off `data-*` hooks** so it coexists with
+htmx-swapped DOM. When you do need rich-widget behavior, take it from the
+`component-behavior.md` contracts - don't hand-roll a combobox or a focus trap.

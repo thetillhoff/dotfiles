@@ -1,22 +1,27 @@
 ---
 name: ui-ux-best-practices
 description: >
-  Battle-tested UI and UX principles for any user-facing interface - web,
-  mobile, consumer product, or internal operator tool. Covers layout, hierarchy,
-  typography, color, interaction feedback, forms, multi-step flows and progress
-  trackers, responsive images (`<picture>`/srcset), modern CSS techniques,
-  navigation, accessibility, and operator-specific patterns (density, tables,
-  keyboard-first, decisions-per-minute). Grounded in Nielsen's heuristics,
-  Tog's principles,
-  Gestalt laws. Use when building a screen, page, form, or component; auditing a
-  UI ("why does this feel off", low conversion, accessibility review); stripping
-  AI slop; or building an operator tool, admin UI, control panel, queue,
-  dashboard, or back-office tool. Triggers on "UX", "usability", "user flow",
-  "make it intuitive", "is this good UI", "admin UI", "control panel", "back
-  office". Principles layer - invoke alongside frontend-design (aesthetic
-  direction) and interface-kit (implementation craft). NOT for: copy/content
-  (copywriting), charts/data viz (dataviz), design-system specs (design-system),
-  or HTMX patterns (htmx).
+  Battle-tested UI and UX principles plus implementation craft for any
+  user-facing interface - web, mobile, consumer product, or internal operator
+  tool. Covers layout, hierarchy, typography, color and theming (palettes,
+  design tokens, dark mode), interaction feedback, motion and animation, forms,
+  multi-step flows and progress trackers, responsive images (`<picture>`/srcset),
+  modern CSS, layout recipes, navigation, accessibility (WCAG, WAI-ARIA
+  component behavior), performance (Core Web Vitals), mobile and touch,
+  internationalization and RTL, component patterns, and operator-specific
+  patterns (density, tables, keyboard-first, decisions-per-minute). Grounded in
+  Nielsen's heuristics, Tog's principles, Gestalt laws. Use when building a
+  screen, page, form, or component; implementing animation, dark mode, a
+  responsive or mobile layout; auditing a UI ("why does this feel off", low
+  conversion, accessibility review); stripping AI slop; or building an operator
+  tool, admin UI, control panel, queue, dashboard, or back-office tool. Triggers
+  on "UX", "usability", "user flow", "make it intuitive", "is this good UI",
+  "make it look good", "build UI", "component", "animation", "dark mode",
+  "responsive", "accessibility", "admin UI", "control panel", "back office".
+  Principles-and-implementation layer - invoke alongside frontend-design or
+  hallmark for aesthetic direction. NOT for: copy/content (copywriting),
+  charts/data viz (dataviz), design-system specs (design-system), or HTMX
+  patterns (htmx).
 ---
 
 # UI & UX Best Practices
@@ -30,8 +35,33 @@ critique lens when reviewing. Before shipping, re-scan each section's **bold
 lead-ins** - they are the pass/fail gate. For the named theory (Nielsen's 10
 heuristics, Tog's principles, Gestalt laws, color schemes, layout patterns)
 consult `references/frameworks.md` - cite by name when justifying a decision.
-For concrete web implementation recipes (responsive images with `<picture>`,
-modern CSS techniques), consult `references/web-implementation.md`.
+
+Reference files, consulted on demand:
+
+- `references/frameworks.md` - the named theory (Nielsen, Tog, Gestalt, color
+  schemes, microinteraction anatomy, design-system layers + systems to study).
+- `references/design-patterns.md` - per-component conventions (buttons, message
+  channels, modals, tables, tabs, menus, tooltips, empty states, loading) and
+  gov-grade form/flow patterns, distilled from where major design systems agree.
+- `references/component-behavior.md` - the keyboard/focus/ARIA/dismiss contract
+  each interactive widget must satisfy (WAI-ARIA APG). Consult when building or
+  reviewing any custom menu, combobox, dialog, tabs, slider, etc. (Choosing a
+  component library? The delivery-model taxonomy is in `frameworks.md`.)
+- `references/accessibility-wcag.md` - WCAG POUR, levels, 2.1/2.2 criteria, and
+  the exact numbers behind the Accessibility section.
+- `references/web-implementation.md` - concrete web recipes: responsive images
+  (`<picture>`/srcset), modern CSS, named layout recipes, and visual polish
+  (shadows, z-index scale, font smoothing).
+- `references/motion.md` - framework-agnostic animation: frequency budget, easing
+  tokens, durations, enter/exit, stagger, `prefers-reduced-motion`, gestures.
+- `references/performance.md` - Core Web Vitals (LCP/INP/CLS): what moves each,
+  font loading, perceived-performance, budgets.
+- `references/color-and-theming.md` - colour meaning, choosing a palette (+
+  generator tools), design-token tiers, and dark mode.
+- `references/mobile-touch.md` - touch targets, thumb zones, hover/pointer
+  capability, mobile keyboards (`inputmode`/`enterkeyhint`), viewport & safe-area.
+- `references/i18n-rtl.md` - text expansion, RTL mirroring + logical properties,
+  locale-aware formatting, script/font coverage.
 
 ## 1. Start with the user, not the screen
 
@@ -75,7 +105,10 @@ Rules of thumb:
   intentionally.
 - **Readability first** - generous size, high contrast, comfortable line length.
 - Define a **type scale** (sizes, weights, line-heights) and reuse it; do not
-  set sizes ad hoc.
+  set sizes ad hoc. One lone 15px or 22px reads as drift.
+- **Antialias the root** (`-webkit-font-smoothing: antialiased`) - without it,
+  text reads heavy on macOS at small sizes. See `references/web-implementation.md`
+  for this and other visual-polish CSS.
 
 ## 4. Color
 
@@ -111,6 +144,11 @@ absence of feedback reads as "broken".
   `12.4 MB uploaded`). Critical when several same-unit values sit together - a
   bare `1175.3s … 979.8` is unreadable. Render human-readable; never surface a
   raw internal key.
+- **Match the message to its channel** - inline (field/section-scoped), transient
+  toast (acknowledge a completed action; one at a time, ~3-5 s), banner
+  (system-wide state like an outage), modal (blocking decision). Anything that
+  needs a user action must persist - never auto-dismiss it. Routing matrix in
+  `references/design-patterns.md`.
 - **Smart defaults** - pre-fill and pre-select the likely choice. Do not
   autoplay media. Defaults must be replaceable.
 - **One authoritative control per value** - two widgets representing the same
@@ -158,6 +196,15 @@ Forms are where users quit. Reduce effort and never punish.
   submit so an impatient user can't fire it twice - a double-submit creates
   duplicate records or double charges. (This is a microinteraction: trigger →
   rule → feedback; see the anatomy in `references/frameworks.md`.)
+- **Mark the minority.** If most fields are required, mark the *optional* ones;
+  if most are optional, mark the *required* ones - never both.
+- **Error summary for anything long or high-stakes.** On a failed submit, list
+  every error in a box at the top, each linking to its field, *and* show the
+  inline message per field; move focus to the summary. The single biggest
+  form-a11y upgrade beyond inline validation.
+- **One thing per page** for important flows - a single question per page beats a
+  wall of fields. See the gov-grade flow patterns (error summary, check-answers,
+  confirmation, task list, field-type inputs) in `references/design-patterns.md`.
 
 ## 7. Multi-step flows & progress trackers
 
@@ -189,6 +236,13 @@ three. For loading/long-job progress bars and spinners, see §12 (operator UIs).
   must read.
 - Strip competing nav during the flow, and add a step page-title beneath the
   tracker so position isn't signalled by the tracker alone.
+- **End with a check-answers page then a confirmation page** - let the user
+  review (with per-row "Change" links) before submit, and confirm what happened
+  - what's next after. Never bounce them silently back to a list.
+- **Non-linear, resumable work → a task-list**, not a linear tracker: a landing
+  page of sub-tasks tagged Completed / In progress / Cannot start yet. Use it
+  when sections can be done in any order across sessions. Details in
+  `references/design-patterns.md`.
 
 Server-rendered wizards (each step a fragment swap): see the **htmx** skill.
 
@@ -200,6 +254,10 @@ Server-rendered wizards (each step a fragment swap): see the **htmx** skill.
 - **User control & freedom** - always provide undo, cancel, and a clear exit.
 
 ## 9. Accessibility (non-negotiable)
+
+Target **WCAG 2.2 level AA** - the legal floor almost everywhere. The exact
+criteria and numbers live in `references/accessibility-wcag.md`; the load-bearing
+ones and the rules below are the day-to-day gate.
 
 - **Semantic HTML** - use the right element for the job; it gives you keyboard
   and screen-reader behavior for free.
@@ -214,8 +272,19 @@ Server-rendered wizards (each step a fragment swap): see the **htmx** skill.
   too: wrap a set (personal info, payment, consent) in `fieldset`/`legend` or
   an ARIA group. Same rule for a multi-step tracker's step list.
 - **Scalable, high-contrast fonts**; respect user zoom and reduced-motion.
+- **Hit the numbers**: text contrast ≥ 4.5:1 (≥ 3:1 for large); non-text contrast
+  (icons, focus rings, form borders, control boundaries) ≥ 3:1; interactive
+  target ≥ 24×24 px (WCAG 2.2); usable at 200% zoom and reflowing at 320 px with
+  no horizontal scroll (size in `rem`/`em`, not fixed px).
+- **Skip-to-content link** as the first focusable element on nav-heavy pages;
+  `autocomplete` tokens on personal-data fields; `<html lang>` set. A focused
+  element must never be fully hidden behind a sticky header (WCAG 2.2).
 - **Full keyboard navigation** - everything reachable and operable without a
   mouse. Never use `outline: none` without providing a visible replacement.
+- **Rich widgets have exact behavior contracts.** A menu, combobox, tabs,
+  dialog, or slider each has a required keyboard/focus/ARIA/dismiss behavior
+  (WAI-ARIA APG). Don't hand-roll it - use a native element or a headless
+  primitive; if you must build one, follow `references/component-behavior.md`.
 - **Keep informational text selectable** - ids, paths, hashes, error messages,
   and timestamps must stay copyable. If you disable selection for an interaction
   (e.g. shift-click row range-select), scope `user-select: none` to the
