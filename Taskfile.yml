@@ -235,3 +235,26 @@ tasks:
     desc: Start claude with local ai
     cmds:
       - ollama launch claude --model qwen2.5-coder:7b
+
+  gh-notifications-cleanup:
+    desc: 'Mark GitHub notifications done when their PR was merged/closed (`task gh-notifications-cleanup -- [owner|owner/repo]`)'
+    dir: '{{.USER_WORKING_DIR}}'
+    cmds:
+      - |
+        export GH_PAGER=cat
+        FILTER="{{.CLI_ARGS}}"
+        gh api "notifications" --paginate -q '.[] | select(.subject.type == "PullRequest") | [.id, .subject.url, .repository.full_name] | @tsv' | \
+        while IFS=$'\t' read -r id url repo; do
+          owner="${repo%%/*}"
+          if [ -n "$FILTER" ]; then
+            case "$FILTER" in
+              */*) [ "$repo" = "$FILTER" ] || continue ;;
+              *) [ "$owner" = "$FILTER" ] || continue ;;
+            esac
+          fi
+          state=$(gh api "$url" -q '.state' 2>/dev/null)
+          if [ "$state" = "closed" ]; then
+            gh api -X DELETE "/notifications/threads/$id"
+            echo "✓ done: $repo ($url)"
+          fi
+        done
