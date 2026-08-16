@@ -1,0 +1,13 @@
+{
+  "eval_id": 2,
+  "eval_name": "fitness-strategy",
+  "prompt": "Does anything in core/ structurally weaken how the trading strategy gets executed, or the returns it makes? I don't want a list of nitpicks, I want to know if the shape of the code is hurting us.",
+  "assertions": [
+    "Stated what the repo is for (strategy signals -> sim/live execution -> returns) and used it as the yardstick for ranking",
+    "Findings are ranked by cost-to-the-goal-if-wrong, not by code aesthetics, and each names the mechanism by which it costs money or correctness",
+    "Every claim cites path:line and the cited code actually says what the report claims (spot-checkable)",
+    "Says plainly where the structure is fine / the limit lies elsewhere instead of manufacturing a structural flaw to have something to report",
+    "Contains no pure style nitpicks (formatting, naming aesthetics) presented as strategy risk",
+    "Respects the repo's known invariants (signal causality / truncation invariance, sim-live parity) rather than proposing changes that would break them"
+  ]
+}

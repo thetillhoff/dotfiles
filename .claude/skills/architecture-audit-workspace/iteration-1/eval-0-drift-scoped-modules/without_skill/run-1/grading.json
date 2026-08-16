@@ -1,0 +1,47 @@
+{
+  "eval_id": 0,
+  "config": "without_skill",
+  "expectations": [
+    {
+      "text": "Ran scripts/preflight.sh (or equivalent explicit tool-availability check) before per-file analysis",
+      "passed": false,
+      "evidence": "report.md never mentions preflight.sh, Docker, or any tool-availability check. The report's own opening scope note describes reading every file plus grep cross-referencing -- no extractor/harvest tool run at all, no symbols.tsv or vulture.txt artifact produced."
+    },
+    {
+      "text": "Stated the repo's purpose (or the answer it assumed) before presenting findings",
+      "passed": false,
+      "evidence": "report.md opens directly with a 'Scope' line then jumps straight to '## Headline finding' (line 5). No statement of the repo's overall purpose/value chain appears anywhere before or interleaved with findings."
+    },
+    {
+      "text": "Ran the bundled Python harvest inside a container, never host python",
+      "passed": false,
+      "evidence": "No symbol-harvest artifact exists in without_skill/outputs/ (only report.md), and the report describes manual file reading + grep, not a parser-based harvest, in or out of a container."
+    },
+    {
+      "text": "Every drift finding cites path:line and contrasts the claimed doc/name against the actual body behaviour",
+      "passed": false,
+      "evidence": "Some dead-code findings have line ranges (e.g. 'BaselineConfig (config.py:598-640)'), but the dedicated 'Docstring/naming vs. behavior' section (lines 21-25) gives no line numbers at all for its 3 items: 'AutomatedTrader.rank_signals docstring...', 'TargetCalculator class docstring says...', and the BASELINE_CONFIG/PRESET_CONFIGS staleness claim. The 'StateManager's documented responsibility' finding (lines 39-41) likewise names the class but cites no line for the docstring it quotes."
+    },
+    {
+      "text": "Report sections follow the skill's Phase-6 order (fitness, boundary, unit, drift, doc check, diagrams)",
+      "passed": false,
+      "evidence": "Sections are: Scope, Headline finding, core/signals findings (Dead code / Docstring-naming / Structural / Minor design smell), core/automation findings, Recommendations. There is no Fitness section, no Boundary section, and no Doc-reality-check section distinct from inline mentions -- the skill's phase structure is absent."
+    },
+    {
+      "text": "Dead-symbol claims are confirmed (grep or framework-entry-point check) instead of taken from a tool or from absence of callers; the lazy __getattr__ re-export in core/automation/__init__.py is not misreported as dead",
+      "passed": true,
+      "evidence": "Report's opening scope note states every public symbol was 'cross-referenced against the rest of the repo (cli/, services/, tests/) with grep to confirm live vs. dead', and 'Checked, ruled out (not a problem)' explicitly lists 'core/automation/__init__.py's lazy PEP 562 export shim is intentional and correctly documented' -- correctly not reported as dead, despite no tool being used at all (so trivially not tool-sourced)."
+    },
+    {
+      "text": "No git write commands were run (no add/commit/checkout)",
+      "passed": true,
+      "evidence": "Report states 'No code was changed' and describes only read-only investigation; no git write artifacts found in the real repo attributable to this run."
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 5,
+    "total": 7,
+    "pass_rate": 0.2857
+  }
+}

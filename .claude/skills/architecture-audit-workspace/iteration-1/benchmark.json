@@ -1,0 +1,363 @@
+{
+  "metadata": {
+    "skill_name": "architecture-audit",
+    "skill_path": "<path/to/skill>",
+    "executor_model": "<model-name>",
+    "analyzer_model": "<model-name>",
+    "timestamp": "2026-07-27T14:28:24Z",
+    "evals_run": [
+      0,
+      1,
+      2
+    ],
+    "runs_per_configuration": 3
+  },
+  "runs": [
+    {
+      "eval_id": 0,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 7,
+        "failed": 0,
+        "total": 7,
+        "time_seconds": 651.9,
+        "tokens": 194523,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Ran scripts/preflight.sh (or equivalent explicit tool-availability check) before per-file analysis",
+          "passed": true,
+          "evidence": "Report's process notes state preflight was run and 'reported no gaps for this scope (Python via Docker fully usable for both harvest and vulture)'. Corroborated by outputs/symbols.tsv (exact harvest schema path/line/kind/vis/name/signature/doc) and outputs/vulture.txt (real vulture output with confidence scores) actually existing, consistent with a completed preflight + tool run."
+        },
+        {
+          "text": "Stated the repo's purpose (or the answer it assumed) before presenting findings",
+          "passed": true,
+          "evidence": "audit-output.md lines 15-26 state the exact Q1 purpose question it would have asked and the assumed answer, then a dedicated '## Purpose (confirmed)' section (lines 30-39) precedes '## Fitness findings' (line 41)."
+        },
+        {
+          "text": "Ran the bundled Python harvest inside a container, never host python",
+          "passed": true,
+          "evidence": "Process notes: 'All Python execution (symbol harvest, vulture) ran in python:3-slim via docker run, never on the host.' outputs/symbols.tsv contains the exact harvest TSV columns the skill's Phase-0 extractor produces; outputs/vulture.txt contains genuine vulture findings (e.g. 'core/signals/rules.py:14: unused method 'evaluate' (60% confidence)') matching real code."
+        },
+        {
+          "text": "Every drift finding cites path:line and contrasts the claimed doc/name against the actual body behaviour",
+          "passed": true,
+          "evidence": "The 'Drift lines' section (lines 214-245) is entirely 'path:line | verdict | note' format, e.g. 'core/signals/detector_filters.py:4 | DRIFT | Module docstring says dedup is by (date, signal_type); the function ... implements (timestamp, signal_type, price)' and 'core/automation/state.py:58-67 | DRIFT | Claims ... has_order_for_instrument_today ... never called'. Spot-checked core/signals/detector.py:28 (import get_technical_rules, unused), :176 (_filter_signals_by_multi_timeframe def), :251 (_get_technical_indicator_signals def), :893-895 (_deduplicate_signals wrapper) and :495-519/570-589 (base_confidence computed then discarded, confidence_score=0.0 hardcoded) -- all citations verified byte-for-byte accurate against the real repo."
+        },
+        {
+          "text": "Report sections follow the skill's Phase-6 order (fitness, boundary, unit, drift, doc check, diagrams)",
+          "passed": true,
+          "evidence": "Section order in audit-output.md: Purpose (confirmed) -> Fitness findings -> Boundary findings -> Unit findings (automation) -> Unit findings (signals) -> Drift lines -> Dead code -> Doc reality check -> Diagrams -> Task list. Matches the required fitness->boundary->unit->drift->doc-check->diagrams sequence (Dead code inserted adjacent to Drift, which is compatible)."
+        },
+        {
+          "text": "Dead-symbol claims are confirmed (grep or framework-entry-point check) instead of taken from a tool or from absence of callers; the lazy __getattr__ re-export in core/automation/__init__.py is not misreported as dead",
+          "passed": true,
+          "evidence": "'False positives from vulture' section (lines 272-286) explicitly lists __getattr__/__dir__ as vulture false positives ('Python protocol hooks') and cross-checks several other vulture hits via rg/callers (e.g. pg_state.py methods called from cli/livetrade_cycle.py, scheduler.py called from cli/auto_trade.py, config.py fields read via getattr). Also stated directly under 'Where the structure is fine': 'vulture flags __getattr__/__dir__ as unused -- false positive, they're a Python protocol hook, not application code.'"
+        },
+        {
+          "text": "No git write commands were run (no add/commit/checkout)",
+          "passed": true,
+          "evidence": "Process notes state 'No git write operations were run (read-only git log/git ls-files only).' Repo's current git status shows no stray changes attributable to this run (only pre-existing untracked .playwright-mcp/ and docs/)."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 1,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.8333,
+        "passed": 5,
+        "failed": 1,
+        "total": 6,
+        "time_seconds": 614.9,
+        "tokens": 145633,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Report contains a mermaid diagram at container level (services, datastores, queues/entry points), not ASCII art",
+          "passed": true,
+          "evidence": "spec__architecture__overview.md contains a 'flowchart TB' mermaid diagram covering frontend, backend, trading-operator, worker Jobs, ibkr-broker, ibkr-gateway, postgres, both CronJob pairs, the CR set, external systems (Yahoo Finance, IBKR, ghcr.io) and entry points (browser, MCP client, local CLI, git push)."
+        },
+        {
+          "text": "Chose an existing docs home (spec/ or DEVELOPMENT.md) as the persistence target instead of inventing a new tree, and named the intended path",
+          "passed": false,
+          "evidence": "Report names an intended path 'spec/architecture/overview.md' and explicitly says 'This is a new file, not an update to something existing' (Diagrams section). The repo's spec/ has no 'architecture/' subdirectory (confirmed: spec/ contains compute/, data.md, edge-evaluation.md, live-trading.md, README.md, signals/, ui/, user-journeys/ -- no architecture/), so this invents a new tree. It also had DEVELOPMENT.md's existing 'Distributed compute & live trading' section (confirmed present at DEVELOPMENT.md:329, the repo's own documented architecture-doc home per CLAUDE.md's docs conventions) available and did not choose it, unlike the without_skill run."
+        },
+        {
+          "text": "Ran the reverse check: lists doc-only nodes/edges (in docs but not in code) alongside code-only ones, because spec/ already documents architecture",
+          "passed": true,
+          "evidence": "'## Doc reality check' section explicitly lists 'doc -> code (stale)' items (GET /api/configs bare list, stale Simulations SPEC.md section, stale 'Read-only' header) alongside 'code -> doc (missing)' items (POST /api/promotions implemented but not in the SPEC.md endpoint table)."
+        },
+        {
+          "text": "Each dead-interface / dead-service finding names both ends of the edge with path:line evidence, and distinguishes 'no producer' from 'no consumer'",
+          "passed": true,
+          "evidence": "Finding 1 cites 'backend/routers/simulations.py:8, list_simulations' (verified: line 8 is exactly '@router.get(\"\")' above list_simulations) as producer, and names the consumer-side absence (api.ts has no simulations entry, no MCP tool) -- 'no consumer'. Finding 2 cites 'trading_mcp/api_client.py:33' (verified: get_latest_data_update defined at line 33) and shows the route it calls does not exist (backend/routers/data_updates.py has only GET \"\" and GET /{name}, verified) -- 'no producer', plus 'no consumer' since no @mcp.tool() wraps it."
+        },
+        {
+          "text": "Did not stage or commit any file, and did not write docs into the repo when told not to",
+          "passed": true,
+          "evidence": "Report states diagrams/docs were written only to the workspace output directory, not the repo, and names the repo path only as an 'intended' target. Real repo git status shows no new spec/architecture/ files or DEVELOPMENT.md changes."
+        },
+        {
+          "text": "Identified at least one real edge type beyond HTTP (postgres tables, k8s CRs, crons, or the IBKR socket)",
+          "passed": true,
+          "evidence": "Diagram and text describe postgres writes (live_orders/live_cycles/live_signals, live_positions/live_fills/live_portfolio), CRs (AutoTrade, StrategyConfig, GridSearch, TaskPlan, DataUpdate), CronJobs (livetrade-open/close, data-refresh-open/close), and the IBKR gateway socket ('FIX/TWS API')."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 505.1,
+        "tokens": 114388,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Stated what the repo is for (strategy signals -> sim/live execution -> returns) and used it as the yardstick for ranking",
+          "passed": true,
+          "evidence": "'## Purpose (confirmed under the assumption above)' section states the value flow (signals -> evaluation/portfolio.py + broker/automation -> asset_analysis eligibility -> orchestration at scale) and names truncation invariance + entry-point parity as the invariant. 'Fitness findings (ranked by cost to the goal)' explicitly uses this as the ranking criterion, with HIGH/LOW severity labels tied to the goal."
+        },
+        {
+          "text": "Findings are ranked by cost-to-the-goal-if-wrong, not by code aesthetics, and each names the mechanism by which it costs money or correctness",
+          "passed": true,
+          "evidence": "Finding 1 (HIGH) names the exact mechanism: the alpha-gate backtest path never pins entry_date for EW signals, so instruments can clear the tradeable-universe gate on a look-ahead-tainted backtest number that live execution cannot reproduce. Findings 2-4 are explicitly LOW and one is affirmative ('done right'), showing genuine cost-based ranking rather than a flat list."
+        },
+        {
+          "text": "Every claim cites path:line and the cited code actually says what the report claims (spot-checkable)",
+          "passed": true,
+          "evidence": "Spot-checked against the real repo: actionable_signals.py:410-415 (entry_date pinning for EW signals) verified verbatim; walk_forward.py:371 (evaluate() def, direct SignalDetector instantiation) verified; screening.py:46 (Stage 3 calls generate_signals_over_eval_dates) verified; screening.py:124-134 (_backtest_worker calling evaluator.evaluate) verified; screening.py:189 (passed = df.loc[...active_alpha > min_alpha...]) verified; portfolio.py:573-577,722-724,997-1001,1158 (entry_date fallback / causal_entry logic) all verified to match the quoted behavior exactly."
+        },
+        {
+          "text": "Says plainly where the structure is fine / the limit lies elsewhere instead of manufacturing a structural flaw to have something to report",
+          "passed": true,
+          "evidence": "Finding 2 is explicitly labeled 'LOW (affirmative) -- Where the same shape of divergence exists elsewhere, it's done right' (edge.py's documented walletless contract). The 'Bottom line' section states plainly: 'core/'s shape is mostly sound... Everything else examined on the execution-critical path (live trading, make evaluate, make recommend, portfolio simulation, cache signatures) held up.'"
+        },
+        {
+          "text": "Contains no pure style nitpicks (formatting, naming aesthetics) presented as strategy risk",
+          "passed": true,
+          "evidence": "All four fitness findings concern causal correctness (look-ahead risk in the alpha gate), documented-vs-undocumented divergence, config-default duplication risk, and file-size correlated-with-stakes -- none are formatting or naming-aesthetic complaints."
+        },
+        {
+          "text": "Respects the repo's known invariants (signal causality / truncation invariance, sim-live parity) rather than proposing changes that would break them",
+          "passed": true,
+          "evidence": "The core finding is itself a causality violation report (screening.py Stage 4 bypasses truncation-invariant entry_date pinning), and the proposed fix explicitly preserves parity: 'repoint _backtest_worker at evaluate_multi_instrument() ... or, if kept, give it seen_ew_keys pinning, and add a causality/parity test covering screening.py.'"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 0,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.2857,
+        "passed": 2,
+        "failed": 5,
+        "total": 7,
+        "time_seconds": 403.3,
+        "tokens": 176528,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Ran scripts/preflight.sh (or equivalent explicit tool-availability check) before per-file analysis",
+          "passed": false,
+          "evidence": "report.md never mentions preflight.sh, Docker, or any tool-availability check. The report's own opening scope note describes reading every file plus grep cross-referencing -- no extractor/harvest tool run at all, no symbols.tsv or vulture.txt artifact produced."
+        },
+        {
+          "text": "Stated the repo's purpose (or the answer it assumed) before presenting findings",
+          "passed": false,
+          "evidence": "report.md opens directly with a 'Scope' line then jumps straight to '## Headline finding' (line 5). No statement of the repo's overall purpose/value chain appears anywhere before or interleaved with findings."
+        },
+        {
+          "text": "Ran the bundled Python harvest inside a container, never host python",
+          "passed": false,
+          "evidence": "No symbol-harvest artifact exists in without_skill/outputs/ (only report.md), and the report describes manual file reading + grep, not a parser-based harvest, in or out of a container."
+        },
+        {
+          "text": "Every drift finding cites path:line and contrasts the claimed doc/name against the actual body behaviour",
+          "passed": false,
+          "evidence": "Some dead-code findings have line ranges (e.g. 'BaselineConfig (config.py:598-640)'), but the dedicated 'Docstring/naming vs. behavior' section (lines 21-25) gives no line numbers at all for its 3 items: 'AutomatedTrader.rank_signals docstring...', 'TargetCalculator class docstring says...', and the BASELINE_CONFIG/PRESET_CONFIGS staleness claim. The 'StateManager's documented responsibility' finding (lines 39-41) likewise names the class but cites no line for the docstring it quotes."
+        },
+        {
+          "text": "Report sections follow the skill's Phase-6 order (fitness, boundary, unit, drift, doc check, diagrams)",
+          "passed": false,
+          "evidence": "Sections are: Scope, Headline finding, core/signals findings (Dead code / Docstring-naming / Structural / Minor design smell), core/automation findings, Recommendations. There is no Fitness section, no Boundary section, and no Doc-reality-check section distinct from inline mentions -- the skill's phase structure is absent."
+        },
+        {
+          "text": "Dead-symbol claims are confirmed (grep or framework-entry-point check) instead of taken from a tool or from absence of callers; the lazy __getattr__ re-export in core/automation/__init__.py is not misreported as dead",
+          "passed": true,
+          "evidence": "Report's opening scope note states every public symbol was 'cross-referenced against the rest of the repo (cli/, services/, tests/) with grep to confirm live vs. dead', and 'Checked, ruled out (not a problem)' explicitly lists 'core/automation/__init__.py's lazy PEP 562 export shim is intentional and correctly documented' -- correctly not reported as dead, despite no tool being used at all (so trivially not tool-sourced)."
+        },
+        {
+          "text": "No git write commands were run (no add/commit/checkout)",
+          "passed": true,
+          "evidence": "Report states 'No code was changed' and describes only read-only investigation; no git write artifacts found in the real repo attributable to this run."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 1,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.6667,
+        "passed": 4,
+        "failed": 2,
+        "total": 6,
+        "time_seconds": 404.0,
+        "tokens": 118876,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Report contains a mermaid diagram at container level (services, datastores, queues/entry points), not ASCII art",
+          "passed": true,
+          "evidence": "architecture-diagram.md contains a 'flowchart TB' mermaid diagram with frontend/Caddy, backend, postgres, CronJobs (data-refresh, livetrade), trading-operator, ibkr-broker, ibkr-gateway, worker Jobs, trading_mcp and the legacy cli/auto_trade.py path, plus a dead-path legend using classDef styling."
+        },
+        {
+          "text": "Chose an existing docs home (spec/ or DEVELOPMENT.md) as the persistence target instead of inventing a new tree, and named the intended path",
+          "passed": true,
+          "evidence": "Report states the diagram 'belongs in the repo at DEVELOPMENT.md, under the existing \"Distributed compute & live trading\" section (currently prose-only)... per this repo's own docs convention'. Verified DEVELOPMENT.md:329 has exactly that pre-existing section. This uses an existing, already-documented home rather than inventing a new file/tree."
+        },
+        {
+          "text": "Ran the reverse check: lists doc-only nodes/edges (in docs but not in code) alongside code-only ones, because spec/ already documents architecture",
+          "passed": false,
+          "evidence": "No systematic doc-vs-code reverse check is performed. The report only mentions in passing that 'spec/README.md already carries a higher-altitude flowchart... this diagram sits one level below it' (Diagrams section) -- it does not enumerate doc-only nodes/edges vs code-only ones as a distinct comparison."
+        },
+        {
+          "text": "Each dead-interface / dead-service finding names both ends of the edge with path:line evidence, and distinguishes 'no producer' from 'no consumer'",
+          "passed": false,
+          "evidence": "Findings name files and functions (e.g. 'backend/routers/simulations.py defines list_simulations()... not services/frontend/src/lib/api.ts (no simulations entry)') but give no specific line numbers for either end in any of the boundary findings. The substance (producer exists, no consumer) is present, but the assertion's path:line requirement is not met."
+        },
+        {
+          "text": "Did not stage or commit any file, and did not write docs into the repo when told not to",
+          "passed": true,
+          "evidence": "Report states 'Nothing was written into the trading repo' and the diagram file was saved only to outputs/architecture-diagram.md, not the repo. Real repo git status confirms no DEVELOPMENT.md changes."
+        },
+        {
+          "text": "Identified at least one real edge type beyond HTTP (postgres tables, k8s CRs, crons, or the IBKR socket)",
+          "passed": true,
+          "evidence": "Report and diagram describe Postgres writes (prices, results, live_orders/fills/trade_log tables), AutoTrade/StrategyConfig CRs, CronJobs (data-refresh-open/close, livetrade-open/close), and the IBKR gateway TWS/paper API."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.8333,
+        "passed": 5,
+        "failed": 1,
+        "total": 6,
+        "time_seconds": 372.3,
+        "tokens": 110987,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Stated what the repo is for (strategy signals -> sim/live execution -> returns) and used it as the yardstick for ranking",
+          "passed": false,
+          "evidence": "report.md opens directly with the verdict ('Yes. One structural gap dominates everything else found...') and Finding 1, with no preceding dedicated statement of the repo's purpose/value chain. The goal is referenced implicitly throughout but never stated as an explicit yardstick before findings, unlike the with_skill run's dedicated Purpose section."
+        },
+        {
+          "text": "Findings are ranked by cost-to-the-goal-if-wrong, not by code aesthetics, and each names the mechanism by which it costs money or correctness",
+          "passed": true,
+          "evidence": "'Finding 1 (headline)' names the exact mechanism (live OrderBuilder sizes off a flat position_size_pct x NetLiquidation with none of the 26 sizing/risk fields the validated backtest depends on, so live capital deployment cannot track the validated strategy) and 'Finding 2 (secondary, systemic)' is explicitly labeled lower priority, showing genuine cost-ordering rather than a flat aesthetic list."
+        },
+        {
+          "text": "Every claim cites path:line and the cited code actually says what the report claims (spot-checkable)",
+          "passed": true,
+          "evidence": "Spot-checked: core/broker/order_builder.py line 111 'position_size_usd = available_capital * self.position_size_pct' verified verbatim; cli/auto_trade.py:244 comment 'all sizing/risk params come from the strategy config' verified verbatim (and is indeed false, only 2 of 26 fields passed); core/signals/detector.py lines 53-62 getattr fallback literals (rsi_period=7, rsi_oversold=25, rsi_overbought=75, macd_signal=12) verified verbatim against real defaults in core/shared/defaults.py (14, 30, 70, 9) -- the drift claim is accurate."
+        },
+        {
+          "text": "Says plainly where the structure is fine / the limit lies elsewhere instead of manufacturing a structural flaw to have something to report",
+          "passed": true,
+          "evidence": "'## Checked and ruled out' section explicitly rules out two candidate issues: the available_capital vs total_portfolio_value basis mismatch ('it isn't'), and the absence of trade-cost config from core/broker ('that's correct... the live broker charges real costs natively'). This is narrower than a whole-repo 'structure is fine' verdict but does show the discipline of stating a checked-and-ruled-out negative rather than inventing more flaws."
+        },
+        {
+          "text": "Contains no pure style nitpicks (formatting, naming aesthetics) presented as strategy risk",
+          "passed": true,
+          "evidence": "Both findings (sizing-engine divergence, getattr-default drift risk) are substantive correctness/risk issues, not style or naming complaints."
+        },
+        {
+          "text": "Respects the repo's known invariants (signal causality / truncation invariance, sim-live parity) rather than proposing changes that would break them",
+          "passed": true,
+          "evidence": "The report explicitly models its fix proposal on the project's own signal-causality pattern: 'the same way core/signals/detector.py is already shared... Add a parity test analogous to the existing signal-parity ones' -- proposing to extend, not violate, the existing invariant-preserving pattern."
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 0.9444,
+        "stddev": 0.0962,
+        "min": 0.8333,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 590.6333,
+        "stddev": 76.3493,
+        "min": 505.1,
+        "max": 651.9
+      },
+      "tokens": {
+        "mean": 151514.6667,
+        "stddev": 40389.9747,
+        "min": 114388,
+        "max": 194523
+      }
+    },
+    "without_skill": {
+      "pass_rate": {
+        "mean": 0.5952,
+        "stddev": 0.2807,
+        "min": 0.2857,
+        "max": 0.8333
+      },
+      "time_seconds": {
+        "mean": 393.2,
+        "stddev": 18.1033,
+        "min": 372.3,
+        "max": 404.0
+      },
+      "tokens": {
+        "mean": 135463.6667,
+        "stddev": 35780.8424,
+        "min": 110987,
+        "max": 176528
+      }
+    },
+    "delta": {
+      "pass_rate": "+0.35",
+      "time_seconds": "+197.4",
+      "tokens": "+16051"
+    }
+  },
+  "notes": []
+}

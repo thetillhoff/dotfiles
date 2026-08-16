@@ -1,0 +1,14 @@
+{
+  "eval_id": 0,
+  "eval_name": "drift-scoped-modules",
+  "prompt": "Audit the architecture of core/automation and core/signals: do the class/method names and docstrings actually match what the code does, and is anything in there dead? Point out structural problems.",
+  "assertions": [
+    "Ran scripts/preflight.sh (or equivalent explicit tool-availability check) before per-file analysis",
+    "Stated the repo's purpose (or the answer it assumed) before presenting findings",
+    "Ran the bundled Python harvest inside a container, never host python",
+    "Every drift finding cites path:line and contrasts the claimed doc/name against the actual body behaviour",
+    "Report sections follow the skill's Phase-6 order (fitness, boundary, unit, drift, doc check, diagrams)",
+    "Dead-symbol claims are confirmed (grep or framework-entry-point check) instead of taken from a tool or from absence of callers; the lazy __getattr__ re-export in core/automation/__init__.py is not misreported as dead",
+    "No git write commands were run (no add/commit/checkout)"
+  ]
+}

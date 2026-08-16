@@ -1,0 +1,47 @@
+{
+  "eval_id": 0,
+  "config": "with_skill",
+  "expectations": [
+    {
+      "text": "Ran scripts/preflight.sh (or equivalent explicit tool-availability check) before per-file analysis",
+      "passed": true,
+      "evidence": "Report's process notes state preflight was run and 'reported no gaps for this scope (Python via Docker fully usable for both harvest and vulture)'. Corroborated by outputs/symbols.tsv (exact harvest schema path/line/kind/vis/name/signature/doc) and outputs/vulture.txt (real vulture output with confidence scores) actually existing, consistent with a completed preflight + tool run."
+    },
+    {
+      "text": "Stated the repo's purpose (or the answer it assumed) before presenting findings",
+      "passed": true,
+      "evidence": "audit-output.md lines 15-26 state the exact Q1 purpose question it would have asked and the assumed answer, then a dedicated '## Purpose (confirmed)' section (lines 30-39) precedes '## Fitness findings' (line 41)."
+    },
+    {
+      "text": "Ran the bundled Python harvest inside a container, never host python",
+      "passed": true,
+      "evidence": "Process notes: 'All Python execution (symbol harvest, vulture) ran in python:3-slim via docker run, never on the host.' outputs/symbols.tsv contains the exact harvest TSV columns the skill's Phase-0 extractor produces; outputs/vulture.txt contains genuine vulture findings (e.g. 'core/signals/rules.py:14: unused method 'evaluate' (60% confidence)') matching real code."
+    },
+    {
+      "text": "Every drift finding cites path:line and contrasts the claimed doc/name against the actual body behaviour",
+      "passed": true,
+      "evidence": "The 'Drift lines' section (lines 214-245) is entirely 'path:line | verdict | note' format, e.g. 'core/signals/detector_filters.py:4 | DRIFT | Module docstring says dedup is by (date, signal_type); the function ... implements (timestamp, signal_type, price)' and 'core/automation/state.py:58-67 | DRIFT | Claims ... has_order_for_instrument_today ... never called'. Spot-checked core/signals/detector.py:28 (import get_technical_rules, unused), :176 (_filter_signals_by_multi_timeframe def), :251 (_get_technical_indicator_signals def), :893-895 (_deduplicate_signals wrapper) and :495-519/570-589 (base_confidence computed then discarded, confidence_score=0.0 hardcoded) -- all citations verified byte-for-byte accurate against the real repo."
+    },
+    {
+      "text": "Report sections follow the skill's Phase-6 order (fitness, boundary, unit, drift, doc check, diagrams)",
+      "passed": true,
+      "evidence": "Section order in audit-output.md: Purpose (confirmed) -> Fitness findings -> Boundary findings -> Unit findings (automation) -> Unit findings (signals) -> Drift lines -> Dead code -> Doc reality check -> Diagrams -> Task list. Matches the required fitness->boundary->unit->drift->doc-check->diagrams sequence (Dead code inserted adjacent to Drift, which is compatible)."
+    },
+    {
+      "text": "Dead-symbol claims are confirmed (grep or framework-entry-point check) instead of taken from a tool or from absence of callers; the lazy __getattr__ re-export in core/automation/__init__.py is not misreported as dead",
+      "passed": true,
+      "evidence": "'False positives from vulture' section (lines 272-286) explicitly lists __getattr__/__dir__ as vulture false positives ('Python protocol hooks') and cross-checks several other vulture hits via rg/callers (e.g. pg_state.py methods called from cli/livetrade_cycle.py, scheduler.py called from cli/auto_trade.py, config.py fields read via getattr). Also stated directly under 'Where the structure is fine': 'vulture flags __getattr__/__dir__ as unused -- false positive, they're a Python protocol hook, not application code.'"
+    },
+    {
+      "text": "No git write commands were run (no add/commit/checkout)",
+      "passed": true,
+      "evidence": "Process notes state 'No git write operations were run (read-only git log/git ls-files only).' Repo's current git status shows no stray changes attributable to this run (only pre-existing untracked .playwright-mcp/ and docs/)."
+    }
+  ],
+  "summary": {
+    "passed": 7,
+    "failed": 0,
+    "total": 7,
+    "pass_rate": 1.0
+  }
+}

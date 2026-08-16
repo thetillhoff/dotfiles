@@ -259,6 +259,52 @@ git tag vX.Y.Z && git push origin vX.Y.Z
 
 When `main` is protected, merge the PR with a **merge commit** (not squash/rebase) if a tag was already created on the pre-merge SHA, so that SHA stays reachable from `main`. Better: don't create the tag until after the merge.
 
+### Never automate a CHANGELOG commit onto a check-protected `main`
+
+**`GITHUB_TOKEN` triggers no workflows.** A commit, branch, tag or PR it creates gets no CI run. So on a `main` with a required status check, no bot-authored commit is mergeable — the check can never report, and `enforce_admins: true` removes the override. This kills every variant: pushing to `main`, appending to the `renovate/**` branch before automerge, opening a PR for a human to merge. Only a PAT or GitHub App token changes it. (A tag it pushes also does not fire `on: push: tags:`, which is why an auto-release workflow must call the release workflow via `workflow_call`.)
+
+A "bump the version and write the CHANGELOG entry" job therefore cannot exist there. The credential-free pattern instead - as in thetillhoff/webscan and thetillhoff/temingo:
+
+- The release workflow takes an optional `release_body` input, and skips the CHANGELOG-reading action when it is set:
+
+  ```yaml
+  outputs:
+    RELEASE_BODY: ${{ inputs.release_body != '' && inputs.release_body || steps.release-prerequisites.outputs.RELEASE_BODY }}
+  steps:
+    - id: release-prerequisites
+      if: ${{ inputs.release_body == '' }}
+  ```
+
+  `inputs.<x>` is null outside `workflow_call`, and null compares equal to `''`, so the `push: tags` path keeps reading the CHANGELOG.
+
+- The auto-release caller passes the fixed text the generated entry would have carried (`release_body: "Updated dependencies."`) and writes no commit.
+
+Cost: `CHANGELOG.md` skips the version numbers of dependency-only patches. Worth it only because that entry was fixed text — never trade away a real entry this way.
+
+### Renovate `automergeType: branch` needs CI `on: push`
+
+Branch automerge opens **no PR**, so a workflow triggered on `pull_request` alone never runs on `renovate/**` — renovate has nothing to wait for and fast-forwards `main` from an unbuilt SHA (or gives up and opens a PR a human merges, which then breaks any `if: github.actor == 'renovate[bot]'` follow-up). Add the branches to the build workflow and keep `ignoreTests: false`:
+
+```yaml
+on:
+  push:
+    branches:
+      - renovate/**
+  pull_request:
+```
+
+This is also what lets a protected `main` accept the fast-forward: the SHA already carries the required check.
+
+### Never re-push a deleted release tag (Go modules especially)
+
+A release pipeline that deletes its tag on failure (`cleanup-on-failure`) does **not** free the version number. `proxy.golang.org` caches the first SHA it saw for `vX.Y.Z` permanently, so re-tagging that version at a different commit gives every `go install` a checksum mismatch that no fix upstream clears. Same hazard, milder, for anything else that pins by tag.
+
+Consequences for pipeline design:
+
+- Verify **before** tagging — build the pending version and check its `--version` output in the tag-creating workflow, so a bad tag never exists (`verify-build` in webscan/temingo `tag-on-main`).
+- Keep tag deletion only for the window after tagging and before publishing; treat it as a fallback, not a retry mechanism.
+- After a cleanup fires: fix the cause, release the **next** patch number.
+
 ### Pipeline Verification After Tag
 
 If `.github/workflows/` has tag-triggered workflows:

@@ -412,6 +412,10 @@ Lock these in early; retroactive consistency is expensive:
   size.
 - **Two font families**: proportional for prose and UI labels; monospace for
   paths, hashes, IDs, and numeric data that changes (tabular figures).
+- **Fixed decimal places within a column, not just tabular-nums.** `tabular-nums`
+  equalizes digit width but not decimal count - `$196.32` next to `$194` still
+  misaligns because one string is shorter. Format every value in a numeric
+  column to the same fixed number of decimals (`$194.00`, not `$194`).
 - **Concentric border-radius** on nested rounded elements: outer = inner +
   padding. Skip this and inner cards look bloated.
 - **Two state palettes**: one for domain states (analysed / new / failed /

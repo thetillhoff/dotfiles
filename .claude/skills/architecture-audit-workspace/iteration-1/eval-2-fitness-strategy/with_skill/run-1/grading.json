@@ -1,0 +1,42 @@
+{
+  "eval_id": 2,
+  "config": "with_skill",
+  "expectations": [
+    {
+      "text": "Stated what the repo is for (strategy signals -> sim/live execution -> returns) and used it as the yardstick for ranking",
+      "passed": true,
+      "evidence": "'## Purpose (confirmed under the assumption above)' section states the value flow (signals -> evaluation/portfolio.py + broker/automation -> asset_analysis eligibility -> orchestration at scale) and names truncation invariance + entry-point parity as the invariant. 'Fitness findings (ranked by cost to the goal)' explicitly uses this as the ranking criterion, with HIGH/LOW severity labels tied to the goal."
+    },
+    {
+      "text": "Findings are ranked by cost-to-the-goal-if-wrong, not by code aesthetics, and each names the mechanism by which it costs money or correctness",
+      "passed": true,
+      "evidence": "Finding 1 (HIGH) names the exact mechanism: the alpha-gate backtest path never pins entry_date for EW signals, so instruments can clear the tradeable-universe gate on a look-ahead-tainted backtest number that live execution cannot reproduce. Findings 2-4 are explicitly LOW and one is affirmative ('done right'), showing genuine cost-based ranking rather than a flat list."
+    },
+    {
+      "text": "Every claim cites path:line and the cited code actually says what the report claims (spot-checkable)",
+      "passed": true,
+      "evidence": "Spot-checked against the real repo: actionable_signals.py:410-415 (entry_date pinning for EW signals) verified verbatim; walk_forward.py:371 (evaluate() def, direct SignalDetector instantiation) verified; screening.py:46 (Stage 3 calls generate_signals_over_eval_dates) verified; screening.py:124-134 (_backtest_worker calling evaluator.evaluate) verified; screening.py:189 (passed = df.loc[...active_alpha > min_alpha...]) verified; portfolio.py:573-577,722-724,997-1001,1158 (entry_date fallback / causal_entry logic) all verified to match the quoted behavior exactly."
+    },
+    {
+      "text": "Says plainly where the structure is fine / the limit lies elsewhere instead of manufacturing a structural flaw to have something to report",
+      "passed": true,
+      "evidence": "Finding 2 is explicitly labeled 'LOW (affirmative) -- Where the same shape of divergence exists elsewhere, it's done right' (edge.py's documented walletless contract). The 'Bottom line' section states plainly: 'core/'s shape is mostly sound... Everything else examined on the execution-critical path (live trading, make evaluate, make recommend, portfolio simulation, cache signatures) held up.'"
+    },
+    {
+      "text": "Contains no pure style nitpicks (formatting, naming aesthetics) presented as strategy risk",
+      "passed": true,
+      "evidence": "All four fitness findings concern causal correctness (look-ahead risk in the alpha gate), documented-vs-undocumented divergence, config-default duplication risk, and file-size correlated-with-stakes -- none are formatting or naming-aesthetic complaints."
+    },
+    {
+      "text": "Respects the repo's known invariants (signal causality / truncation invariance, sim-live parity) rather than proposing changes that would break them",
+      "passed": true,
+      "evidence": "The core finding is itself a causality violation report (screening.py Stage 4 bypasses truncation-invariant entry_date pinning), and the proposed fix explicitly preserves parity: 'repoint _backtest_worker at evaluate_multi_instrument() ... or, if kept, give it seen_ew_keys pinning, and add a causality/parity test covering screening.py.'"
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1.0
+  }
+}

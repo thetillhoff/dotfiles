@@ -1,0 +1,165 @@
+path	line	kind	vis	name	signature	doc
+core/automation/__init__.py	22	func	priv	__getattr__	(name:str)	-
+core/automation/__init__.py	28	func	priv	__dir__	()	-
+core/automation/pg_state.py	14	func	priv	_register_numpy_adapters	()->None	Teach psycopg2 to quote numpy scalars as plain SQL numbers.
+core/automation/pg_state.py	36	class	pub	PgStateManager	()	Postgres-backed StateManager — writes are immediate; save() is a no-op.
+core/automation/pg_state.py	39	method	priv	PgStateManager.__init__	(dsn:str)	-
+core/automation/pg_state.py	42	method	priv	PgStateManager._conn	()	-
+core/automation/pg_state.py	46	method	priv	PgStateManager._today	@staticmethod (date:Optional[datetime])->str	-
+core/automation/pg_state.py	49	method	pub	PgStateManager.add_order	(instrument:str, parent_order_id:int, stop_order_id:int, target_order_id:int, entry_price:float, stop_loss:float, target_price:float, quantity:int, certainty:float, status:OrderStatus=OrderStatus.PEND	-
+core/automation/pg_state.py	105	method	pub	PgStateManager.has_order_for_instrument_today	(instrument:str, date:Optional[datetime]=None)->bool	-
+core/automation/pg_state.py	119	method	priv	PgStateManager._row_to_record	@staticmethod (r)->OrderRecord	-
+core/automation/pg_state.py	138	method	pub	PgStateManager.load_open_orders	()->List[OrderRecord]	-
+core/automation/pg_state.py	148	method	pub	PgStateManager.load_active_orders	()->List[OrderRecord]	Non-terminal orders (pending + filled) that reconcile must still track — a filled bracket stays 'active' until its position closes (stop/target hit), which is when we stamp the trade log's outcome + r
+core/automation/pg_state.py	161	method	pub	PgStateManager.set_status	(parent_order_id:int, status:OrderStatus, row_id:Optional[int]=None)->None	Flip one order's status. Prefer `row_id` (the table PK): parent_order_id is a session-scoped IBKR id that gets reused after a gateway restart, so keying on it can update SEVERAL rows — including an un
+core/automation/pg_state.py	181	method	pub	PgStateManager.cleanup_old_records	(keep_days:int=30)->None	-
+core/automation/pg_state.py	197	method	pub	PgStateManager.state_file	@property ()->Path	Compat shim — AutomatedTrader uses .parent to derive a log CSV path.
+core/automation/pg_state.py	202	method	pub	PgStateManager.orders	@property ()->Dict[str, List[OrderRecord]]	Compat shim — returns open orders grouped by trade_date string.
+core/automation/pg_state.py	209	method	pub	PgStateManager.save	()->None	No-op — writes are immediate.
+core/automation/pg_state.py	212	method	pub	PgStateManager.record_fill	(order_id:int, instrument:str, fill_price:float, quantity:int, exec_id:str=None)->None	Record an execution. Idempotent on exec_id: re-recording the same IB fill each cycle is a no-op, so we never double-count a fill.
+core/automation/pg_state.py	227	method	pub	PgStateManager.load_unstamped_closures	()->List[dict]	Terminal orders whose trade-log row still has no outcome, with their PERSISTED fills.
+core/automation/pg_state.py	270	method	pub	PgStateManager.upsert_position	(instrument:str, quantity:int, avg_cost:float, unrealized_pnl:float, market_value:float=0.0)->None	-
+core/automation/pg_state.py	292	method	pub	PgStateManager.prune_positions	(instruments:List[str])->None	Delete live_positions rows for instruments no longer held (closed positions).
+core/automation/pg_state.py	305	method	pub	PgStateManager.append_signal	(date:str, instrument:str, certainty:float, threshold:float, rsi:Optional[float], ema_short:Optional[float], ema_long:Optional[float], macd:Optional[float], components:Optional[Dict[str, float]]=None)	-
+core/automation/pg_state.py	329	method	pub	PgStateManager.update_signal_traded	(date:str, instrument:str)->None	-
+core/automation/pg_state.py	339	method	pub	PgStateManager.set_signal_decisions	(date:str, decisions:Dict[str, str])->None	Record WHY each scored instrument was or wasn't traded.
+core/automation/pg_state.py	358	method	pub	PgStateManager.append_portfolio_snapshot	(portfolio_value:float, currency:str=None)->None	-
+core/automation/pg_state.py	367	method	pub	PgStateManager.append_cycle_heartbeat	(trigger:str, dry_run:bool, status:str, instruments_evaluated:int=None, instrument:str=None, reason:str=None)->None	Record one row per livetrade cycle, on EVERY outcome (disabled, skipped-trigger, error, no_signal, skipped, dry_run, placed). Lets the UI show 'ran, evaluated N, no trade' distinctly from 'cycle faile
+core/automation/pg_state.py	390	method	pub	PgStateManager.append_trade_log	(instrument:str, intent:str, quantity:int, entry_price:float, stop_loss:float, target_price:float, certainty:float, portfolio_value:float, parent_order_id:Optional[int]=None)->None	-
+core/automation/pg_state.py	417	method	pub	PgStateManager.close_trade_log	(parent_order_id:int, outcome:str, final_pnl:Optional[float], instrument:Optional[str]=None)->None	Stamp a trade log row's outcome + realized P&L when its position closes. Only stamps rows not already closed (outcome IS NULL) so a re-run is a no-op. final_pnl stays NULL when the closing fills aren'
+core/automation/reconcile.py	16	func	priv	_is_long	(side:Optional[str], intent:Optional[str]=None)->bool	`side` is the OPENING broker action (BUY/SELL); `intent` the strategy's own word for it.
+core/automation/reconcile.py	23	func	pub	classify_outcome	(*, side:Optional[str], intent:Optional[str], entry_fill:Optional[float], target_fill:Optional[float], stop_fill:Optional[float], target_price:Optional[float], stop_loss:Optional[float], never_filled:	Which exit leg closed this trade, and whether it ever stood a chance.
+core/automation/reconcile.py	60	func	priv	_realized_pnl	(side:str, entry_price:float, exit_price:float, quantity:int)->float	Realized P&L of a closed bracket. `side` is the OPENING action: BUY = long (profit when exit > entry), SELL = short (profit when exit < entry). Long/short is symmetric around entry.
+core/automation/reconcile.py	69	func	pub	reconcile	(ibkr_client, state_manager)->None	Sync pending/filled order records against live IBKR state.
+core/automation/reconcile.py	195	func	priv	_stamp_unstamped_closures	(state_manager)->None	Heal trade-log rows that reached a terminal status without an outcome.
+core/automation/reconcile.py	241	func	priv	_record_close_outcome	(state_manager, record, fills_by_order:Dict[int, Any], never_filled:bool=False)->None	On a bracket close, stamp the trade log with outcome (target_hit/stop_hit) and realized P&L. Which child filled tells us the outcome; entry+exit fills give the P&L. Fills are current-session only, so
+core/automation/scheduler.py	18	class	pub	Scheduler	()	Manages timing for automated trading.
+core/automation/scheduler.py	28	method	priv	Scheduler.__init__	(market_close_hour:int=16, market_close_minute:int=0, wait_after_close_minutes:int=30, market_open_hour:int=9, market_open_minute:int=30, wait_after_open_minutes:int=2, timezone:str='America/New_York'	Initialize scheduler.
+core/automation/scheduler.py	65	method	priv	Scheduler._load_last_processed_date	()->Optional[datetime]	Load last-processed date from state file (YYYY-MM-DD per line, last line wins).
+core/automation/scheduler.py	77	method	priv	Scheduler._save_last_processed_date	(date:datetime)->None	Persist last-processed date to state file (atomic write-then-rename).
+core/automation/scheduler.py	87	method	pub	Scheduler.get_current_time	()->datetime	Get current time in market timezone.
+core/automation/scheduler.py	91	method	pub	Scheduler.get_market_close_time	(date:Optional[datetime]=None)->datetime	Get market close time for a specific date.
+core/automation/scheduler.py	112	method	pub	Scheduler.get_data_refresh_time	(date:Optional[datetime]=None)->datetime	Get time when data should be refreshed (close + buffer).
+core/automation/scheduler.py	125	method	pub	Scheduler.get_market_open_time	(date:Optional[datetime]=None)->datetime	Get market open time for a specific date.
+core/automation/scheduler.py	136	method	pub	Scheduler.get_open_data_refresh_time	(date:Optional[datetime]=None)->datetime	Get time when open data should be ready (open + buffer).
+core/automation/scheduler.py	140	method	pub	Scheduler.should_process_now	()->bool	Check if we should process data now.
+core/automation/scheduler.py	162	method	pub	Scheduler.is_weekend	(date:Optional[datetime]=None)->bool	Check if date is a weekend.
+core/automation/scheduler.py	176	method	pub	Scheduler.is_market_holiday	(date:Optional[datetime]=None)->bool	Check if date is a US market holiday.
+core/automation/scheduler.py	213	method	pub	Scheduler.is_trading_day	(date:Optional[datetime]=None)->bool	Check if date is a trading day (not weekend or holiday).
+core/automation/scheduler.py	228	method	pub	Scheduler.get_next_trading_day	(from_date:Optional[datetime]=None)->datetime	Get the next trading day after from_date.
+core/automation/scheduler.py	247	method	pub	Scheduler.seconds_until_next_refresh	()->int	Calculate seconds until next data refresh time.
+core/automation/scheduler.py	271	method	pub	Scheduler.wait_for_market_close	()	Block until it's time to process data (after market close + buffer).
+core/automation/scheduler.py	297	method	pub	Scheduler.wait_for_market_open	()	Block until it's time to process data (after market open + buffer).
+core/automation/scheduler.py	303	method	priv	Scheduler._should_fire	()->bool	-
+core/automation/scheduler.py	327	method	pub	Scheduler.mark_processed	(date:Optional[datetime]=None)	Mark a date as processed to avoid duplicate processing.
+core/automation/scheduler.py	343	method	pub	Scheduler.sleep_until_next_day	(use_open:bool=False)	Sleep until next trading day's refresh time.
+core/automation/state.py	18	class	pub	OrderStatus	(Enum)	Order status enum.
+core/automation/state.py	27	class	pub	OrderRecord	@dataclass ()	Record of a placed order.
+core/automation/state.py	48	method	pub	OrderRecord.to_dict	()->Dict[str, Any]	Convert to dictionary.
+core/automation/state.py	53	method	pub	OrderRecord.from_dict	@classmethod (data:Dict[str, Any])->'OrderRecord'	Create from dictionary.
+core/automation/state.py	58	class	pub	StateManager	()	Manages state of placed orders.
+core/automation/state.py	69	method	priv	StateManager.__init__	(state_file:Path)	Initialize state manager.
+core/automation/state.py	80	method	priv	StateManager._load_state	()	Load state from JSON file.
+core/automation/state.py	99	method	pub	StateManager.save	()	Public alias for _save_state; use when bulk-mutating records externally.
+core/automation/state.py	103	method	priv	StateManager._save_state	()	Save state to JSON file atomically (write-then-rename).
+core/automation/state.py	121	method	pub	StateManager.has_order_for_instrument_today	(instrument:str, date:Optional[datetime]=None)->bool	Check if we've already placed an order for this instrument today.
+core/automation/state.py	146	method	pub	StateManager.get_orders_for_date	(date:Optional[datetime]=None)->List[OrderRecord]	Get all orders for a specific date.
+core/automation/state.py	162	method	pub	StateManager.add_order	(instrument:str, parent_order_id:int, stop_order_id:int, target_order_id:int, entry_price:float, stop_loss:float, target_price:float, quantity:int, certainty:float, status:OrderStatus=OrderStatus.PEND	Add a new order to the state.
+core/automation/state.py	224	method	pub	StateManager.update_order_status	(order_id:int, new_status:OrderStatus)->bool	Update status of an order by ID.
+core/automation/state.py	246	method	pub	StateManager.cleanup_old_records	(keep_days:int=30)	Remove records older than keep_days.
+core/automation/state.py	265	method	pub	StateManager.get_all_instruments_with_orders_today	(date:Optional[datetime]=None)->List[str]	Get list of all instruments that have orders today.
+core/automation/trader.py	35	func	priv	_float_or_none	(v)->float | None	-
+core/automation/trader.py	42	func	priv	_execution_signal_for_instrument	(instrument:str, config:Any, lookback_days:int, staleness_max_days:int, target_date:datetime, price_data:Optional[pd.Series]=None)->Optional[Tuple[TradingSignal, datetime, str]]	Run execution-day signal path for one instrument (read-only config; safe across processes). Shared by get_latest_signal_for_instrument and parallel analyze_all_instruments.
+core/automation/trader.py	92	class	pub	AutomatedTrader	()	Automated trading orchestrator.
+core/automation/trader.py	104	method	priv	AutomatedTrader.__init__	(ibkr_client:IBKRClient, order_builder:OrderBuilder, state_manager:StateManager, strategy_config_path:Path, lookback_days:int=365, staleness_max_days:int=3, analysis_workers:Optional[int]=None)	Initialize automated trader.
+core/automation/trader.py	143	method	pub	AutomatedTrader.reconcile_with_broker	()->None	Sync local state against broker truth before this cycle analyses anything.
+core/automation/trader.py	152	method	priv	AutomatedTrader._log_trade	(order_params, signal:TradingSignal, portfolio_value:float)->None	Append one row to the trade log CSV for post-hoc parity analysis.
+core/automation/trader.py	177	method	pub	AutomatedTrader.get_latest_signal_for_instrument	(instrument:str, target_date:Optional[datetime]=None)->Optional[Tuple[TradingSignal, datetime, str]]	Get the most recent signal for an instrument.
+core/automation/trader.py	206	method	pub	AutomatedTrader.analyze_all_instruments	(price_provider:Optional[Callable[[str], pd.Series]]=None)->List[Tuple[TradingSignal, datetime, str]]	Analyze all instruments from strategy config and collect signals.
+core/automation/trader.py	288	method	pub	AutomatedTrader.rank_signals	(signals:List[Tuple[TradingSignal, datetime, str]])->List[Tuple[TradingSignal, datetime, str]]	Rank signals by quality, best first.
+core/automation/trader.py	322	method	pub	AutomatedTrader.should_skip_signal	(signal:TradingSignal)->Tuple[bool, str]	Check if signal should be skipped based on IBKR state.
+core/automation/trader.py	367	method	priv	AutomatedTrader._long_position_qty_for_instrument	@staticmethod (positions, instrument:str)->float	Total long quantity for instrument from IBKR positions list.
+core/automation/trader.py	371	method	pub	AutomatedTrader.analyze_and_trade	(dry_run:bool=False, price_provider:Optional[Callable[[str], pd.Series]]=None)->Dict[str, Any]	Main trading logic: analyze signals and place order if appropriate.
+core/signals/actionable_signals.py	28	class	pub	ActionableSignalsResult	@dataclass ()	-
+core/signals/actionable_signals.py	35	class	pub	ExecutionCandidate	@dataclass ()	-
+core/signals/actionable_signals.py	42	class	pub	ExecutionDayCandidatesResult	@dataclass ()	-
+core/signals/actionable_signals.py	49	class	pub	EvalDateChunk	@dataclass ()	-
+core/signals/actionable_signals.py	56	func	pub	ew_confirmation_window	(data_length:int, min_wave_length:Optional[int]=None)->int	Return EW confirmation window consistent with detector behavior.
+core/signals/actionable_signals.py	63	func	priv	_build_detector_and_target	(config)->Tuple[SignalDetector, TargetCalculator]	-
+core/signals/actionable_signals.py	74	func	priv	_signal_rr	(signal:TradingSignal)->float	Risk/reward proxy used only for deterministic ranking tie-breaks.
+core/signals/actionable_signals.py	85	func	pub	execution_candidate_sort_key	(candidate:ExecutionCandidate)->Tuple[float, int, float, str, str]	Deterministic ordering contract used by recommend/auto-trade/evaluate parity.
+core/signals/actionable_signals.py	106	func	pub	sort_execution_candidates	(candidates:List[ExecutionCandidate])->List[ExecutionCandidate]	Return candidates sorted by the shared parity ordering.
+core/signals/actionable_signals.py	111	func	pub	partition_eval_dates_monthly	(eval_dates:List[pd.Timestamp])->List[EvalDateChunk]	Partition eval dates into deterministic monthly chunks.
+core/signals/actionable_signals.py	150	func	priv	_load_history_up_to_date	(instrument:str, target_date:datetime, lookback_days:int, config)	-
+core/signals/actionable_signals.py	165	func	priv	_execution_timestamp_for_signal	(index:pd.DatetimeIndex, signal_timestamp:pd.Timestamp, execution_delay_bars:int)->Optional[pd.Timestamp]	Map signal timestamp to execution timestamp using bar delay.
+core/signals/actionable_signals.py	178	func	pub	extract_execution_day_candidates_from_signals	(*, signals:List[TradingSignal], price_index:pd.DatetimeIndex, target_date:datetime, execution_delay_bars:int)->List[ExecutionCandidate]	Extract execution-day candidates from precomputed signals (evaluate oracle helper).
+core/signals/actionable_signals.py	205	func	pub	get_actionable_signals_for_date	(instrument:str, config, lookback_days:int, target_date:datetime, staleness_max_days:int=3)->Optional[ActionableSignalsResult]	Return signals actionable on latest available day in history up to target_date.
+core/signals/actionable_signals.py	286	func	pub	get_execution_day_candidates_for_instrument	(instrument:str, config, lookback_days:int, target_date:datetime, staleness_max_days:int=3, price_data:Optional[pd.Series]=None)->Optional[ExecutionDayCandidatesResult]	Return all candidates that execute on `target_date` under execution-delay semantics.
+core/signals/actionable_signals.py	348	func	priv	_can_use_single_pass	(config)->bool	Eligibility gate for the causal single-pass path. Returns True when the config has no Elliott Wave and step_days == 1. Elliott Wave requires global window statistics incompatible with a single causal
+core/signals/actionable_signals.py	362	func	priv	_generate_signals_windowed	(data_inst:pd.Series, config, instrument:str, eval_dates:List[pd.Timestamp], lookback_days:int, timings:Optional[Dict[str, float]]=None)->Tuple[List[TradingSignal], Dict[str, float]]	Generate signals over walk-forward eval_dates with EW first-discovery dedup.
+core/signals/actionable_signals.py	425	func	pub	generate_signals_single_pass	(data_inst:pd.Series, config, instrument:str, eval_dates:List[pd.Timestamp], lookback_days:int, timings:Optional[Dict[str, float]]=None)->Tuple[List[TradingSignal], Dict[str, float]]	Causal single-pass walk-forward generator for EW-free / step_days==1 configs (see _can_use_single_pass). Computes indicators ONCE over a series primed from first_eval - (lookback_days + warmup_days),
+core/signals/actionable_signals.py	486	func	pub	generate_signals_over_eval_dates	(data_inst:pd.Series, config, instrument:str, eval_dates:List[pd.Timestamp], lookback_days:int, timings:Optional[Dict[str, float]]=None)->Tuple[List[TradingSignal], Dict[str, float]]	Generate walk-forward signals. Routes EW-free, step_days==1 configs through the fast single-pass path; all others through the windowed path. Both are causal.
+core/signals/config.py	28	func	priv	_warmup_calendar_days	(config)->int	Calendar days of extra history needed so all indicators are fully computed at lookback_start.
+core/signals/config.py	57	func	priv	_validate_config	(*, ema_short_period:int, ema_long_period:int, rsi_oversold:int, rsi_overbought:int, risk_reward:float, position_size_pct:float, min_confidence:Optional[float]=None, min_wave_size:Optional[float]=None	Validate indicator and risk parameters. Raises ValueError with clear message on failure.
+core/signals/config.py	104	class	pub	SignalConfig	@dataclass ()	Configuration for signal generation (simplified version of StrategyConfig).
+core/signals/config.py	158	method	priv	SignalConfig.__post_init__	()->None	-
+core/signals/config.py	174	class	pub	StrategyConfig	@dataclass ()	Configuration for a trading strategy.
+core/signals/config.py	312	method	priv	StrategyConfig.__post_init__	()->None	-
+core/signals/config.py	416	func	pub	generate_grid_configs	(name_prefix:str='grid', use_elliott_wave_values:list=None, use_rsi_values:list=None, use_ema_values:list=None, use_macd_values:list=None, signal_types_values:list=None, include_parameter_variations:b	Generate a grid of configurations testing indicator combinations and parameters.
+core/signals/config.py	598	class	pub	BaselineConfig	()	Helper class to access baseline and preset configurations.
+core/signals/config.py	602	method	pub	BaselineConfig.get_baseline	@staticmethod ()->StrategyConfig	Get the current baseline configuration.
+core/signals/config.py	607	method	pub	BaselineConfig.get_preset	@staticmethod (name:str)->StrategyConfig	Get a preset configuration by name.
+core/signals/config.py	615	method	pub	BaselineConfig.list_presets	@staticmethod ()->list	List all available preset names.
+core/signals/config.py	620	method	pub	BaselineConfig.create_custom	@staticmethod (name:str, description:str='', **kwargs)->StrategyConfig	Create a custom configuration with optional overrides from baseline.
+core/signals/config_loader.py	19	func	priv	_normalize_confidence_weights	(raw_weights:Optional[dict], mtf_legacy_period:int=8)->dict	Normalize confidence_weights or legacy indicator_weights to {key: {weight, threshold}} format.
+core/signals/config_loader.py	53	func	pub	load_config_from_yaml	(yaml_path:Union[str, Path], instruments_override:Optional[list]=None)->StrategyConfig	Load strategy configuration from YAML file.
+core/signals/config_loader.py	250	func	pub	save_config_to_yaml	(config:StrategyConfig, yaml_path:Union[str, Path])	Save strategy configuration to YAML file.
+core/signals/detector.py	33	class	pub	SignalDetector	()	Unified signal detector using all indicators.
+core/signals/detector.py	42	method	priv	SignalDetector.__init__	(config)	Initialize the signal detector.
+core/signals/detector.py	71	method	pub	SignalDetector.detect_signals	(data:pd.Series)->List[Signal]	Detect trading signals. Delegates to detect_signals_with_indicators for unified scoring.
+core/signals/detector.py	76	method	pub	SignalDetector.detect_signals_with_indicators	(data:pd.Series, timings:Optional[Dict[str, float]]=None)->Tuple[List[Signal], pd.DataFrame, List[Wave]]	Detect trading signals and return signals, indicator dataframe, and waves for target calculation.
+core/signals/detector.py	91	method	priv	SignalDetector._acc	(key:str, elapsed:float)->None	-
+core/signals/detector.py	176	method	priv	SignalDetector._filter_signals_by_multi_timeframe	(signals:List[Signal], data:pd.Series, *, weekly:Optional[pd.Series]=None, weekly_ema:Optional[pd.Series]=None)->List[Signal]	Keep only signals confirmed by weekly trend when use_multi_timeframe_filter is True. No-op when use_multi_timeframe is False or use_multi_timeframe_filter is False. Supports MTF ensemble (uses weighte
+core/signals/detector.py	217	method	priv	SignalDetector._invert_price_data	(data:pd.Series)->pd.Series	Invert price data to detect bearish patterns as bullish patterns.
+core/signals/detector.py	235	method	priv	SignalDetector._uses_technical_indicators	()->bool	Check if any technical indicators are enabled.
+core/signals/detector.py	241	method	priv	SignalDetector._indicator_warmup_rows	()->int	Minimum rows of indicator data to skip before generating signals (warmup for reliable values).
+core/signals/detector.py	251	method	priv	SignalDetector._get_technical_indicator_signals	(data:pd.Series, indicator_df:pd.DataFrame)->List[Signal]	Generate signals from technical indicators using vectorized operations.
+core/signals/detector.py	373	method	priv	SignalDetector._get_elliott_wave_signals	(data:pd.Series, indicator_df:Optional[pd.DataFrame]=None, timings:Optional[Dict[str, float]]=None)->Tuple[List[Signal], List[Wave]]	Generate signals from Elliott Wave patterns (treated as indicator). Returns (signals, waves).
+core/signals/detector.py	380	method	priv	SignalDetector._acc	(key:str, elapsed:float)->None	-
+core/signals/detector.py	415	method	priv	SignalDetector._get_inverted_elliott_wave_signals	(data:pd.Series, indicator_df:Optional[pd.DataFrame]=None)->Tuple[List[Signal], List[Wave]]	Generate signals from inverted Elliott Wave patterns (for sell signal generation). Returns (signals, waves) with waves on inverted data for target calculation.
+core/signals/detector.py	465	method	priv	SignalDetector._inverted_wave_to_signal	(wave:Wave, data:pd.Series, indicator_df:Optional[pd.DataFrame]=None)->Optional[Signal]	Convert an inverted Elliott Wave to a trading signal with inverted signal types.
+core/signals/detector.py	552	method	priv	SignalDetector._wave_to_signal	(wave:Wave, data:pd.Series, indicator_df:Optional[pd.DataFrame]=None)->Optional[Signal]	Convert an Elliott Wave to a trading signal.
+core/signals/detector.py	621	method	priv	SignalDetector._check_indicator_confirmation	(signal:Signal, indicator_df:pd.DataFrame)->Tuple[bool, str, int, Optional[IndicatorValues]]	Check if technical indicators confirm a signal. Returns (confirmed, reason, count, indicators).
+core/signals/detector.py	637	method	priv	SignalDetector._nan	(x, default=None)	-
+core/signals/detector.py	682	method	priv	SignalDetector._get_indicators_at	(signal:Signal, indicator_df:Optional[pd.DataFrame])->Optional[IndicatorValues]	Extract IndicatorValues from indicator_df at signal's timestamp.
+core/signals/detector.py	700	method	priv	SignalDetector._nan	(x, default=None)	-
+core/signals/detector.py	725	method	priv	SignalDetector._get_mtf_signals	(data:pd.Series, mtf_lookup:Dict, mode:str)->List[Signal]	Emit candidate signals from the weekly-trend direction (opt-in via mtf_signal_mode).
+core/signals/detector.py	733	method	priv	SignalDetector._direction	(ensemble)->Optional[SignalType]	-
+core/signals/detector.py	761	method	priv	SignalDetector._build_mtf_ensemble	(data:pd.Series)->Dict	Build a CAUSAL per-daily-bar MTF confirmation lookup from confidence_weights mtf_* keys. Returns {daily_bar_ts: [{key, weight, threshold, buy, sell, margin}, ...]}, where `margin` is the signed % sepa
+core/signals/detector.py	842	method	priv	SignalDetector._score_signals	(signals:List[Signal], indicator_df:Optional[pd.DataFrame], mtf_ensemble_lookup:Dict)->None	Score all signals using compute_confidence_score. Modifies signals in-place. Sets confidence_score and component_weighted on each signal.
+core/signals/detector.py	893	method	priv	SignalDetector._deduplicate_signals	(signals:List[Signal])->List[Signal]	Remove duplicate signals on the same day.
+core/signals/detector_filters.py	23	func	pub	filter_signals_by_trend	(signals:List[TradingSignal], data:'Any', ma_days)->List[TradingSignal]	Regime/trend gate: drop BUY signals whose price is below the instrument's `ma_days` SMA (don't buy into a downtrend). Causal — the SMA at bar B uses only bars <= B. Permissive when the MA can't be com
+core/signals/detector_filters.py	46	func	pub	filter_signals_by_type	(signals:List[TradingSignal], signal_types:str)->List[TradingSignal]	Keep only signals of the requested type.
+core/signals/detector_filters.py	67	func	priv	_confidence_histogram	(signals:List[TradingSignal])->str	Build histogram of confidence_score for diagnostic logging.
+core/signals/detector_filters.py	79	func	pub	filter_signals_by_quality	(signals:List[TradingSignal], config:Any)->List[TradingSignal]	Keep only signals meeting min_confirmations and min_certainty (if set on config).
+core/signals/detector_filters.py	119	func	pub	deduplicate_signals	(signals:List[TradingSignal])->List[TradingSignal]	Remove duplicate signals with exact same timestamp, type, and price.
+core/signals/rules.py	11	class	pub	SignalRule	(Protocol)	Protocol for a rule that evaluates one row and returns buy/sell reason strings.
+core/signals/rules.py	14	method	pub	SignalRule.evaluate	(row:pd.Series, prev_row:pd.Series, config:Any)->Tuple[List[str], List[str]]	Evaluate rule at this row.
+core/signals/rules.py	34	class	pub	RsiRule	()	RSI-based buy (exit oversold) and sell (enter overbought) reasons.
+core/signals/rules.py	37	method	pub	RsiRule.evaluate	(row:pd.Series, prev_row:pd.Series, config:Any)->Tuple[List[str], List[str]]	-
+core/signals/rules.py	54	class	pub	EmaRule	()	EMA crossover buy/sell reasons.
+core/signals/rules.py	57	method	pub	EmaRule.evaluate	(row:pd.Series, prev_row:pd.Series, config:Any)->Tuple[List[str], List[str]]	-
+core/signals/rules.py	72	class	pub	MacdRule	()	MACD histogram zero-cross buy/sell reasons.
+core/signals/rules.py	75	method	pub	MacdRule.evaluate	(row:pd.Series, prev_row:pd.Series, config:Any)->Tuple[List[str], List[str]]	-
+core/signals/rules.py	94	func	pub	get_technical_rules	(config:Any)->List[SignalRule]	Return the list of technical indicator rules enabled by config.
+core/signals/target_calculator.py	15	class	pub	TargetCalculator	()	Calculates target prices for trading signals.
+core/signals/target_calculator.py	18	method	priv	TargetCalculator.__init__	(risk_reward_ratio:float=2.0, use_fibonacci:bool=True, use_atr_stops:bool=False, atr_stop_multiplier:float=2.0, atr_period:int=14)	Initialize the target calculator.
+core/signals/target_calculator.py	42	method	pub	TargetCalculator.calculate_targets	(signals:List[TradingSignal], data:'pd.DataFrame | pd.Series', all_waves:Optional[List[Wave]]=None)->List[TradingSignal]	Calculate target prices and stop-loss for trading signals.
+core/signals/target_calculator.py	67	method	priv	TargetCalculator._calculate_signal_targets	(signal:TradingSignal, data:'pd.DataFrame | pd.Series', all_waves:Optional[List[Wave]]=None)->TradingSignal	Calculate targets for a single signal.
+core/signals/target_calculator.py	117	method	priv	TargetCalculator._calculate_atr_based_targets	(signal_type:SignalType, data:'pd.DataFrame | pd.Series', entry_price:float)->tuple	Calculate targets using ATR for signals without wave info.
+core/signals/target_calculator.py	151	method	priv	TargetCalculator._calculate_buy_target	(wave:'Wave', data:pd.Series, entry_price:float, all_waves:Optional[List[Wave]]=None)->Optional[float]	Calculate target price for buy signal using wave-specific Fibonacci relationships.
+core/signals/target_calculator.py	212	method	priv	TargetCalculator._find_related_waves	(wave:'Wave', all_waves:Optional[List[Wave]])->dict	Find related waves for wave-specific target calculation.
+core/signals/target_calculator.py	266	method	priv	TargetCalculator._calculate_sell_target	(wave:'Wave', data:pd.Series, entry_price:float, all_waves:Optional[List[Wave]]=None)->Optional[float]	Calculate target price for sell signal using wave-specific relationships.
+core/signals/target_calculator.py	299	method	priv	TargetCalculator._calculate_atr	(data:'pd.DataFrame | pd.Series')->Optional[float]	Calculate ATR (Average True Range).
+core/signals/target_calculator.py	330	method	priv	TargetCalculator._calculate_atr_stop_loss	(entry_price:float, data:'pd.DataFrame | pd.Series', signal_type:SignalType)->Optional[float]	Calculate stop-loss based on ATR (Average True Range).
+core/signals/target_calculator.py	364	method	priv	TargetCalculator._calculate_stop_loss	(entry_price:float, target_price:Optional[float], signal_type:SignalType)->Optional[float]	Calculate stop-loss based on risk/reward ratio.

@@ -1,0 +1,51 @@
+{
+  "skill_name": "architecture-audit",
+  "evals": [
+    {
+      "id": 0,
+      "name": "drift-scoped-modules",
+      "prompt": "Audit the architecture of core/automation and core/signals: do the class/method names and docstrings actually match what the code does, and is anything in there dead? Point out structural problems.",
+      "expected_output": "Preflight run first; assumed purpose stated before findings; Python symbol harvest run in Docker; per-symbol DRIFT/MISNAMED/UNDOC verdicts with path:line; dead-code claims confirmed rather than asserted; Phase-6 section order; no git writes.",
+      "files": [],
+      "assertions": [
+        "Ran scripts/preflight.sh (or equivalent explicit tool-availability check) before per-file analysis",
+        "Stated the repo's purpose (or the answer it assumed) before presenting findings",
+        "Ran the bundled Python harvest inside a container, never host python",
+        "Every drift finding cites path:line and contrasts the claimed doc/name against the actual body behaviour",
+        "Report sections follow the skill's Phase-6 order (fitness, boundary, unit, drift, doc check, diagrams)",
+        "Dead-symbol claims are confirmed (grep or framework-entry-point check) instead of taken from a tool or from absence of callers; the lazy __getattr__ re-export in core/automation/__init__.py is not misreported as dead",
+        "No git write commands were run (no add/commit/checkout)"
+      ]
+    },
+    {
+      "id": 1,
+      "name": "boundary-map",
+      "prompt": "Map how our pieces actually talk to each other - backend/, services/ibkr-broker/, services/frontend/, trading_operator/, the crons - and tell me whether any interface or whole service is dead. Save the diagram somewhere sensible if there is one.",
+      "expected_output": "Container-level mermaid diagram covering services, datastores and entry points; dead-interface findings citing both ends; persistence target resolved to the repo's existing docs home (spec/) rather than a new tree; reverse check (doc-only vs code-only) since architecture docs already exist; nothing staged or committed.",
+      "files": [],
+      "assertions": [
+        "Report contains a mermaid diagram at container level (services, datastores, queues/entry points), not ASCII art",
+        "Chose an existing docs home (spec/ or DEVELOPMENT.md) as the persistence target instead of inventing a new tree, and named the intended path",
+        "Ran the reverse check: lists doc-only nodes/edges (in docs but not in code) alongside code-only ones, because spec/ already documents architecture",
+        "Each dead-interface / dead-service finding names both ends of the edge with path:line evidence, and distinguishes 'no producer' from 'no consumer'",
+        "Did not stage or commit any file, and did not write docs into the repo when told not to",
+        "Identified at least one real edge type beyond HTTP (postgres tables, k8s CRs, crons, or the IBKR socket)"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "fitness-strategy",
+      "prompt": "Does anything in core/ structurally weaken how the trading strategy gets executed, or the returns it makes? I don't want a list of nitpicks, I want to know if the shape of the code is hurting us.",
+      "expected_output": "Purpose stated first and used as the yardstick; findings ranked by cost-to-the-goal with path:line citations; explicit 'structure is fine, the limit is elsewhere' where that is the honest answer; no fabricated structural flaw; no aesthetic nitpicks.",
+      "files": [],
+      "assertions": [
+        "Stated what the repo is for (strategy signals -> sim/live execution -> returns) and used it as the yardstick for ranking",
+        "Findings are ranked by cost-to-the-goal-if-wrong, not by code aesthetics, and each names the mechanism by which it costs money or correctness",
+        "Every claim cites path:line and the cited code actually says what the report claims (spot-checkable)",
+        "Says plainly where the structure is fine / the limit lies elsewhere instead of manufacturing a structural flaw to have something to report",
+        "Contains no pure style nitpicks (formatting, naming aesthetics) presented as strategy risk",
+        "Respects the repo's known invariants (signal causality / truncation invariance, sim-live parity) rather than proposing changes that would break them"
+      ]
+    }
+  ]
+}

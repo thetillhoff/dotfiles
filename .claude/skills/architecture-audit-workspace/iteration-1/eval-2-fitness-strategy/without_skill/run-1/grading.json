@@ -1,0 +1,42 @@
+{
+  "eval_id": 2,
+  "config": "without_skill",
+  "expectations": [
+    {
+      "text": "Stated what the repo is for (strategy signals -> sim/live execution -> returns) and used it as the yardstick for ranking",
+      "passed": false,
+      "evidence": "report.md opens directly with the verdict ('Yes. One structural gap dominates everything else found...') and Finding 1, with no preceding dedicated statement of the repo's purpose/value chain. The goal is referenced implicitly throughout but never stated as an explicit yardstick before findings, unlike the with_skill run's dedicated Purpose section."
+    },
+    {
+      "text": "Findings are ranked by cost-to-the-goal-if-wrong, not by code aesthetics, and each names the mechanism by which it costs money or correctness",
+      "passed": true,
+      "evidence": "'Finding 1 (headline)' names the exact mechanism (live OrderBuilder sizes off a flat position_size_pct x NetLiquidation with none of the 26 sizing/risk fields the validated backtest depends on, so live capital deployment cannot track the validated strategy) and 'Finding 2 (secondary, systemic)' is explicitly labeled lower priority, showing genuine cost-ordering rather than a flat aesthetic list."
+    },
+    {
+      "text": "Every claim cites path:line and the cited code actually says what the report claims (spot-checkable)",
+      "passed": true,
+      "evidence": "Spot-checked: core/broker/order_builder.py line 111 'position_size_usd = available_capital * self.position_size_pct' verified verbatim; cli/auto_trade.py:244 comment 'all sizing/risk params come from the strategy config' verified verbatim (and is indeed false, only 2 of 26 fields passed); core/signals/detector.py lines 53-62 getattr fallback literals (rsi_period=7, rsi_oversold=25, rsi_overbought=75, macd_signal=12) verified verbatim against real defaults in core/shared/defaults.py (14, 30, 70, 9) -- the drift claim is accurate."
+    },
+    {
+      "text": "Says plainly where the structure is fine / the limit lies elsewhere instead of manufacturing a structural flaw to have something to report",
+      "passed": true,
+      "evidence": "'## Checked and ruled out' section explicitly rules out two candidate issues: the available_capital vs total_portfolio_value basis mismatch ('it isn't'), and the absence of trade-cost config from core/broker ('that's correct... the live broker charges real costs natively'). This is narrower than a whole-repo 'structure is fine' verdict but does show the discipline of stating a checked-and-ruled-out negative rather than inventing more flaws."
+    },
+    {
+      "text": "Contains no pure style nitpicks (formatting, naming aesthetics) presented as strategy risk",
+      "passed": true,
+      "evidence": "Both findings (sizing-engine divergence, getattr-default drift risk) are substantive correctness/risk issues, not style or naming complaints."
+    },
+    {
+      "text": "Respects the repo's known invariants (signal causality / truncation invariance, sim-live parity) rather than proposing changes that would break them",
+      "passed": true,
+      "evidence": "The report explicitly models its fix proposal on the project's own signal-causality pattern: 'the same way core/signals/detector.py is already shared... Add a parity test analogous to the existing signal-parity ones' -- proposing to extend, not violate, the existing invariant-preserving pattern."
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 1,
+    "total": 6,
+    "pass_rate": 0.8333
+  }
+}

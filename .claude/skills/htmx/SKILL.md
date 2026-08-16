@@ -204,6 +204,54 @@ Idiomorph matches nodes by **`id`**. A child with no `id` can be dropped or
 rebuilt during a morph. Give any element that must survive a swap - or carry
 client state across it - a stable `id`.
 
+## Scroll position inside a polled region
+
+**Problem:** a polled fragment containing a scroll container (a wide table in
+`overflow-x: auto`, a log pane, any inner scroller) inserts a *fresh* element on
+every swap, and a fresh element starts at offset 0. On a phone, where a wide
+table is read by scrolling sideways, a 5 s poll throws the reader back to the
+first column - away from the very numbers the poll exists to update. The faster
+the poll, the more unusable it gets.
+
+`hx-preserve` is the wrong tool here: it keeps the *old node with its old
+content*, so the region stops updating - it fixes the scroll by defeating the
+refresh. Reach for it only for elements whose content doesn't change (a spinner).
+
+**Two fixes:**
+
+1. **Morph swap** (idiomorph). Existing nodes are reconciled rather than
+   replaced, so the scroller keeps its offset for free. Correct default *when
+   you already load the extension* - don't add a dependency for this alone.
+
+2. **Save and restore the offset around the swap.** No dependency, ~15 lines,
+   and it generalises to every scroll container on the page. Key the offsets by
+   `id`, which means each container needs a stable one.
+
+   ```js
+   const offsets = new Map();
+   const scrollers = () => document.querySelectorAll("[id].table-scroll");
+
+   document.addEventListener("htmx:beforeSwap", () => {
+     for (const el of scrollers()) offsets.set(el.id, el.scrollLeft);
+   });
+   document.addEventListener("htmx:afterSwap", () => {
+     for (const el of scrollers()) {
+       const left = offsets.get(el.id);
+       if (left) el.scrollLeft = left;
+     }
+   });
+   ```
+
+   `htmx:beforeSwap` still sees the old node in the DOM; `htmx:afterSwap` sees
+   the new one. Listening on `document` covers every swap on the page, so no
+   fragment has to opt in.
+
+**Better still, question the sideways scroll.** A table that must be scrolled
+horizontally to reach its numbers is a desktop table on a phone. If the polled
+values are the point, stack each row into a card below the phone breakpoint -
+then there is no scroll offset to preserve. Restoring the offset is the fix for
+"this table is genuinely wide"; it is not a substitute for a layout that fits.
+
 ## Nav + status widget
 
 Pin a canonical nav and a host/process status widget (service states, load) to
@@ -323,7 +371,8 @@ behavior hooks with no re-wiring.
   a fragment response renders as a bare partial. Use explicit `hx-get`/`hx-post`
   - `hx-target` instead.
 - **Polling the whole page.** Poll only the changing region. Full-page polls
-  reset focus and scroll position.
+  reset focus and scroll position. Even a scoped poll resets the offset of a
+  scroll container inside it - see "Scroll position inside a polled region".
 - **Silently swallowing server errors.** Add an `htmx:responseError` listener
   to surface 4xx/5xx responses as a visible error state, not a silent no-op.
 

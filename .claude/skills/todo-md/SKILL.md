@@ -69,9 +69,16 @@ Once you start the work, keep the `**Ready to build.**` marker until the item is
 
 Do **not** start work on an item marked `Not ready`. Instead, surface the blocking questions (see the collaboration flow below) and wait for answers.
 
-## Guiding design passes - one topic at a time
+## One topic per message - the default
 
-When the operator asks you to "guide through design passes" of `Not ready` items, or otherwise wants to promote items to `Ready`, work **one topic at a time**. Never dump the whole `Not ready` list at once.
+**One topic per message is the DEFAULT for every operator-facing pass over TODO items**, not a mode the operator has to request. It applies whenever you walk, review, triage, or design-pass items: promoting `Not ready` items to `Ready`, working through findings after a build, deciding what to tackle now versus later, or any other reply where the operator is expected to make calls on TODO content. Never dump the list at once, and don't wait to be asked to slow down.
+
+Two exceptions, both explicit:
+
+- **The operator asks for a survey** ("what's on the plate?", "list what's open"). Give a one-line-per-topic index, then wait for them to pick. See the bottom of this section.
+- **The operator asks for a different pacing** (grouped by theme, blocking items only, all at once). Their pacing wins - offer the default, then follow what they choose.
+
+When the count is large, say roughly how many topics there are before starting the first one, so the operator can choose a different pacing knowingly rather than discovering the length halfway through.
 
 **Per topic, in one reply:**
 

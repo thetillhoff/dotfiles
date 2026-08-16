@@ -64,7 +64,40 @@
       }
     }
   },
-  "theme": "auto",
   "skipWorkflowUsageWarning": true,
-  "skipAutoPermissionPrompt": true
+  "statusLine": {
+    "type": "command",
+    "command": "c=$(bash '/Users/tillhoffmann/.claude/plugins/cache/caveman/caveman/25d22f864ad6/src/hooks/caveman-statusline.sh'); p=$(bash '/Users/tillhoffmann/.claude/plugins/cache/ponytail/ponytail/4.7.0/hooks/ponytail-statusline.sh'); printf '%s' \"${c}${c:+${p:+ }}${p}\""
+  },
+  "theme": "auto",
+  "skipAutoPermissionPrompt": true,
+  "model": "opus",
+  "autoMode": {
+    "classifyAllShell": true,
+    "allow": [
+      "$defaults",
+      "Bash(aws * --profile */vehicle-perception-engineer-ro)",
+      "Bash(assume */vehicle-perception-engineer-ro --exec './do cdk diff *')",
+      "Secret handling that keeps plaintext out of the output: decrypt or generate into a file (`sops -d f > out`, `openssl rand -base64 32 > pw`), or compare via exit code or hash. Creating, moving and re-encrypting secret files is fine."
+    ],
+    "hard_deny": [
+      "$defaults",
+      "Any command run via sudo or that otherwise escalates privileges.",
+      "Any command that prints secret plaintext — sops decrypt/edit without redirecting to a file, cat/grep of a .env, private key, kubeconfig or credentials file, `kubectl get secret -o yaml`, `aws secretsmanager get-secret-value`, `ssm get-parameter --with-decryption`, `base64 -d` of secret data, `env` dumps, or a generated password shown in the terminal. Plaintext goes to a local file, never stdout.",
+      "Any Read or Grep of decrypted secrets, .env files, private keys or credential files.",
+      "Any command sending secret content off the machine as payload — curl -d/-F/-T with @file or a secret variable, wget --post-file, piping into nc/ssh/scp/rsync/mail, or a paste service. Authenticating to a service with a credential is fine."
+    ],
+    "soft_deny": [
+      "$defaults",
+      "Any MCP tool call that writes state to an external system — creates, updates, deletes, mutates, transitions, comments, merges, or otherwise changes data in a connected service (e.g. GitHub, Jira/Confluence, AWS, Wiz, Miro). Read-only MCP queries (list_/get_/search_/read_ style calls) are fine.",
+      "Any git force push.",
+      "Any AWS CLI or assume/granted command whose profile does not end in -ro, or that otherwise uses AWS credentials granting write/mutate access.",
+      "Any CDK/CloudFormation write or state-changing operation — cdk deploy, cdk destroy, or any equivalent apply/rollback — including when wrapped inside an 'assume ... --exec' command. Read-only cdk synth, cdk diff, and cdk list are fine.",
+      "Any command writing secret plaintext outside local scratch — into a git-tracked file, a log, the clipboard, or a network mount.",
+      "Any command that rotates or overwrites an existing secret — sops -e/-r in place, `kubectl create secret`, `aws secretsmanager put-secret-value`.",
+      "Any destructive git operation that rewrites or discards history or work — git reset --hard, git clean, git rebase, deleting branches (git branch -d / -D), or any git push (force pushes included).",
+      "Any destructive or state-changing container or deployment operation — docker rm, docker rmi, docker system prune, docker run, docker exec, docker stop, or kamal deploys.",
+      "Any file-destroying or permission-weakening command — rm of tracked or otherwise important paths, or chmod 777."
+    ]
+  }
 }

@@ -1,0 +1,13 @@
+{
+  "eval_id": 1,
+  "eval_name": "boundary-map",
+  "prompt": "Map how our pieces actually talk to each other - backend/, services/ibkr-broker/, services/frontend/, trading_operator/, the crons - and tell me whether any interface or whole service is dead. Save the diagram somewhere sensible if there is one.",
+  "assertions": [
+    "Report contains a mermaid diagram at container level (services, datastores, queues/entry points), not ASCII art",
+    "Chose an existing docs home (spec/ or DEVELOPMENT.md) as the persistence target instead of inventing a new tree, and named the intended path",
+    "Ran the reverse check: lists doc-only nodes/edges (in docs but not in code) alongside code-only ones, because spec/ already documents architecture",
+    "Each dead-interface / dead-service finding names both ends of the edge with path:line evidence, and distinguishes 'no producer' from 'no consumer'",
+    "Did not stage or commit any file, and did not write docs into the repo when told not to",
+    "Identified at least one real edge type beyond HTTP (postgres tables, k8s CRs, crons, or the IBKR socket)"
+  ]
+}
