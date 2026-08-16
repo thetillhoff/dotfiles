@@ -6,6 +6,17 @@
 - Repo layout: `~/code/<owner>/<repo>/` — `.git` may be at any subdirectory level within, not necessarily the root. Locate it before running git commands.
 - Use `cd <path> && git <cmd>`, never `git -C <path> <cmd>`.
 - Superpowers skills must never run git commands.
+- **Never pass a commit message with `git commit -m "..."` if it contains backticks.** The shell substitutes them and runs the contents as a command. A message containing the literal words `git add -A` executed exactly that, staging the whole repo into what should have been a five-file commit; another ran the test suite and pasted its output into the message. Always use a quoted heredoc, which substitutes nothing:
+
+  ```sh
+  git commit -F - <<'MSG'
+  subject line
+
+  Body may contain `backticks`, $VARS, and $(anything) safely.
+  MSG
+  ```
+
+  The quoted `'MSG'` delimiter is what disables substitution; an unquoted `MSG` does not. Use the same form for `--amend`.
 
 ## Principles
 
@@ -98,7 +109,22 @@ Stop because the work is at a clean point, not because the turn ran out. If a fo
 
 - No em dashes (—). Use a plain hyphen-minus surrounded by spaces ( - ) instead.
 
-## Markdown Linting
+## ASD-STE100 Simplified Technical English
+
+Write all prose (docs, READMEs, comments, commit bodies, PR descriptions, chat answers) in ASD-STE100 Simplified Technical English:
+
+- One instruction per sentence. Procedures max 20 words per sentence, descriptive text max 25.
+- One paragraph = one topic, max 6 sentences.
+- Active voice. Name the actor: "The service writes the log", not "The log is written".
+- Imperative for instructions: "Start the container." Not "The container should be started."
+- One word = one meaning, one meaning = one word. Pick a term, reuse it everywhere. Never use synonyms for variety.
+- Only approved/technical vocabulary. Prefer: use (not utilize), start (not initiate/commence), do (not perform), about (not approximately), before (not prior to), after (not subsequent to), can (not is able to), must (not is required to), help (not facilitate), send (not transmit) - unless the long form is the exact technical term.
+- No noun clusters longer than 3 words. Break with "of"/"for": "settings of the retry queue", not "retry queue settings configuration".
+- No -ing verb forms as nouns or modifiers where a plain verb works. Use "to configure X", not "configuring X".
+- Do not drop articles ("the", "a") - ASD-STE100 requires them, unlike telegraphic styles.
+- Keep warnings and safety text before the step they apply to, never after.
+
+Exempt: code, code identifiers, quoted error messages, external names, direct quotes.
 
 **Always run markdownlint with `--ignore node_modules`** (global setting). A `**/*.md` glob otherwise lints dependency markdown and floods the output with errors you don't own. Belt-and-suspenders: keep a `.markdownlintignore` at the repo root containing `node_modules/` and `dist/` - markdownlint-cli auto-respects it.
 
@@ -110,6 +136,17 @@ npx markdownlint-cli --disable MD013 --ignore node_modules -- <file.md>
 ```
 
 `--fix` handles tables, bare URLs, list/heading spacing, etc. automatically. Fix any remaining reported errors (e.g. MD040 fenced-code language, which it can't infer) by hand before considering the task done.
+
+**`--fix` silently destroys tabs inside fenced code blocks (MD010).** Go, Makefiles, and Taskfiles all indent with tabs, so a markdown file that quotes them comes back with the indentation replaced by single spaces. Nothing warns you. In any repo whose markdown contains such code, add a `.markdownlint.json` at the root - markdownlint-cli auto-discovers it, and it also removes the need to pass `--disable MD013` on every call:
+
+```json
+{
+  "MD013": false,
+  "MD010": { "code_blocks": false }
+}
+```
+
+Verify a config change actually took effect: run the lint with NO `--disable` flags and confirm it exits 0, then run `--fix` on a file with a tab-indented code block and confirm the tab is still there.
 
 ## Markdown Writing Style
 
