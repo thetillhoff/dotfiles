@@ -58,6 +58,8 @@ brew "go"
 brew "golangci-lint"
 # Kubernetes package manager
 brew "helm"
+# Configurable static site generator
+brew "hugo"
 # Tools and libraries to manipulate images in select formats
 brew "imagemagick"
 # CLI wrapper for basic network utilities on macOS - ip command
@@ -70,6 +72,8 @@ brew "kind"
 brew "kubectx"
 # Postgres C API library
 brew "libpq"
+# High quality, one-dimensional sample-rate conversion library
+brew "libsoxr"
 # Command-line interface to LiveKit
 brew "livekit-cli"
 # Utility for directing compilation
@@ -84,6 +88,8 @@ brew "nmap"
 brew "nvm"
 # Drop-in replacement for Terraform. Infrastructure as Code Tool
 brew "opentofu"
+# API for decoding and seeking in .opus files
+brew "opusfile"
 # Fast, disk space efficient package manager
 brew "pnpm"
 # PDF rendering library (based on the xpdf-3.0 code base)
