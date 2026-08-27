@@ -6,6 +6,7 @@
 - Repo layout: `~/code/<owner>/<repo>/` — `.git` may be at any subdirectory level within, not necessarily the root. Locate it before running git commands.
 - Use `cd <path> && git <cmd>`, never `git -C <path> <cmd>`.
 - Superpowers skills must never run git commands.
+- **Start every new topic or feature from the latest upstream state.** Before you write code, run `git pull` on the current branch. Before you branch off `main`, check out `main` and pull it first. This prevents work that starts from a stale base.
 - **Never pass a commit message with `git commit -m "..."` if it contains backticks.** The shell substitutes them and runs the contents as a command. A message containing the literal words `git add -A` executed exactly that, staging the whole repo into what should have been a five-file commit; another ran the test suite and pasted its output into the message. Always use a quoted heredoc, which substitutes nothing:
 
   ```sh
@@ -32,6 +33,7 @@
 - **Falsification-first, not narrative-first.** Assume your latest result is wrong; try to break it before reporting. Don't build a story then defend it.
 - **State conclusions with their confounds.** "X, but Y isn't controlled" — never bare "X" when a variable moved alongside.
 - **Control the variable.** Two things changed together (e.g. a multiplier shifting both signal weight and total exposure) = you isolated nothing. Hold confounders constant.
+- **Never write a parser or adapter against an invented fixture.** Capture one real payload from the live endpoint FIRST, commit it as the fixture, then write the code. A fabricated fixture makes every test compare the code against your own assumption, so no test can fail on the one thing that is wrong. Twelve passing reviews of a news-ingestion adapter missed that its source returns space-separated archive URLs, not tab-separated rows, and that the other source returns Atom, not JSON.
 - **A surprising result is a measurement bug until proven otherwise.** Contradictions (0 trades + high exposure) → distrust the parse/instrument before the system.
 - **Verify the premise before building the fix.** One cheap measurement of the real bottleneck beats a confident assumption. Never optimize an unmeasured cost.
 - **Structured data → real parsers.** pandas for CSVs (fields contain commas); shell arrays for lists. Never `awk -F,` column-splitting; never unquoted `for x in $VAR` / `set -- $x` in zsh (it doesn't word-split — use `${=var}` or arrays).
@@ -53,6 +55,20 @@ Always `cd <path> && <cmd>` — never use flag-based directory overrides like `g
 ### Text replacements: sed, not perl
 
 For shell-based in-place text replacements, use `sed` — never `perl -pi`. (Prefer the Edit tool over both when editing a known file.)
+
+### Granted/`assume`: never pipe it, always verify identity before an apply
+
+`assume <profile>` is a shell function (`assume` is aliased to `. assume`) — it must run as a
+plain foreground command in the current shell. Piping it into anything (`source assume ... |
+tail -3`) forks a subshell for the piped side in both bash and zsh, so the exported
+`AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`/`AWS_SESSION_TOKEN` never reach the parent shell —
+the next command then silently falls through to whatever credentials were already in the
+environment. A fresh non-interactive shell can already have stale `AWS_*` env vars baked in
+from an unrelated SSO session (profile init, `.zshrc`, a leftover export) — those take
+precedence over `AWS_PROFILE`-based resolution, so `AWS_PROFILE=x pulumi up` can silently run
+under the wrong account with no error. Always run `source assume "<profile>"` unpiped, then
+confirm with a plain `aws sts get-caller-identity` (also unpiped) immediately before any
+command that creates, modifies, or destroys real infrastructure — not just once per session.
 
 ### Git: cd then git, never git -C
 

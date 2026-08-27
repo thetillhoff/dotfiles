@@ -7,6 +7,7 @@ tap "hashicorp/tap", trusted: true
 tap "homebrew/cask"
 tap "homebrew/core"
 tap "siderolabs/tap", trusted: true
+tap "stripe/stripe-cli"
 tap "thetillhoff/tap", trusted: true
 # Run your GitHub Actions locally
 brew "act"
@@ -54,6 +55,8 @@ brew "gnu-sed"
 brew "gnupg"
 # Open source programming language to build simple/reliable/efficient software
 brew "go"
+# Task is a task runner/build tool that aims to be simpler and easier to use
+brew "go-task", link: false
 # Fast linters runner for Go
 brew "golangci-lint"
 # Kubernetes package manager
@@ -62,6 +65,8 @@ brew "helm"
 brew "hugo"
 # Tools and libraries to manipulate images in select formats
 brew "imagemagick"
+# Update of iperf: measures TCP, UDP, and SCTP bandwidth
+brew "iperf3"
 # CLI wrapper for basic network utilities on macOS - ip command
 brew "iproute2mac"
 # Lightweight and flexible command-line JSON processor
@@ -109,7 +114,7 @@ brew "ripgrep"
 # Utility that provides fast incremental file transfer
 brew "rsync"
 # Powerful, clean, object-oriented scripting language
-brew "ruby", link: false
+brew "ruby"
 # Safe, concurrent, practical language
 brew "rust"
 # Editor of encrypted files
@@ -148,26 +153,26 @@ brew "common-fate/granted/granted"
 brew "ekristen/tap/aws-nuke", trusted: true
 # Flux CLI
 brew "fluxcd/tap/flux"
-# A fast, cross-platform build tool inspired by Make, designed for modern workflows.
-brew "go-task/tap/go-task"
 # Packer
 brew "hashicorp/tap/packer"
 # Terraform
 brew "hashicorp/tap/terraform"
 # CLI for out-of-band management of Kubernetes nodes created by Talos
 brew "siderolabs/tap/talosctl"
+# Stripe CLI utility
+brew "stripe/stripe-cli/stripe", trusted: true
 # Pi coding agent harness with model routing, bash safety, and subagent delegation
 brew "thetillhoff/tap/kern", trusted: true
 # Minimal golang templater for websites
-brew "thetillhoff/tap/temingo"
+brew "thetillhoff/tap/temingo", link: false
 # Verifies web things
 brew "thetillhoff/tap/webscan"
 cask "font-meslo-lg-nerd-font"
+# A fast, cross-platform build tool inspired by Make, designed for modern workflows.
+cask "go-task/tap/go-task", trusted: true
 # Backup/restore tool
 cask "kopiaui"
 # Interactive JavaScript, Python or SQL interface
 cask "mysql-shell"
 # Tool to reverse the direction of scrolling
 cask "scroll-reverser"
-# Binary releases of VS Code without MS branding/telemetry/licensing
-cask "vscodium"

@@ -400,6 +400,8 @@ Describe the rough strokes - what changed and why. Do **not** list specific file
 6. Remove all slop (emojis, hyperbole, filler)
 7. Verify title-body consistency: title should reflect the Summary. If body says "Removes Athena + Adds KPI tool" but title only says "Add KPI tool", fix both together: `gh pr edit <number> --title "..." --body "..."`
 
+**Always double-check the PR description matches the current tree — every bullet, not just the one being edited.** An existing description is a claim someone made about a past diff, and it goes stale the moment the branch changes again — especially after history rewrites (amend, rebase, force-push) earlier in the same session. Before finalizing, verify each bullet — old and new — against the current tree, e.g. `git diff origin/main...HEAD --stat` or `git ls-tree -r HEAD --name-only | grep <file>` for a bullet naming a specific file.
+
 ### PR Description Checklist
 
 - [ ] Title: `<type>: <description>` format, ≤72 chars

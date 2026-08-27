@@ -69,3 +69,18 @@ kubectl get deploy <operator> -n <ns> --context=<ctx> -o jsonpath='{range .spec.
 - Leading `--context` → plugin-shim error; put it after the verb.
 - Forgetting `export KUBECONFIG` → flux/kubectl hit the wrong (or no) cluster.
 - Treating `repository up-to-date` as failure → it means the commit already landed.
+- Reading a hung `flux reconcile kustomization` as a slow apply. It waits on health
+  checks (default timeout ~10m), so a Deployment that cannot finish rolling holds
+  the Kustomization on the OLD revision — including the commit that fixes it.
+  Check with `kubectl get kustomization <k> -n flux-system --context=<ctx>` and look
+  for `Running health checks for revision <old sha>`. Break the deadlock by applying
+  the one fixing manifest directly (`kubectl apply -f <file> --context=<ctx>`); Flux
+  converges to the same content on its next pass.
+- A stalled rollout whose ReplicaSet reports `FailedCreate` is in exponential
+  backoff, so it does not retry promptly after you remove the cause (a
+  ResourceQuota ceiling, a missing secret). `kubectl delete rs <new-rs>` makes the
+  Deployment recreate it and retry at once — safe while that RS has 0 pods.
+- `maxSurge` on a namespace with a ResourceQuota needs headroom for the extra pod
+  in `limits.*`, not just in `pods`. Without it the surge pod is rejected outright:
+  the rollout stalls with the old pod serving, which is safe but silent unless you
+  read the ReplicaSet's events.

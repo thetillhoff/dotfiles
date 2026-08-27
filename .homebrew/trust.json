@@ -11,6 +11,10 @@
   "trustedformulae": [
     "ariga/tap/atlas",
     "ekristen/tap/aws-nuke",
+    "stripe/stripe-cli/stripe",
     "thetillhoff/tap/kern"
+  ],
+  "trustedcasks": [
+    "go-task/tap/go-task"
   ]
 }
