@@ -117,6 +117,8 @@ brew "rsync"
 brew "ruby"
 # Safe, concurrent, practical language
 brew "rust"
+# Static analysis and lint tool, for (ba)sh scripts
+brew "shellcheck"
 # Editor of encrypted files
 brew "sops"
 # Generate type safe Go from SQL
@@ -139,6 +141,8 @@ brew "typescript"
 brew "velero"
 # Internet file retriever
 brew "wget"
+# Automatic speech recognition, port of OpenAI's Whisper
+brew "whisper-cpp"
 # Network analyzer and capture tool - without graphical user interface
 brew "wireshark"
 # JavaScript package manager
