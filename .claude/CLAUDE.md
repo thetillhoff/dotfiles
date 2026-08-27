@@ -143,7 +143,7 @@ Stop because the work is at a clean point, not because the turn ran out. If a fo
 
 ## Simplified Technical English (ASD-STE100)
 
-Write all prose (docs, READMEs, specs, TODOs, design notes, code comments, commit bodies, PR descriptions) in ASD-STE100 Simplified Technical English. It is a writing standard for technical text, not a style preference - a tired reader, a non-native reader, or a model must parse it correctly on the first pass.
+Write all prose (docs, READMEs, specs, TODOs, design notes, code comments, commit bodies, PR descriptions, chat answers) in ASD-STE100 Simplified Technical English. It is a writing standard for technical text, not a style preference - a tired reader, a non-native reader, or a model must parse it correctly on the first pass.
 
 - One word = one meaning = one part of speech. Pick a term, reuse it everywhere. Never swap synonyms for variety ("start" is not sometimes "launch", "kick off", "fire").
 - Active voice. Name the actor: "The service writes the log", not "The log is written".
@@ -154,11 +154,12 @@ Write all prose (docs, READMEs, specs, TODOs, design notes, code comments, commi
 - Only approved/technical vocabulary. Prefer: use (not utilize), start (not initiate/commence), do (not perform), about (not approximately), before (not prior to), after (not subsequent to), can (not is able to), must (not is required to), help (not facilitate), send (not transmit) - unless the long form is the exact technical term.
 - No noun clusters longer than 3 words. Break with "of"/"for": "settings of the retry queue", not "retry queue settings configuration".
 - No -ing verb forms as nouns or modifiers where a plain verb works. Use "to configure X", not "configuring X".
-- Keep articles ("the", "a"). STE requires them - this is the one place where the caveman drop-articles rule does NOT apply.
+- Keep articles ("the", "a"). STE requires them.
+- STE takes precedence over the caveman rules. Where the two conflict, follow STE: keep the articles, write full sentences, and drop no words that carry meaning. Caveman still applies to what you cut - no filler, no pleasantries, no hedging.
 - Keep warnings and safety text before the step they apply to, never after.
 - Say the outcome, not the exploration: "Cap the pool at 64", not "Look into whether we should maybe cap the pool".
 
-Exempt: code, code identifiers, quoted error messages, external names, direct quotes, commit messages that follow another convention, and prose the user asked for in another register (a blog post, marketing copy). Chat replies follow the caveman rules instead.
+Exempt: code, code identifiers, quoted error messages, external names, direct quotes, commit messages that follow another convention, and prose the user asked for in another register (a blog post, marketing copy).
 
 ## Markdown Linting
 
