@@ -252,6 +252,21 @@ Server-rendered wizards (each step a fragment swap): see the **htmx** skill.
   get back. Highlight the current location; use breadcrumbs where depth warrants.
 - **Logo in the nav links to home** (expected everywhere; its absence surprises).
 - **User control & freedom** - always provide undo, cancel, and a clear exit.
+- **Nav label == page title == `<h1>`, the same string.** A nav word that changes
+  on arrival ("Gate" → "New-person gate — compare admission rules") teaches
+  nothing and blocks recall: the user cannot search their memory, the browser
+  history, or a tab title for a word the nav showed them. Audit it as a set - drift
+  accumulates one page at a time and is invisible from inside any single page.
+- **Name a page for its content, not its lineage.** Two pages whose link text has
+  to gloss the other ("Model overview (per-crop) →") have failed - rename both to
+  what they contain. Redirect the old path; a rename is not a reason to break a
+  bookmark.
+- **The page where work starts deserves a nav entry.** Burying the primary action
+  inside a page named for observing it (an Analyse button under "Status") costs a
+  click and, worse, hides that the action exists.
+- **Group a nav past ~8 items** with separators (media | identity | models |
+  system), and keep sibling pages adjacent - a tuning page wedged between two
+  media pages breaks the group the eye already learned.
 
 ## 9. Accessibility (non-negotiable)
 
@@ -445,6 +460,14 @@ Words in the UI are design material. Keep them consistent:
   (3 samples)".
 - Entity names (track, scene, person, source) stay the same across pages. No
   synonym pile.
+- **One verb form per action, everywhere.** `Re-analyse` / `↻ re-analyse` /
+  `re-analyse` across three pages is three actions to a reader who is scanning.
+  Fix the casing and the glyph together, and grep for the label when you change
+  it.
+- **One shape per navigational move.** "Go up to the list" is a button in the page
+  nav row on every page, or muted text on every page - not one on some and the
+  other elsewhere. Same for detail-page headings: pick `<h1>` = file name (with
+  the full path muted beneath) or `<h1>` = full path, and apply it to all of them.
 - Labels describe the concept, not the value. "Status: Disabled" reads cleanly;
   "Enabled: Disabled" is a contradiction.
 - **A verb-label names a mechanism - re-audit it when the mechanism changes.**

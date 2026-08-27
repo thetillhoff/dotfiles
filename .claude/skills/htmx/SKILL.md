@@ -130,6 +130,48 @@ poll a partial endpoint.
 
 Keep polling fragments small. Poll only the changing region, not the whole page.
 
+**A poll must not wrap readable content — it eats text selection.** Every swap
+destroys and rebuilds the nodes inside the fragment, so any text the user had
+selected vanishes a tick later, and a drag in progress re-anchors onto the
+rebuilt nodes (it "selects other text"). This is invisible in testing because
+nothing looks broken; users report it as "the page keeps clearing my selection".
+Same swap also loses focus, scroll inside the region, and open `<details>`.
+
+Two rules keep it clean:
+
+1. **Status polls; content doesn't.** Put the job card / progress line in the
+   polled fragment and leave the table, transcript, or log outside it. When the
+   content genuinely changes (job finished), have the polled response carry it as
+   an out-of-band swap (`hx-swap-oob="true"` on an element with the content's
+   `id`) — so the content is swapped at the two moments it changes, not every
+   tick.
+2. **Stop polling when there is nothing to poll for.** Render the poll trigger
+   only while work is in flight; an idle page should make no requests at all. The
+   response that observes "finished" simply comes back without the trigger, which
+   ends the loop server-side (see *Terminal responses drive lifecycle*).
+
+```html
+<!-- WRONG: the results table is inside the polled fragment -->
+<div id="status" hx-get="/run/status" hx-trigger="every 2s" hx-swap="outerHTML">
+  <p>Running…</p>
+  <table>…500 rows the user is reading…</table>
+</div>
+
+<!-- RIGHT: poll the card; the table is its own region, swapped OOB when done -->
+<div id="status" {% if running %}hx-trigger="every 2s"{% endif %}
+     hx-get="/run/status" hx-swap="outerHTML">
+  <p>Running…</p>
+</div>
+<div id="results"><table>…</table></div>
+<!-- /run/status returns, only on the tick that sees the run finish:
+     <div id="status" …>idle</div>
+     <div id="results" hx-swap-oob="true"><table>…fresh…</table></div>  -->
+```
+
+If the content must live inside the polled region, morph instead of replace
+(idiomorph, stable `id`s) — it reconciles in place and disturbs selection far
+less, though a changed text node can still drop it.
+
 **One polling loop per region - never nest polls.** A polling element inside an
 already-polling fragment is torn down and rebuilt on every outer swap; the two
 race, and if the inner one returns `HX-Redirect` on a transient not-running

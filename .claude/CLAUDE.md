@@ -78,6 +78,22 @@ Already stated above under Git. Repeated here as a reminder for hook sections be
 
 To get a command's exit status, run a plain `echo $?` on its own — not a per-command `echo "label: $?"` each time. If a label is wanted, print a static `echo` line right before it, never in the same command (a preceding command would overwrite `$?`).
 
+### `docker exec` with a heredoc needs `-i`
+
+`docker exec <ctr> python3 - <<'EOF'` without `-i` silently runs NOTHING: stdin
+isn't attached, the interpreter reads EOF immediately and exits 0 with no output.
+It looks like a script that produced nothing rather than one that never ran. Use
+`docker exec -i <ctr> python3 - <<'EOF'`, and treat "no output at all" from a
+heredoc as this bug until proven otherwise.
+
+### `docker run -v` needs `:z` on SELinux, and mount dirs not files
+
+On this host (SELinux enforcing), `-v /path/script.py:/script.py:ro` fails with
+`can't open file: [Errno 13] Permission denied` - the file has no container label.
+Add `:z` to every bind mount, and prefer mounting the containing directory
+(`-v "$DIR:/work:z"`) over a single file: relabelling one file is fussier and a
+script usually wants siblings anyway.
+
 ### Kubernetes manifests: one resource per file
 
 One k8s manifest per file - never bundle multiple resources with `---` separators. Name files `<kind>-<name>.yaml` (e.g. `serviceAccount-trading-worker.yaml`), matching the existing dir convention. Wire each into `kustomization.yaml`.
@@ -125,22 +141,26 @@ Stop because the work is at a clean point, not because the turn ran out. If a fo
 
 - No em dashes (—). Use a plain hyphen-minus surrounded by spaces ( - ) instead.
 
-## ASD-STE100 Simplified Technical English
+## Simplified Technical English (ASD-STE100)
 
-Write all prose (docs, READMEs, comments, commit bodies, PR descriptions, chat answers) in ASD-STE100 Simplified Technical English:
+Write all prose (docs, READMEs, specs, TODOs, design notes, code comments, commit bodies, PR descriptions) in ASD-STE100 Simplified Technical English. It is a writing standard for technical text, not a style preference - a tired reader, a non-native reader, or a model must parse it correctly on the first pass.
 
-- One instruction per sentence. Procedures max 20 words per sentence, descriptive text max 25.
-- One paragraph = one topic, max 6 sentences.
+- One word = one meaning = one part of speech. Pick a term, reuse it everywhere. Never swap synonyms for variety ("start" is not sometimes "launch", "kick off", "fire").
 - Active voice. Name the actor: "The service writes the log", not "The log is written".
 - Imperative for instructions: "Start the container." Not "The container should be started."
-- One word = one meaning, one meaning = one word. Pick a term, reuse it everywhere. Never use synonyms for variety.
+- Present tense for what is. Simple past or future when needed. No perfect tenses ("has been added" -> "exists", or delete it).
+- One instruction per sentence. Split a compound instruction into two. Max 20 words per instruction, 25 per description.
+- One paragraph = one topic, max 6 sentences. Use a vertical list instead of a long sentence.
 - Only approved/technical vocabulary. Prefer: use (not utilize), start (not initiate/commence), do (not perform), about (not approximately), before (not prior to), after (not subsequent to), can (not is able to), must (not is required to), help (not facilitate), send (not transmit) - unless the long form is the exact technical term.
 - No noun clusters longer than 3 words. Break with "of"/"for": "settings of the retry queue", not "retry queue settings configuration".
 - No -ing verb forms as nouns or modifiers where a plain verb works. Use "to configure X", not "configuring X".
-- Do not drop articles ("the", "a") - ASD-STE100 requires them, unlike telegraphic styles.
+- Keep articles ("the", "a"). STE requires them - this is the one place where the caveman drop-articles rule does NOT apply.
 - Keep warnings and safety text before the step they apply to, never after.
+- Say the outcome, not the exploration: "Cap the pool at 64", not "Look into whether we should maybe cap the pool".
 
-Exempt: code, code identifiers, quoted error messages, external names, direct quotes.
+Exempt: code, code identifiers, quoted error messages, external names, direct quotes, commit messages that follow another convention, and prose the user asked for in another register (a blog post, marketing copy). Chat replies follow the caveman rules instead.
+
+## Markdown Linting
 
 **Always run markdownlint with `--ignore node_modules`** (global setting). A `**/*.md` glob otherwise lints dependency markdown and floods the output with errors you don't own. Belt-and-suspenders: keep a `.markdownlintignore` at the repo root containing `node_modules/` and `dist/` - markdownlint-cli auto-respects it.
 
