@@ -98,6 +98,30 @@ Rules of thumb:
 - **Perspective / flow** - position elements where the flow expects them
   (submit at the end of a form, not the top).
 
+### Sketch the rows in text before you build them
+
+Any arrangement of three or more elements has several defensible forms, and the
+words people use for it - "aligned", "at the top", "same size" - describe all of
+them equally well. Draw the layout as a box sketch, show it, and let them point
+at the one they meant. One question beats rebuilding the same grid three times,
+and a picture settles what a paragraph of layout prose cannot:
+
+```text
+┌──────────────────────────────┐
+│ ← Series name                │
+├──────────────┬───────────────┤
+│ Chapter 12 ▾ │ via asura ▾   │
+├──────────────┼───────────────┤
+│ ← Chapter 11 │ Chapter 13 →  │
+└──────────────┴───────────────┘
+```
+
+Offer the two or three arrangements that genuinely differ, each one whole - a
+gallery of near-identical variants asks the reader to do the designing. Where
+the request already names one form, or the layout has only one sensible shape (a
+lone button, a plain list), build it: a preview of an inevitable result spends a
+turn to confirm what both of you already knew.
+
 ## 3. Typography
 
 - **Max two font families.** More fragments the page.
