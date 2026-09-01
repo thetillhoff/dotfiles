@@ -36,6 +36,11 @@ lead-ins** - they are the pass/fail gate. For the named theory (Nielsen's 10
 heuristics, Tog's principles, Gestalt laws, color schemes, layout patterns)
 consult `references/frameworks.md` - cite by name when justifying a decision.
 
+Once the interface is built, the accessibility and responsive claims here stop
+being advice and become checkable: run the **frontend-verify** skill. It scans
+every page at every width in both colour schemes with axe-core and returns
+counts, which is the only form of "it is accessible" worth reporting.
+
 Reference files, consulted on demand:
 
 - `references/frameworks.md` - the named theory (Nielsen, Tog, Gestalt, color

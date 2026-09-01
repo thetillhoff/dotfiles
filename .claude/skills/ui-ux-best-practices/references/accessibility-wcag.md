@@ -122,4 +122,6 @@ levels. Details are unstable; 2.2 AA is expected to satisfy most of its minimum.
   colors and encloses at least a 2px perimeter; "technically visible" isn't
   enough.
 - **Keyboard-only pass** and an **automated scan** (axe-core / Lighthouse /
-  pa11y) in CI.
+  pa11y) in CI. The **frontend-verify** skill runs that scan across every page,
+  width and colour scheme, and records the tab order - use it rather than
+  assembling the run by hand.

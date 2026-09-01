@@ -28,6 +28,10 @@
 - **CoC** (Convention over Configuration) — follow existing patterns before inventing new ones.
 - **Fail fast** — surface errors at the boundary; don't swallow and continue silently.
 
+## Code Comments
+
+- Never reference another PR, issue, or ticket number in a code comment ("once PR #69 merges", "see issue X"). That's process metadata; it rots and means nothing to a reader without repo access. State the actual technical constraint instead: what's missing, what's unsupported, what the workaround compensates for.
+
 ## Research & Debugging Discipline
 
 - **Falsification-first, not narrative-first.** Assume your latest result is wrong; try to break it before reporting. Don't build a story then defend it.
@@ -209,5 +213,6 @@ Several skills overlap on UI/design work. Route by intent:
 | HTMX server-rendered patterns | htmx |
 | Charts / data viz | dataviz |
 | DESIGN.md spec documents | design-system |
+| Verifying a built frontend - a11y scan, viewport sweep, keyboard path | frontend-verify |
 
 If this cluster changes - a skill is added, removed, renamed, or merged - this table goes stale. Tell me so I can update it.

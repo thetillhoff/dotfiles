@@ -4,7 +4,7 @@ Mobile-first. Content-driven breakpoints. No desktop-only interactions.
 
 ## Mobile — non-negotiable
 
-Every Hallmark output must render flawlessly at **320 px, 375 px, 414 px, and 768 px** CSS-pixel widths. Eyeball each viewport before marking the output complete:
+Every Hallmark output must render flawlessly at **320 px, 375 px, 414 px, and 768 px** CSS-pixel widths. Eyeball each viewport before marking the output complete, then confirm it with the **frontend-verify** skill - it measures these gates at every width instead of trusting the eye:
 
 - No horizontal scroll (slop-test gate 34)
 - No clickable text wrapping to two lines (gate 49)
