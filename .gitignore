@@ -46,6 +46,8 @@ AppImages/
 !.claude/CLAUDE.md
 !.claude/settings.json
 !.claude/skills
+.claude/skills/*/node_modules/
+.claude/skills/*/package-lock.json
 
 .codex/
 

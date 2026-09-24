@@ -97,6 +97,11 @@ function probe(maxCh) {
   for (const el of document.querySelectorAll('main p, article p, main li, article li')) {
     if (!visible(el)) continue;
     const s = getComputedStyle(el);
+    // A grid/flex item is a layout box, not a line of text - it can span a
+    // whole multi-column row (a number column beside a prose column) with no
+    // reading-measure problem at all. Only flow-layout boxes are actual text
+    // lines worth measuring in characters.
+    if (s.display === 'grid' || s.display === 'flex') continue;
     ctx.font = `${s.fontStyle} ${s.fontWeight} ${s.fontSize} ${s.fontFamily}`;
     const zero = ctx.measureText('0').width || 8;
     const inner = el.getBoundingClientRect().width
@@ -140,8 +145,13 @@ async function keyboardPath(page) {
   const skip = await page.$('a[href^="#"]:has-text("Skip"), a.skip-link');
   let skipLandsFocus = null;
   if (skip) {
-    await page.keyboard.press('Home');
-    await page.evaluate(() => document.body.focus());
+    // A page with more than 15 focusable elements never hits the `!stop`
+    // break above, so the tab cursor is left mid-page; `body.focus()` is a
+    // no-op on a plain <body> with no tabindex, so the follow-up Tab+Enter
+    // used to fire on whatever real link was last focused, navigating away
+    // and destroying the execution context. Reload for a guaranteed-clean
+    // first-Tab state instead of trying to rewind focus by hand.
+    await page.reload({ waitUntil: 'load' });
     await page.keyboard.press('Tab');
     await page.keyboard.press('Enter');
     skipLandsFocus = await page.evaluate(() => {

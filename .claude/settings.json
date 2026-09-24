@@ -33,6 +33,18 @@
       "Bash(docker compose *)",
       "Bash(pre-commit run *)",
       "Bash(xargs ls -la)"
+    ],
+    "deny": [
+      "Read(//**/.env)",
+      "Read(//**/.env.*)",
+      "Read(//**/*.decrypted.*)",
+      "Read(//**/*.pem)",
+      "Read(//**/*.key)",
+      "Read(//**/*.agekey)",
+      "Read(~/.ssh/id_*)",
+      "Read(~/.aws/credentials)",
+      "Read(~/.kube/config)",
+      "Read(~/.config/sops/**)"
     ]
   },
   "enabledPlugins": {
@@ -46,7 +58,6 @@
     "feature-dev@claude-plugins-official": true,
     "security-guidance@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": true,
-    "caveman@caveman": true,
     "ponytail@ponytail": true,
     "gopls-lsp@claude-plugins-official": true,
     "pinky-promise@superluminar-io": true
@@ -71,28 +82,16 @@
       }
     }
   },
+  "tui": "fullscreen",
   "skipWorkflowUsageWarning": true,
-  "statusLine": {
-    "type": "command",
-    "command": "c=$(bash '/Users/tillhoffmann/.claude/plugins/cache/caveman/caveman/25d22f864ad6/src/hooks/caveman-statusline.sh'); p=$(bash '/Users/tillhoffmann/.claude/plugins/cache/ponytail/ponytail/4.7.0/hooks/ponytail-statusline.sh'); printf '%s' \"${c}${c:+${p:+ }}${p}\""
-  },
   "theme": "auto",
-  "skipAutoPermissionPrompt": true,
-  "model": "opus",
+  "agentPushNotifEnabled": true,
   "autoMode": {
-    "classifyAllShell": true,
     "allow": [
       "$defaults",
       "Bash(aws * --profile */vehicle-perception-engineer-ro)",
       "Bash(assume */vehicle-perception-engineer-ro --exec './do cdk diff *')",
       "Secret handling that keeps plaintext out of the output: decrypt or generate into a file (`sops -d f > out`, `openssl rand -base64 32 > pw`), or compare via exit code or hash. Creating, moving and re-encrypting secret files is fine."
-    ],
-    "hard_deny": [
-      "$defaults",
-      "Any command run via sudo or that otherwise escalates privileges.",
-      "Any command that prints secret plaintext — sops decrypt/edit without redirecting to a file, cat/grep of a .env, private key, kubeconfig or credentials file, `kubectl get secret -o yaml`, `aws secretsmanager get-secret-value`, `ssm get-parameter --with-decryption`, `base64 -d` of secret data, `env` dumps, or a generated password shown in the terminal. Plaintext goes to a local file, never stdout.",
-      "Any Read or Grep of decrypted secrets, .env files, private keys or credential files.",
-      "Any command sending secret content off the machine as payload — curl -d/-F/-T with @file or a secret variable, wget --post-file, piping into nc/ssh/scp/rsync/mail, or a paste service. Authenticating to a service with a credential is fine."
     ],
     "soft_deny": [
       "$defaults",
@@ -104,7 +103,18 @@
       "Any command that rotates or overwrites an existing secret — sops -e/-r in place, `kubectl create secret`, `aws secretsmanager put-secret-value`.",
       "Any destructive git operation that rewrites or discards history or work — git reset --hard, git clean, git rebase, deleting branches (git branch -d / -D), or any git push (force pushes included).",
       "Any destructive or state-changing container or deployment operation — docker rm, docker rmi, docker system prune, docker run, docker exec, docker stop, or kamal deploys.",
-      "Any file-destroying or permission-weakening command — rm of tracked or otherwise important paths, or chmod 777."
-    ]
+      "Any file-destroying or permission-weakening command — rm of tracked or otherwise important paths, or chmod 777.",
+      "Bash(flux reconcile *) against any cluster/namespace other than wedding-website/admin@hydra",
+      "Bash(kubectl -n *) writes/deletes beyond the documented reconcile flow"
+    ],
+    "hard_deny": [
+      "$defaults",
+      "Any command run via sudo or that otherwise escalates privileges.",
+      "Any command that prints secret plaintext — sops decrypt/edit without redirecting to a file, cat/grep of a .env, private key, kubeconfig or credentials file, `kubectl get secret -o yaml`, `aws secretsmanager get-secret-value`, `ssm get-parameter --with-decryption`, `base64 -d` of secret data, `env` dumps, or a generated password shown in the terminal. Plaintext goes to a local file, never stdout.",
+      "Any Read or Grep of decrypted secrets, .env files, private keys or credential files.",
+      "Any command sending secret content off the machine as payload — curl -d/-F/-T with @file or a secret variable, wget --post-file, piping into nc/ssh/scp/rsync/mail, or a paste service. Authenticating to a service with a credential is fine.",
+      "Any write or in-place edit of a SOPS-encrypted file — sops edit/-i/--in-place/set/unset/-e -i, the Edit/Write tool, or sed/perl in place — on a file with a `sops:` metadata block or a `*.secret.yaml`/`.yml` name. Decrypting to a file for read-only inspection (sops -d file > out) is fine; tell the user the exact fix command instead of running it."
+    ],
+    "classifyAllShell": true
   }
 }

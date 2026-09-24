@@ -9,6 +9,9 @@ ask=0
 
 files() { git ls-files "$@" 2>/dev/null | grep -vE 'node_modules|/vendor/|\.min\.' | wc -l | tr -d ' '; }
 have() { command -v "$1" >/dev/null 2>&1; }
+# The binary existing proves nothing: a container runtime with a stopped daemon still resolves on
+# PATH and then fails at the first run. Ask the daemon, not the shell.
+have_docker() { command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; }
 row() { printf '  %-14s %s\n' "$1" "$2"; }
 need() { ask=1; printf '  %-14s MISSING - %s\n' "$1" "$2"; }
 
@@ -23,9 +26,11 @@ echo
 
 if [ "$n_py" -gt 0 ]; then
   echo "python"
-  if have docker; then
+  if have_docker; then
     row harvest "ok (python:3-slim + scripts/extract_py.py, stdlib only)"
     row reachability "ok on demand (vulture/pyflakes inside the same container)"
+  elif have docker; then
+    need "docker daemon" "docker is installed, its daemon is not answering - start it and re-run"
   elif have python3; then
     row harvest "ok via host python3 - stdlib only, but check the repo's Docker convention"
     need vulture "no docker: pip on the host is not allowed, so reachability is grep-only"

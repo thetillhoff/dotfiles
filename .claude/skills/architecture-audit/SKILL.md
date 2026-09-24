@@ -91,6 +91,11 @@ Then build the map yourself so no agent re-explores:
   value here is reachability evidence (a symbol only tests call is dead in
   production terms, and that only shows up if tests are inventoried too).
 - Note the languages present.
+- **Assert the units COVER the file list**, then fix the gap before spawning. Grouping by named
+  prefix silently drops anything that matches no prefix, and a dropped file is invisible for the
+  rest of the run — no agent reports a file it was never given. `comm -23` the harvest's paths
+  against the union of the unit slices; the answer must be empty. A top-level module that is
+  nobody's obvious subtree is exactly what falls through, and it is often shared infrastructure.
 
 **Run the extractors — see `references/extractors.md` for commands and caveats.**
 Two jobs there:
@@ -112,6 +117,13 @@ the same columns by reading.
 
 Haiku fits because this is local bounded reading: one file at a time, no
 cross-file judgement. Batch files — one agent per file means hundreds of agents.
+
+**Sample before you fan out.** Run ONE agent, on the unit likeliest to be stale (highest churn, or
+the one nobody owns). If it comes back over ~90% `MATCH`, STOP: this repo has doc discipline, drift
+is not where its defects live, and the remaining batches will bill full price to confirm it. Spend
+that budget on reachability, boundaries and the doc diff, which is where a healthy repo's real
+findings are. A repo that fails the sample earns the full fan-out. Say in the report which way the
+sample went — "drift sampled clean, fan-out skipped" is a finding about the repo, not a gap.
 
 Hand each agent its batch's harvest rows (`path line kind vis name signature doc`)
 so it starts from the symbol list rather than rebuilding it, and require it to
@@ -255,6 +267,12 @@ do:       <the action, one sentence — or "A vs B" when it's the user's call>
 ## Skill verdict
 <Phase 7: what to change about this skill, with the run's evidence.>
 ```
+
+**Diff every finding against the repo's own tracker before it reaches the report.** A backlog file,
+an issue tracker or a known-issues doc may already carry it, often in more detail than the audit
+produced — and re-reporting it as a discovery wastes the reader's attention and misrepresents what
+the run learned. Something already tracked is either dropped or cited as confirmation, never
+presented as new.
 
 What keeps it short and final:
 

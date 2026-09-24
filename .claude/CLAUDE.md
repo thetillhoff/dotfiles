@@ -167,7 +167,9 @@ Exempt: code, code identifiers, quoted error messages, external names, direct qu
 
 ## Markdown Linting
 
-**Always run markdownlint with `--ignore node_modules`** (global setting). A `**/*.md` glob otherwise lints dependency markdown and floods the output with errors you don't own. Belt-and-suspenders: keep a `.markdownlintignore` at the repo root containing `node_modules/` and `dist/` - markdownlint-cli auto-respects it.
+**Always run markdownlint with `--ignore node_modules`** (global setting). A `**/*.md` glob otherwise lints dependency markdown and floods the output with errors you don't own.
+
+**`--ignore node_modules` is not enough on its own - it matches only a top-level `node_modules`, not a nested one.** A monorepo with `services/frontend/node_modules` still floods. Keep a `.markdownlintignore` at the repo root (markdownlint-cli auto-respects it) listing `node_modules/`, `dist/`, and any directory of GENERATED markdown (`results/`, report output) plus gitignored scratch (`docs/superpowers/`). The goal is that `npx markdownlint-cli --ignore node_modules -- '**/*.md'` exits 0 over the whole repo, so a real violation is visible instead of buried.
 
 After creating or editing any markdown file, auto-fix the mechanical issues first, then lint:
 
