@@ -11,6 +11,7 @@
   "trustedformulae": [
     "ariga/tap/atlas",
     "ekristen/tap/aws-nuke",
+    "fwdcloudsec/granted/granted",
     "stripe/stripe-cli/stripe",
     "thetillhoff/tap/kern"
   ],

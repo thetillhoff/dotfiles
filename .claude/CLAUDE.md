@@ -28,9 +28,23 @@
 - **CoC** (Convention over Configuration) — follow existing patterns before inventing new ones.
 - **Fail fast** — surface errors at the boundary; don't swallow and continue silently.
 
+## CLI Deprecation
+
+- Do not add a forwarding stub for a removed subcommand or flag ("X moved to Y"). Delete the subcommand outright.
+- Reason: a stub is legacy weight. It sits in the code forever and nobody prunes it later.
+- If a codebase already has stubs like this, do not silently remove them. Flag them to the user first, so they know the weight exists and can decide.
+
 ## Code Comments
 
+Every comment is another thing to update, review, and re-read. A stale one is worse than none.
+
+- Why, not what. Never restate the code, a name, or a flag.
+- Two lines max. Longer than the code it explains means delete it or cut it.
+- No war stories: no "we tried X", no measured timings, no quoted error text, no diff history. That goes in the commit message or `TODO.md`.
 - Never reference another PR, issue, or ticket number in a code comment ("once PR #69 merges", "see issue X"). That's process metadata; it rots and means nothing to a reader without repo access. State the actual technical constraint instead: what's missing, what's unsupported, what the workaround compensates for.
+- Prefer a better name. If renaming removes the need for the comment, rename.
+- A non-obvious constraint (hardware quirk, API contract, workaround) earns one line naming the constraint - not the investigation behind it.
+- `ponytail:` markers stay one line: the ceiling and the upgrade path.
 
 ## Research & Debugging Discipline
 
@@ -98,6 +112,39 @@ Add `:z` to every bind mount, and prefer mounting the containing directory
 (`-v "$DIR:/work:z"`) over a single file: relabelling one file is fussier and a
 script usually wants siblings anyway.
 
+### Playwright browsers: use the official Docker image, not host install
+
+Bazzite (immutable Fedora) has no `apt-get`; `npx playwright install-deps`
+fails with exit 127, and `npx playwright install chrome` alone fails too -
+it needs `sudo`, not available non-interactively. Skip host install:
+`docker run --rm -it -v "$PWD:/work:z" -w /work
+mcr.microsoft.com/playwright:v<ver>-noble bash` - browsers ship
+preinstalled, pin `<ver>` to the npm `playwright` version in use (check
+with `npx playwright --version` on the host; that npm install itself works
+without `sudo`, only the browser binary download needs it).
+
+- **The `playwright` npm package itself is NOT preinstalled** - only the
+  browser binaries are. Run `npm install playwright@<ver> --no-save
+  --silent` inside the container before `require('playwright')`, or the
+  script fails with `Cannot find module 'playwright'`.
+- **To reach a dev server already running on the host** (e.g. `task dev`
+  bound to `localhost:8080`), add `--network host` to `docker run` - on
+  Linux this shares the host's network namespace, so `localhost` inside the
+  container is the host's `localhost`, no `host.docker.internal` needed.
+- **Screenshot/output paths must land under the mounted volume.** A script
+  written for a bare Playwright environment often hardcodes an absolute
+  path like `/out/shot.png`; inside this container that path is not
+  mounted, so the file silently never appears (no error). Use a path
+  relative to the container's working directory (`-w /work`, so
+  `./out/shot.png`), or add a second `-v` for the output directory.
+- **Verify a "restarted" server is actually serving the new build** before
+  trusting a screenshot - `curl` the changed asset directly (e.g.
+  `curl localhost:PORT/static/style.css | grep <the change>`) and confirm
+  it, not just that the port answers. A stale process left listening on
+  the same port (a failed kill, a second background job) answers requests
+  fine while still serving the old build, and a screenshot from it looks
+  like your fix did nothing.
+
 ### Kubernetes manifests: one resource per file
 
 One k8s manifest per file - never bundle multiple resources with `---` separators. Name files `<kind>-<name>.yaml` (e.g. `serviceAccount-trading-worker.yaml`), matching the existing dir convention. Wire each into `kustomization.yaml`.
@@ -124,6 +171,8 @@ Stop because the work is at a clean point, not because the turn ran out. If a fo
 
 - Any task that runs, tests, or installs Python must specify Docker in the plan steps.
 - All git commands in the plan must use `cd <path> && git <cmd>` — never `git -C`.
+- **Check the plan's own code comments against ASD-STE100 before the plan ships.** Implementers copy plan code verbatim, comments included. A plan that mandates the standard while its own samples chain clauses with `and`/`but`/`so` produces one fix round per task. A 9-task plan spent 3 fix rounds on comments that were all plan text.
+- **Check dependency edges, not just interface names.** Two tasks can agree on a signature while no task ever adds the dependency that makes it importable. A plan had `cli` calling `translate_core::Subtitle` and never added `translate-core` to `cli`'s manifest.
 
 ### During superpowers:subagent-driven-development
 
@@ -179,6 +228,8 @@ npx markdownlint-cli --disable MD013 --ignore node_modules -- <file.md>
 ```
 
 `--fix` handles tables, bare URLs, list/heading spacing, etc. automatically. Fix any remaining reported errors (e.g. MD040 fenced-code language, which it can't infer) by hand before considering the task done.
+
+**MD049/MD050 style is inferred from the first emphasis in the file, so one new `*word*` can fail every pre-existing `_word_`.** The errors point at untouched lines far from your edit and read like the file was already broken. Check the baseline before "fixing" them - `git show HEAD:file.md > /tmp/base.md` and lint that. If the baseline is clean, the offender is your own emphasis: match the file's existing style instead of letting `--fix` rewrite unrelated lines.
 
 **`--fix` silently destroys tabs inside fenced code blocks (MD010).** Go, Makefiles, and Taskfiles all indent with tabs, so a markdown file that quotes them comes back with the indentation replaced by single spaces. Nothing warns you. In any repo whose markdown contains such code, add a `.markdownlint.json` at the root - markdownlint-cli auto-discovers it, and it also removes the need to pass `--disable MD013` on every call:
 

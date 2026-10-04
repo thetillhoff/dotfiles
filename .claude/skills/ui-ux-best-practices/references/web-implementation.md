@@ -151,6 +151,13 @@ gracefully: `text-wrap: balance` (even ragged headings) and `text-wrap: pretty`
   auto-stacks when the main can't keep its minimum width.
 - **Centered measure** (readable prose): `max-width: 60-75ch` with
   `margin-inline: auto`, plus `padding-inline` so it never kisses the edges.
+  Apply to `p, ul, ol` (and any status/alert/banner element in normal flow) as
+  one selector list, not `p` alone - a plain `<div>` (an htmx error target, a
+  banner) has no width of its own and silently stretches to the full outer
+  container, rendering visibly wider than the prose around it once the prose
+  is capped and centered. For `ul`/`ol`, center the **list element itself**,
+  never each `<li>` individually - centering per-item leaves markers
+  drifting out of column instead of aligned.
 - **Full-bleed within a centered column:** a grid with named lines lets children
   break out of the measure to full width -
   `[full-start] minmax(1rem,1fr) [content-start] min(65ch,100%) [content-end] minmax(1rem,1fr) [full-end]`;

@@ -47,6 +47,10 @@
       "Read(~/.config/sops/**)"
     ]
   },
+  "statusLine": {
+    "type": "command",
+    "command": "c=$(bash '/Users/tillhoffmann/.claude/plugins/cache/caveman/caveman/25d22f864ad6/src/hooks/caveman-statusline.sh'); p=$(bash '/Users/tillhoffmann/.claude/plugins/cache/ponytail/ponytail/4.7.0/hooks/ponytail-statusline.sh'); printf '%s' \"${c}${c:+${p:+ }}${p}\""
+  },
   "enabledPlugins": {
     "frontend-design@claude-plugins-official": true,
     "superpowers@claude-plugins-official": true,

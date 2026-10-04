@@ -75,6 +75,10 @@ flow that gets them there? Sketch the **user journey** first; the UI is just the
 path. Design each screen around the one thing the user came to do.
 
 - **Progressive disclosure** - ask one thing at a time, not everything at once.
+- **A page's lead-in explains in one line, not six.** A wall of explanatory
+  prose above the fold pushes the actual task below the fold and reads as
+  unfinished, not thorough. Cut it to one sentence and move the rest behind a
+  help icon (tooltip or slide-out panel) for whoever wants it.
 - **Above vs below the fold** - be deliberate about what is seen without
   scrolling. Put the primary action and value there.
 - **Familiar patterns** - do it the way most products do it. Novelty in

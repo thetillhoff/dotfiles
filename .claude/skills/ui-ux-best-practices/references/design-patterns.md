@@ -80,6 +80,33 @@ Match **scope + urgency + persistence** to the channel - don't pick by looks:
   alone. **Virtualize** lists beyond ~50 rows (render only what's on screen) to
   keep scrolling at 60fps.
 
+### Editable table rows (add/remove)
+
+A table the user edits in place (DNS records, line items, key/value pairs) is
+a form whose fields happen to be arranged as rows, not a data table — treat
+adding and removing a row as explicit actions, not table furniture:
+
+- **An explicit "+ Add row" button, never an auto-appended blank row.** A row
+  that appears on its own — on load, or right after the last one gets used —
+  reads as an existing entry, not an empty slot waiting for input, especially
+  once the table already has real data above it. Nothing exists until the user
+  asks for a new row.
+- **A blank row's own delete button is the tell that it's not deliberate.** If
+  a spare row is always present, its delete button appears to do nothing (removing
+  it just produces an identical replacement) — the same auto-append that misleads
+  about existence also breaks the control that should fix it.
+- **Number the rows if any validation message will ever refer to one by
+  position** ("row 3 needs a value") — an unnumbered table makes that message
+  unreadable. Recompute numbers after every add/delete, not once at render:
+  a number frozen at initial render goes wrong the first time a row is added or
+  removed above it.
+- **Validate the field, not the row.** "Row 3 needs a type, a name, and a
+  value" makes the user hunt across three columns; a red border plus an inline
+  message on the SPECIFIC empty/invalid cell (native `required`/`:invalid`
+  constraint validation covers most of this with no JS) tells them exactly
+  where to look. Reserve a row-level message for a genuinely cross-field
+  problem (two rows collide, an inter-row conflict) that no single cell owns.
+
 ### Tabs
 
 - **Tabs switch peer views within one context** - never sequential steps (use a
@@ -103,6 +130,10 @@ Match **scope + urgency + persistence** to the channel - don't pick by looks:
 - Additional, not redundant - don't just repeat the visible label. Must trigger
   on **hover *and* focus** and be keyboard/touch reachable (hover-only excludes
   keyboard and touch users). For a disabled control, say how to enable it.
+- **Pair the trigger with a visible icon on the control itself.** Touch has no
+  hover, so a tooltip with no on-screen cue is undiscoverable until someone
+  taps blindly. A small `(i)`/`?` glyph on the button tells the user a tooltip
+  exists before they touch or focus it.
 
 ### Pagination vs infinite scroll
 
