@@ -35,6 +35,7 @@ cd "<dir containing the .md>" && docker run --rm --platform linux/amd64 \
   -V lang=de \
   -V mainfont="Arial.ttf" \
   -V mainfontoptions="Path=/hostfonts/,BoldFont=Arial Bold.ttf,ItalicFont=Arial Italic.ttf,BoldItalicFont=Arial Bold Italic.ttf" \
+  -V header-includes='\usepackage{atbegshi}' \
   -o output.pdf input.md
 ```
 
@@ -66,6 +67,21 @@ want into a directory Docker may share, once:
 mkdir -p ~/.claude/fonts && cp /System/Library/Fonts/Supplemental/Arial*.ttf ~/.claude/fonts/
 ```
 
+On Linux (no system Arial), get the real ArialMT from Debian's
+`ttf-mscorefonts-installer`. Do not use the `arial.ttf` in Wine/Proton
+prefixes - it is a look-alike that embeds as `Arial`, not `ArialMT`:
+
+```sh
+mkdir -p ~/.claude/fonts && docker run --rm -v "$HOME/.claude/fonts:/out:z" debian:stable-slim sh -c '
+sed -i "s/Components: main/Components: main contrib/" /etc/apt/sources.list.d/debian.sources
+apt-get -qq update && echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections
+DEBIAN_FRONTEND=noninteractive apt-get -qq install -y ttf-mscorefonts-installer
+cd /usr/share/fonts/truetype/msttcorefonts
+cp Arial.ttf /out/; cp Arial_Bold.ttf "/out/Arial Bold.ttf"; cp Arial_Italic.ttf "/out/Arial Italic.ttf"; cp Arial_Bold_Italic.ttf "/out/Arial Bold Italic.ttf"'
+```
+
+On SELinux hosts, add `:z` to the bind mounts in the pandoc command too.
+
 Then address the faces by filename via `Path=`, as in the command above —
 filenames sidestep fontconfig entirely. Arial suits German business
 correspondence and matches what most property managers and insurers send. For a
@@ -74,60 +90,57 @@ your own document is ordinary use; don't redistribute the font files themselves.
 
 ## German business letter layout (DIN 5008)
 
-Markdown alone cannot right-align a block or position the address field for a
-window envelope. Embed raw LaTeX for the header and signature, keep the body in
-Markdown:
+Use DIN 5008 Form B. Its address field sits in the window of both DL envelopes
+(A4 folded in three) and C4 window envelopes (A4 unfolded):
 
-```latex
-\begin{flushright}
-\begin{minipage}[t]{75mm}
+| Element | Position from the top-left sheet corner |
+| --- | --- |
+| Address field | x 20 mm, y 45-90 mm, 85 mm wide |
+| Return-address line | bottom of the note zone, baseline about 60.5 mm, small type |
+| Recipient address | text at x 25 mm, from y 62.7 mm |
+| Fold marks | y 105 mm and 210 mm |
+| Punch mark | y 148.5 mm |
+| Subject / body start | about y 98.5 mm |
+
+Do not position these blocks with `\vspace` in the text flow. Pin them to the
+page with `atbegshi` (in the image; `eso-pic`, `textpos` and `scrlttr2` are
+not). Add `-V header-includes='\usepackage{atbegshi}'` to the command, and start
+the Markdown with a raw `{=latex}` fence:
+
+````markdown
+```{=latex}
+% DIN 5008 Form B: fits DL (folded in three) and C4 window envelopes.
+\AtBeginShipoutNext{\AtBeginShipoutUpperLeft{\setlength{\unitlength}{1mm}%
+\put(140,-20){\begin{minipage}[t]{50mm}\vspace{0pt}
 Sender Name\\
 Street 1\\
 12345 City
-\end{minipage}
-\end{flushright}
-
-\vspace{9mm}
-
-\begin{minipage}[t]{85mm}
+\end{minipage}}%
+\put(25,-60.5){\makebox(0,0)[bl]{\scriptsize Sender Name $\cdot$ Street 1 $\cdot$ 12345 City}}%
+\put(25,-62.7){\begin{minipage}[t]{75mm}\vspace{0pt}
 Recipient GmbH\\
-Department\\
 Street 2\\
 54321 City
-\end{minipage}
-
-\vspace{10mm}
-
-\begin{flushright}
-City, 23.08.2026
-\end{flushright}
+\end{minipage}}%
+\put(190,-90){\makebox(0,0)[br]{City, 08.10.2026}}%
+}}
+\vspace*{70.5mm}
 ```
+````
 
-`flushright` + `minipage` is the idiom for "block sits right, text inside stays
-left-aligned".
-
-**Horizontal position is set by the minipage width, not by the alignment.** A
-right-aligned block starts at `sheet width − right margin − minipage width`, so
-compute the width backwards from where the block should start. On A4 with
-`right=20mm`: 75mm starts at 115mm (≈55 % across, reads as centred), 50mm starts
-at 140mm (right third), 35mm starts at 155mm (right quarter).
-
-Keep one font size throughout the letter and choose the width so the longest line
-still fits — a street line is roughly 34mm at Arial 11pt, so 50mm is comfortable.
-Shrinking the block until it needs `\small` trades a uniform document for a few
-millimetres of position; widen the box instead.
-
-**Vertical position** is set by the `\vspace` after the sender block. Measure it
-rather than deriving it: render once, note where the recipient lands, then adjust
-the `\vspace` by the difference. With `top=20mm` and a three-line 11pt sender
-block, the offset before the `\vspace` is about 42mm, so `\vspace{33mm}` puts the
-first recipient line near 75mm.
-
-Target 75mm from the sheet edge with a left margin near 22.5mm. That is what
-Deutsche Post's BriefKlick template uses, and matching a carrier's own template
-is safer than reasoning about envelope windows. If the user has a sample from
-their mail service, measure that page and match it — a couple of millimetres in
-either direction is fine.
+- `\AtBeginShipoutNext` draws on page 1 only.
+- Fold and punch marks are optional, and the user does not want them. To add them, use `\put(3.5,-105){\line(1,0){5}}` (repeat at 148.5 and 210).
+- `\vspace{0pt}` as the first item of a `[t]` minipage puts the top of the block,
+  not the first baseline, at the `\put` point.
+- `\vspace*{70.5mm}` moves the body start to about 98.5 mm, with `top=20mm` and
+  11pt. Change it if the margins or the font size change.
+- Measure the result instead of trusting the numbers. In the image, `pdfplumber`
+  in a `python:3-slim` container prints the top of each text line and each rule in
+  mm (`value * 25.4 / 72`).
+- Keep one font size for the letter, except the return-address line. A street
+  line is about 34 mm wide at Arial 11pt, so a 50 mm sender box is enough.
+- The fenced `{=latex}` block passes any LaTeX through. A raw block without the
+  fence must start with `\begin{...}`; see the caveat below.
 
 Signature block, with room to actually sign:
 
@@ -176,6 +189,10 @@ Give the Markdown no YAML title block unless you want a title page; a letter or
 memo shouldn't have one.
 
 Re-running the command overwrites the PDF, so iterating is cheap.
+
+Keep a number and its unit on one line with an escaped space (`+64\ %`,
+`25\ EUR`). Pandoc turns it into a non-breaking space; a plain space lets
+LaTeX break between them.
 
 Business letters legitimately violate `markdownlint` MD041 (first line not a
 heading) and MD036 (bold where a heading would go) — the sender address and the
