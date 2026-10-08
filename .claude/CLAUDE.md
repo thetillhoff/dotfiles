@@ -112,38 +112,23 @@ Add `:z` to every bind mount, and prefer mounting the containing directory
 (`-v "$DIR:/work:z"`) over a single file: relabelling one file is fussier and a
 script usually wants siblings anyway.
 
-### Playwright browsers: use the official Docker image, not host install
+### `/home` is a symlink to `/var/home` - tools that refuse symlinks break
 
-Bazzite (immutable Fedora) has no `apt-get`; `npx playwright install-deps`
-fails with exit 127, and `npx playwright install chrome` alone fails too -
-it needs `sudo`, not available non-interactively. Skip host install:
-`docker run --rm -it -v "$PWD:/work:z" -w /work
-mcr.microsoft.com/playwright:v<ver>-noble bash` - browsers ship
-preinstalled, pin `<ver>` to the npm `playwright` version in use (check
-with `npx playwright --version` on the host; that npm install itself works
-without `sudo`, only the browser binary download needs it).
+On this host (Bazzite) `/home` points to `/var/home`. `@swc/core` (used by the
+`cdk init` jest setup) then fails with `Failed to load native binding` /
+`cache root contains a non-directory or symlink`. Set
+`SWC_NATIVE_BINDING_CACHE=/var/home/$USER/.cache/swc` before `npx jest`.
 
-- **The `playwright` npm package itself is NOT preinstalled** - only the
-  browser binaries are. Run `npm install playwright@<ver> --no-save
-  --silent` inside the container before `require('playwright')`, or the
-  script fails with `Cannot find module 'playwright'`.
-- **To reach a dev server already running on the host** (e.g. `task dev`
-  bound to `localhost:8080`), add `--network host` to `docker run` - on
-  Linux this shares the host's network namespace, so `localhost` inside the
-  container is the host's `localhost`, no `host.docker.internal` needed.
-- **Screenshot/output paths must land under the mounted volume.** A script
-  written for a bare Playwright environment often hardcodes an absolute
-  path like `/out/shot.png`; inside this container that path is not
-  mounted, so the file silently never appears (no error). Use a path
-  relative to the container's working directory (`-w /work`, so
-  `./out/shot.png`), or add a second `-v` for the output directory.
-- **Verify a "restarted" server is actually serving the new build** before
-  trusting a screenshot - `curl` the changed asset directly (e.g.
-  `curl localhost:PORT/static/style.css | grep <the change>`) and confirm
-  it, not just that the port answers. A stale process left listening on
-  the same port (a failed kill, a second background job) answers requests
-  fine while still serving the old build, and a screenshot from it looks
-  like your fix did nothing.
+### `pkill -f <pattern>` kills its own shell
+
+`pkill -f "node local/server.js"` also matches the Bash tool's own command line
+(which contains that string) and kills it with exit 144 - every command after it
+in the same call never runs. Stop a background server by its task id, or with
+`pkill -f '[n]ode local/server.js'` so the pattern does not match itself.
+
+### Playwright: Docker only
+
+Never install a browser on the host. Use the `playwright-bazzite` skill for screenshots, scripted flows and the Playwright MCP.
 
 ### Kubernetes manifests: one resource per file
 
