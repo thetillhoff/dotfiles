@@ -190,6 +190,12 @@ memo shouldn't have one.
 
 Re-running the command overwrites the PDF, so iterating is cheap.
 
+Put a `YYYY-MM-DD` date in the file name, so alphabetical order is date
+order. Use the position of the date (start or end) that other files in the
+folder use. If the folder has no such scheme, ask the user. Keep the rest of
+the name the same for each version of a document: a new version changes only
+the date.
+
 Keep a number and its unit on one line with an escaped space (`+64\ %`,
 `25\ EUR`). Pandoc turns it into a non-breaking space; a plain space lets
 LaTeX break between them.
