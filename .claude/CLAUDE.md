@@ -7,6 +7,8 @@
 - Use `cd <path> && git <cmd>`, never `git -C <path> <cmd>`.
 - Superpowers skills must never run git commands.
 - **Start every new topic or feature from the latest upstream state.** Before you write code, run `git pull` on the current branch. Before you branch off `main`, check out `main` and pull it first. This prevents work that starts from a stale base.
+- **Run `git branch --show-current` right before every commit.** Another process can switch the branch of the checkout during a session. A commit once landed on a feature branch of another task that way.
+- **Another session can work in the same repo.** Run `git status` before a commit and stage by path, never `git add -A`: its uncommitted files are not yours. A session of the user (for example `mosswood-app-*`) committed its own work in the middle of this one.
 - **Never pass a commit message with `git commit -m "..."` if it contains backticks.** The shell substitutes them and runs the contents as a command. A message containing the literal words `git add -A` executed exactly that, staging the whole repo into what should have been a five-file commit; another ran the test suite and pasted its output into the message. Always use a quoted heredoc, which substitutes nothing:
 
   ```sh
@@ -19,6 +21,11 @@
 
   The quoted `'MSG'` delimiter is what disables substitution; an unquoted `MSG` does not. Use the same form for `--amend`.
 
+## Parallel Agents
+
+- A hand-back can be interim: an agent that spawns helpers reports early, or repeats the same report many times. Do not trust a report. Check the tree: build, vet, tests, and a diff filter for the kind of change that was allowed. Stop a looping agent with `TaskStop`.
+- Split bulk edits by directory, so no two agents touch one file. Tell each agent the checks to run and that it must not change state in git.
+
 ## Principles
 
 - **DRY** (Don't Repeat Yourself) — one source of truth; extract only after 3+ identical uses, not before.
@@ -27,12 +34,33 @@
 - **SRP** (Single Responsibility Principle) — one unit does one job; split when a second unrelated reason to change appears.
 - **CoC** (Convention over Configuration) — follow existing patterns before inventing new ones.
 - **Fail fast** — surface errors at the boundary; don't swallow and continue silently.
+- **Reference, don't restate** — in CLAUDE.md, AGENTS.md and skills, name a public standard, spec or well-known practice and stop. The next agent knows it as well as you do. Write down only what it cannot know: the choice between options, the exception, the project fact.
+
+## Scope: Ask Before You Add a Feature
+
+- Do only what the user asked. A new feature, mechanism or contract that the user did not mention is a separate decision.
+- Ask before you add it. Examples: a version scheme, a new field, a new endpoint, a migration, a new dependency.
+- A change that the user asked for can need such a part to work. Then name the part and ask, or take the smallest option and say so.
+- Do not keep something just because the old code had it. If the user asks for a rewrite, ask whether the old extras stay.
+
+## Version Numbers
+
+- A version number counts releases, not iterations. Bump it once for a change that ships, however many drafts came before.
+- An unreleased draft has no version of its own. Replace it in place: the newest draft is the current version, also when an earlier draft was committed, pushed or reviewed.
+- Do not keep, number or describe earlier drafts in code or comments. Git history is the record.
 
 ## CLI Deprecation
 
 - Do not add a forwarding stub for a removed subcommand or flag ("X moved to Y"). Delete the subcommand outright.
 - Reason: a stub is legacy weight. It sits in the code forever and nobody prunes it later.
 - If a codebase already has stubs like this, do not silently remove them. Flag them to the user first, so they know the weight exists and can decide.
+
+## URL Deprecation
+
+- Do not keep an old URL path alive after a rename or move. Delete the old route; an old link returns 404.
+- No redirect, no alias route, no "kept for bookmarks" handler - unless the user explicitly asks for one.
+- Reason: same as a CLI stub. A redirect is legacy weight that stays forever.
+- A redirect that canonicalises a LIVE URL (two current ids for one resource) is not legacy. Keep it.
 
 ## Code Comments
 
@@ -88,6 +116,14 @@ under the wrong account with no error. Always run `source assume "<profile>"` un
 confirm with a plain `aws sts get-caller-identity` (also unpiped) immediately before any
 command that creates, modifies, or destroys real infrastructure — not just once per session.
 
+### Wrong AWS account: say it first, and only that
+
+If something the user shows (a bucket name, an account ID, a resource that the repo does not
+create) suggests that the AWS console or CLI is on another account than the repo uses, say so
+at once, in one short message, and do nothing else. Example: "It seems you are not in AWS
+account <id>. Can you double check?" Name the account that the repo expects. Do not read the
+other project's code, do not explain the resources, and do not start work before the user answers.
+
 ### Git: cd then git, never git -C
 
 Already stated above under Git. Repeated here as a reminder for hook sections below.
@@ -103,6 +139,7 @@ isn't attached, the interpreter reads EOF immediately and exits 0 with no output
 It looks like a script that produced nothing rather than one that never ran. Use
 `docker exec -i <ctr> python3 - <<'EOF'`, and treat "no output at all" from a
 heredoc as this bug until proven otherwise.
+`kubectl exec` has the same trap: use `kubectl exec -i`.
 
 ### `docker run -v` needs `:z` on SELinux, and mount dirs not files
 
@@ -119,12 +156,26 @@ On this host (Bazzite) `/home` points to `/var/home`. `@swc/core` (used by the
 `cache root contains a non-directory or symlink`. Set
 `SWC_NATIVE_BINDING_CACHE=/var/home/$USER/.cache/swc` before `npx jest`.
 
+### Pulumi CLI: default login is an S3 backend
+
+The CLI on this host is logged in to an S3 backend. Without AWS credentials, `pulumi new` fails with `no EC2 IMDS role found`. Scaffold with `PULUMI_BACKEND_URL=file://~ pulumi new <template> --generate-only`. `@pulumi/pulumi` rejects TypeScript 7: install `typescript@5`.
+
+### `pulumi import` protects the resource by default
+
+`pulumi import` marks each imported resource as protected in the state, even when the code has no `protect`. Pass `--protect=false` when the project uses no protect flags.
+
+### Taskfile: a shell variable wins over an `env:` block
+
+Task lets a variable of the caller's shell override the `env:` of a task. An exported `PULUMI_BACKEND_URL` of one account then sends a task for another env to the wrong state bucket, with no error. Set such a variable on the command itself (`- VAR='{{.VALUE}}' cmd`), never in `env:`. A `vars:` map also rejects the YAML merge key (`<<: *anchor`): put every variable into the anchored map.
+
 ### `pkill -f <pattern>` kills its own shell
 
 `pkill -f "node local/server.js"` also matches the Bash tool's own command line
 (which contains that string) and kills it with exit 144 - every command after it
 in the same call never runs. Stop a background server by its task id, or with
 `pkill -f '[n]ode local/server.js'` so the pattern does not match itself.
+The bracket form fails when the same call also holds the plain string (a
+`pkill` and then a restart in one call). Stop and start in two calls.
 
 ### Playwright: Docker only
 
@@ -133,6 +184,15 @@ Never install a browser on the host. Use the `playwright-bazzite` skill for scre
 ### Kubernetes manifests: one resource per file
 
 One k8s manifest per file - never bundle multiple resources with `---` separators. Name files `<kind>-<name>.yaml` (e.g. `serviceAccount-trading-worker.yaml`), matching the existing dir convention. Wire each into `kustomization.yaml`.
+
+## Infrastructure as Code: never CloudFormation directly
+
+- Never use CloudFormation directly. Do not write templates. Do not use L1 `Cfn*` resource constructs or `node.defaultChild` escape hatches. Do not build values from intrinsic functions or dynamic references (`{{resolve:...}}`).
+- Exception: the project already uses raw CloudFormation. Then follow it.
+- Otherwise use the IaC tool the project already uses. Use Terraform only when the project already uses it.
+- For new infrastructure, use AWS CDK or Pulumi. Prefer TypeScript for both.
+- If an L2 construct lacks a setting, look for another L2 construct first. Example: a `HttpStage` with `throttle` instead of a `CfnStage` override.
+- Do not pass a secret value through the template. Grant the function read access to the secret and read it at runtime.
 
 ## Memory
 
@@ -144,6 +204,7 @@ End a piece of work with the repo in a state a fresh session could close - no im
 
 - Update the docs the change touched: `README.md`, `EXAMPLES.md`, `TODO.md`, design/spec docs, and `CHANGELOG.md` if the repo keeps one. Don't touch docs the change didn't affect.
 - Capture next steps and known gaps in `TODO.md` so nothing lives only in chat.
+- A gap the user accepts (no fix planned) moves from `TODO.md` to `KNOWN-ISSUES.md`. `TODO.md` holds only work someone will do.
 - Commit completed work with a written message; never leave a coherent change uncommitted or half-applied. (Push only when asked.)
 - Write down anything deliberately deferred (a `TODO.md` entry or a `ponytail:` comment) instead of leaving it implicit.
 - Persist all session learnings to files — never rely on memory. Each learning that's reusable across repos (a workflow rule, a tool quirk, a preference) goes in this global CLAUDE.md or a global skill; each one specific to a repo goes in that repo's `CLAUDE.md`, docs, or a repo-local skill. This means editing existing skills and CLAUDE.md sections, not just adding new ones — if a skill or CLAUDE.md section was wrong, incomplete, or out of date during the session, correct it in place before finishing. Treat "I'll remember this" as a bug: if it isn't in a file, it didn't happen.
@@ -163,6 +224,8 @@ Stop because the work is at a clean point, not because the turn ran out. If a fo
 
 **Before dispatching any subagent**, include the full content of the `dev-environment` skill in the subagent brief. Subagents do not inherit CLAUDE.md — without this, they will use `pip install` on the host and `git -C`, breaking both constraints.
 
+**On frontend tasks, rebuild and open the page in a real browser after each task** (playwright-bazzite, with a `pageerror` listener). Grep tests of templates and JS pass while a load-time error kills every handler after it. One such error left a whole tab widget dead under a green suite of 400 tests.
+
 ### During superpowers:test-driven-development
 
 - Python tests must run inside Docker. Do not run `pytest` or `python -m pytest` directly on the host.
@@ -174,6 +237,12 @@ Stop because the work is at a clean point, not because the turn ran out. If a fo
 ### During superpowers:executing-plans
 
 - Apply the same Docker and git constraints as during writing-plans when executing steps.
+
+## Answer Length
+
+- Answer exactly what the user asked, and stop. A request for a command gets the command, with no explanation, no variants and no safety notes.
+- Add details only when the user asks for them, or when a step can destroy data or cost money.
+- Do not wrap a command in extra shell (`read -rs`, `unset`, pipes) unless the user asks. Leave a value the user must fill in as the last argument or as `<placeholder>`.
 
 ## Blog/Prose Writing Style
 
@@ -198,6 +267,14 @@ Write all prose (docs, READMEs, specs, TODOs, design notes, code comments, commi
 - Say the outcome, not the exploration: "Cap the pool at 64", not "Look into whether we should maybe cap the pool".
 
 Exempt: code, code identifiers, quoted error messages, external names, direct quotes, commit messages that follow another convention, and prose the user asked for in another register (a blog post, marketing copy).
+
+## German: Regelbasiertes Schreiben (tekom)
+
+Write all German prose by the tekom guideline "Regelbasiertes Schreiben - Deutsch für die Technische Kommunikation", the German counterpart of ASD-STE100. Spelling follows Duden. On top of it:
+
+- Address nobody where the sentence allows it: no "du", no "Sie". If a form of address is needed, follow the one the project already uses.
+- An instruction is "Bitte" plus infinitive: "Bitte erneut hochladen."
+- The exemptions of STE apply. A legal text keeps the wording that a lawyer approved.
 
 ## Markdown Linting
 

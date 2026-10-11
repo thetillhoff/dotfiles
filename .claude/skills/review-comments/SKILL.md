@@ -45,6 +45,16 @@ file:line
 
 Group by file. If a file has no violations, skip it. If there are no violations at all, say so plainly.
 
+## Bulk trims
+
+When a whole codebase is trimmed (many files, parallel agents), prove that only comments changed:
+
+```sh
+git diff -U0 -- '*.go' | grep -E '^[+-]' | grep -vE '^(\+\+\+|---)' | grep -vE '^[+-]\s*(//|$)'
+```
+
+Only trailing comments and formatter realignment may print. Then run build, vet and the tests. Keep the comment that names a real constraint (write order, security boundary, provider quirk) in one or two lines.
+
 ## Scope
 
 Default scope is the current diff (`git diff @{upstream}...HEAD`). If the user passes a file path or PR number, scope to that instead.

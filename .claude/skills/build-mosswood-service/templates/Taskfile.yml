@@ -1,0 +1,89 @@
+version: '3'
+
+vars:
+  SECRETS: awskms://alias/<project>-pulumi-secrets?region=eu-central-1
+
+tasks:
+  default:
+    desc: List the tasks
+    silent: true
+    cmds:
+      - task --list
+
+  install:
+    desc: Install the Node dependencies of the tooling and the Pulumi projects
+    cmds:
+      - for: ['.', infra, infra/bootstrap, infra/shared]
+        cmd: cd {{.ITEM}} && npm install --silent
+
+  # The done gate. Keep the steps that fit the project, add the ones it needs (formatter, vet, build).
+  # Run the test suite twice: a run that leaves state behind fails on the rerun.
+  verify:
+    desc: The full gate
+    cmds:
+      - task: install
+      - npx --no-install markdownlint-cli --ignore node_modules -- '**/*.md'
+      - for: [infra, infra/bootstrap, infra/shared]
+        cmd: cd {{.ITEM}} && npx tsc --noEmit
+      - task: test
+      - task: test
+
+  test:
+    desc: Run the tests of the app and of the Pulumi program
+    cmds:
+      - echo "replace with the real test commands"
+
+  # infra/bootstrap's Pulumi.yaml pins the local backend. Its state holds no secrets.
+  bootstrap:
+    desc: Account baseline - state bucket, KMS key, Lambda quota, console colour (task bootstrap ENV=dev|prd)
+    dir: infra/bootstrap
+    requires:
+      vars:
+        - name: ENV
+          enum: [dev, prd]
+    env:
+      PULUMI_CONFIG_PASSPHRASE: ""
+    cmds:
+      - npm install --silent
+      - PULUMI_BACKEND_URL='file://~' pulumi stack select --create {{.ENV}}
+      - PULUMI_BACKEND_URL='file://~' pulumi up --stack {{.ENV}}
+
+  # dev deploys from the dev branch, prd from main. shared borrows the bucket and key of prd.
+  stack:
+    desc: Create the stack on its backend if it does not exist (task stack ENV=dev|prd|shared)
+    dir: '{{.STACK_DIR}}'
+    requires: &envRequired
+      vars:
+        - name: ENV
+          enum: [dev, prd, shared]
+    vars: &envVars
+      ACCOUNT: '{{if eq .ENV "dev"}}<dev-account>{{else}}<prd-account>{{end}}'
+      STACK_DIR: '{{if eq .ENV "shared"}}infra/shared{{else}}infra{{end}}'
+      BRANCH: '{{if eq .ENV "prd"}}main{{else}}dev{{end}}'
+      # Set on the command, not in env: a variable of the caller's shell wins over an env block.
+      BACKEND: 's3://<project>-pulumi-state-{{.ACCOUNT}}?region=eu-central-1'
+    cmds:
+      - PULUMI_BACKEND_URL='{{.BACKEND}}' pulumi stack select --create --secrets-provider '{{.SECRETS}}' {{.ENV}}
+
+  preview:
+    desc: Show what a deploy changes (task preview ENV=dev|prd|shared)
+    dir: '{{.STACK_DIR}}'
+    requires: *envRequired
+    vars: *envVars
+    cmds:
+      - task: stack
+      - PULUMI_BACKEND_URL='{{.BACKEND}}' pulumi preview --stack {{.ENV}}
+
+  # Runs `pulumi up` on real infrastructure. Operator-invoked only.
+  deploy:
+    desc: Deploy one env from its branch, or shared from any branch (task deploy ENV=dev|prd|shared)
+    dir: '{{.STACK_DIR}}'
+    requires: *envRequired
+    vars: *envVars
+    preconditions:
+      - sh: '[ "{{.ENV}}" = shared ] || [ "$(git rev-parse --abbrev-ref HEAD)" = "{{.BRANCH}}" ]'
+        msg: '{{.ENV}} deploys only from the {{.BRANCH}} branch'
+    cmds:
+      - task: verify
+      - task: stack
+      - PULUMI_BACKEND_URL='{{.BACKEND}}' pulumi up --stack {{.ENV}}
