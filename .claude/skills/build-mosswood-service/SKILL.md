@@ -66,7 +66,7 @@ Three layers. Every service has the same ones.
 - Region `eu-central-1`, set once in the `Pulumi.yaml` of the project (`aws:region: { value: ... }`). Only the registrar and CloudFront certificates use `us-east-1`.
 - Secrets: SSM Parameter Store SecureString. Never in the Pulumi state, never through a template.
 - dev runs the same program and code as prd. Every difference is stack config. Never branch on the stack name.
-- Cost controls are required: reserved concurrency on every Lambda, a throttle on the API stage, and a monthly budget with mail at 80 % and 100 % (`templates/budget.ts`, `budgetNotificationEmail` in each stack config). `infra/bootstrap` requests the Lambda quota of 1000, because a new account has 10.
+- Cost controls are required: reserved concurrency on every Lambda, a throttle on the API stage, and a monthly budget with mail at 80 % and 100 % (`templates/budget.ts`, `budgetNotificationEmail` in each stack config). See "Conditional aspects" for the Lambda quota.
 - dev uses fakes for paid or irreversible providers. A fake records calls and can force failures. It never deduplicates or retries.
 
 ## Pulumi
@@ -102,7 +102,7 @@ Three projects, TypeScript, `typescript@5`:
 
 ## Taskfile
 
-Start from `templates/Taskfile.yml`. Tasks: `verify`, `test`, `bootstrap`, `stack`, `preview`, `deploy`. A product adds its own (`dev`, `build`).
+Start from `templates/Taskfile.yml`. Tasks: `verify`, `test`, `bootstrap`, `stack`, `preview`, `deploy`, `reset-dev`. A product adds its own (`dev`, `build`).
 
 - Prefer Taskfile over Makefile. Review an existing Makefile against this list and port it.
 - Share `requires` and `vars` with YAML anchors. `vars` per ENV: `ACCOUNT`, `STACK_DIR`, `BRANCH`, `BACKEND`.
@@ -110,8 +110,28 @@ Start from `templates/Taskfile.yml`. Tasks: `verify`, `test`, `bootstrap`, `stac
 - A `vars:` map rejects the YAML merge key. Put every variable in the anchored map.
 - `task stack` creates a missing stack with the alias as secrets provider. `preview` and `deploy` run it. This replaces a manual `pulumi stack init`.
 - `deploy` refuses a branch that does not match the env. `shared` runs from any branch. `deploy` runs `verify` first.
+- `reset-dev` empties every bucket and table of the dev stack, then runs `pulumi up --refresh` to re-seed `TableItem` rows. It uses `templates/reset-dev.sh` as `scripts/reset-dev.sh`. The script reads the ids from the stack state and refuses a non-dev account. It does not clean Cognito or SSM: add that per service.
 - `default` lists the tasks. A destructive task uses `prompt:` and refuses the wrong account in its script. `install` runs `npm install` in every Node project.
 - `verify` is the done gate. Include each check that fits the project: markdown lint, formatter, vet or lint, `tsc --noEmit` of every Pulumi project, the tests (twice), the deployable build. Skip a check that does not fit. Add a better one when the project has it. Never force a check that has no meaning there.
+
+## Conditional aspects
+
+Apply each aspect only when the service has the named resource.
+
+- **Lambda (any function):**
+  - A new account has a concurrency quota of 10, and Lambda keeps 10 unreserved. Every reserved concurrency then fails with "below its minimum value of [10]".
+  - `infra/bootstrap` requests 1000 (`ServiceQuota`, `L-B99A9384`, `templates/bootstrap-index.ts`). Run `task bootstrap ENV=<env>` before the first deploy of the env. AWS can take time to grant it.
+  - Check with `aws lambda get-account-settings --region eu-central-1`.
+- **Log groups (Lambda, CloudFront, any other):**
+  - Set `retentionInDays` on each log group. The default is never expire.
+  - Use one number for all of them. Put it in the stack config or one constant.
+  - The privacy notice states it when the service has one. The notice, the log groups and the CloudFront log rule change together. A test asserts the number.
+- **S3 buckets:**
+  - Give each bucket a lifecycle rule, or write down why it has none (invoices: statutory retention, so no expiry).
+  - A bucket of user uploads expires its objects. The rule is the backstop: the code deletes the object earlier. Keep the days in line with the privacy notice.
+  - A versioned bucket also expires noncurrent versions and incomplete multipart uploads.
+  - A test asserts each rule.
+- **DynamoDB with temporary rows:** enable TTL on an expiry attribute.
 
 ## Agent files
 
@@ -123,7 +143,7 @@ Start from `templates/Taskfile.yml`. Tasks: `verify`, `test`, `bootstrap`, `stac
 - Use the latest LTS of each runtime (Node, `@types/node`, `engines`, the Lambda runtime) and the latest stable Go. Renovate keeps the libraries current. Pulumi needs `typescript@5`.
 - Account IDs and the `source assume` line belong in the agent file.
 - Customer-facing and legal copy names no provider and no AWS service. Exceptions: the pay step, the legal pages and the privacy notice.
-- Log retention of 14 days must match in the privacy notice, the Lambda log groups and the CloudFront log rule. Change all together.
+- A retention time that the privacy notice states must match every place that enforces it. See "Conditional aspects".
 
 ## Docs
 

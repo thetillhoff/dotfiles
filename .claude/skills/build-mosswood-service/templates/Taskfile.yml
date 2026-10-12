@@ -87,3 +87,16 @@ tasks:
       - task: verify
       - task: stack
       - PULUMI_BACKEND_URL='{{.BACKEND}}' pulumi up --stack {{.ENV}}
+
+  # Deletes data on real infrastructure. Operator-invoked only; the script refuses a non-dev account.
+  reset-dev:
+    desc: Empty the buckets and tables of dev and re-seed the stack rows, as after a first deploy
+    prompt: Delete all data of dev?
+    vars:
+      ACCOUNT: '<dev account id>'
+      BACKEND: 's3://<service>-pulumi-state-<dev account id>?region=eu-central-1'
+    env:
+      ACCOUNT: '{{.ACCOUNT}}'
+      BACKEND: '{{.BACKEND}}'
+    cmds:
+      - ./scripts/reset-dev.sh
