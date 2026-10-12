@@ -51,6 +51,8 @@ const schemes = list(arg('schemes', 'light,dark'));
 const themeAttr = arg('theme-attr'); // e.g. data-theme, set to the scheme name on <html>
 const maxCh = Number(arg('max-ch', 78));
 const outPath = arg('out', 'frontend-verify.json');
+const locale = arg('locale'); // e.g. de-DE, for sites that redirect by navigator.language
+const storageState = arg('storage-state'); // Playwright storage state file, for pages behind a login
 
 // Runs in the page. Everything a static read of the CSS cannot tell you:
 // what the browser actually laid out at this width.
@@ -84,6 +86,8 @@ function probe(maxCh) {
   const wrapped = [];
   for (const el of document.querySelectorAll('header a, nav a, footer a, [role="navigation"] a, button, .btn, [role="button"]')) {
     if (!visible(el)) continue;
+    // Content of a closed <details> keeps a box, but it is not rendered.
+    if (el.closest('details:not([open])') && !el.matches('summary')) continue;
     const range = document.createRange();
     range.selectNodeContents(el);
     const tops = new Set([...range.getClientRects()].map((r) => Math.round(r.top)));
@@ -142,7 +146,7 @@ async function keyboardPath(page) {
     if (!stop) break;
     stops.push(stop);
   }
-  const skip = await page.$('a[href^="#"]:has-text("Skip"), a.skip-link');
+  const skip = await page.$('a[href^="#"]:has-text("Skip"), a.skip-link, a.skip');
   let skipLandsFocus = null;
   if (skip) {
     // A page with more than 15 focusable elements never hits the `!stop`
@@ -167,8 +171,9 @@ const report = { widths, schemes, urls, pages: [], failures: [] };
 const fail = (msg) => report.failures.push(msg);
 
 for (const scheme of schemes) {
-  const context = await browser.newContext({ colorScheme: scheme, reducedMotion: 'reduce' });
   for (const url of urls) {
+    // One context per URL, so a page that navigates away cannot take the next one down.
+    const context = await browser.newContext({ colorScheme: scheme, reducedMotion: 'reduce', ...(locale && { locale }), ...(storageState && { storageState }) });
     const page = await context.newPage();
     const consoleErrors = [];
     page.on('pageerror', (e) => consoleErrors.push(String(e)));
@@ -201,12 +206,18 @@ for (const scheme of schemes) {
 
     if (scheme === schemes[0]) {
       await page.setViewportSize({ width: 1280, height: 900 });
-      report.pages.at(-1).keyboard = await keyboardPath(page);
+      // A page that binds Tab to navigation leaves mid-probe: a keyboard trap, not a crash.
+      try {
+        report.pages.at(-1).keyboard = await keyboardPath(page);
+      } catch (err) {
+        if (!/context was destroyed|navigation/i.test(err.message)) throw err;
+        report.pages.at(-1).keyboard = 'left the page';
+        fail(`Tab navigates away from the page (WCAG 2.1.1) - ${url}`);
+      }
     }
     for (const e of consoleErrors) fail(`page error - ${url}: ${e}`);
-    await page.close();
+    await context.close();
   }
-  await context.close();
 }
 await browser.close();
 

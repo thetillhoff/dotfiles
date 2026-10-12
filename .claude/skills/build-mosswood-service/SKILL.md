@@ -49,7 +49,7 @@ Three layers. Every service has the same ones.
 
 | Layer | Runs | Providers, auth, mail |
 | --- | --- | --- |
-| Local (`task dev`, `task test`) | On the machine, no AWS | Mocks or stubs: a `*.mock.js` twin (sendpdf) or DynamoDB Local with stubbed auth (mosswood-app). One switch, static requires. |
+| Local (`task dev`, `task test`) | On the machine, no AWS | Mocks or stubs: a `*.mock.js` twin (sendpdf) or DynamoDB Local with stubbed auth (mosswood-app). One switch, static requires. A server with stubbed auth binds `127.0.0.1`, never all interfaces: `task a11y` and `task dev` leave it running with a fixed login. |
 | dev | Own AWS account | Real AWS. Fakes for every paid or irreversible provider, mail only to an allow list, search engines blocked. |
 | prd | Own AWS account | Real. |
 
@@ -111,6 +111,7 @@ Start from `templates/Taskfile.yml`. Tasks: `verify`, `test`, `bootstrap`, `stac
 - `task stack` creates a missing stack with the alias as secrets provider. `preview` and `deploy` run it. This replaces a manual `pulumi stack init`.
 - `deploy` refuses a branch that does not match the env. `shared` runs from any branch. `deploy` runs `verify` first.
 - `reset-dev` empties every bucket and table of the dev stack, then runs `pulumi up --refresh` to re-seed `TableItem` rows. It uses `templates/reset-dev.sh` as `scripts/reset-dev.sh`. The script reads the ids from the stack state and refuses a non-dev account. It does not clean Cognito or SSM: add that per service.
+- A product with a UI adds `a11y`: `frontend-verify` in Docker, one run for each language (`--locale`), signed in with the stub cookie when the pages need a login (`--storage-state`). Mount only `.a11y/` (script and site `:ro,z`), pin every npm package, and start the server on the host. `a11y` is not part of `verify`: it takes minutes.
 - `default` lists the tasks. A destructive task uses `prompt:` and refuses the wrong account in its script. `install` runs `npm install` in every Node project.
 - `verify` is the done gate. Include each check that fits the project: markdown lint, formatter, vet or lint, `tsc --noEmit` of every Pulumi project, the tests (twice), the deployable build. Skip a check that does not fit. Add a better one when the project has it. Never force a check that has no meaning there.
 
