@@ -25,6 +25,11 @@ that catches janky handlers, not just the first tap.
   independent scripts.
 - **TTFB first** - a slow server or redirect chain caps LCP no matter what the
   front end does. Cache, CDN, avoid redirect hops.
+- **Unhashed assets need `Cache-Control: no-cache`** (the browser revalidates by
+  ETag, a 304 costs one tiny request). Without a header the browser reuses a
+  file by heuristic, so a visitor gets the old `app.js` with the new `i18n.js`
+  and sees raw text keys such as `ocr.cover`. A CDN invalidation does not clear
+  browser caches. Long `immutable` caching is for content-hashed file names only.
 - Serve modern image formats at the right size (AVIF/WebP, `srcset`).
 
 ## CLS - reserve space for everything that arrives late

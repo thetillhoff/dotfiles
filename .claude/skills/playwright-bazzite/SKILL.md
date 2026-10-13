@@ -27,6 +27,9 @@ runs in a Microsoft image. Never run `npx playwright install` on the host.
   `curl -s https://mcr.microsoft.com/v2/playwright/tags/list | tr ',' '\n' | grep -E '"v1\.[0-9]+\.[0-9]+-noble"' | tail -1`
 - The images ship browsers, not the npm `playwright` package. Install the same
   version inside the container. The `playwright/python` image lacks its package too.
+- The default headless browser (`chromium-headless-shell`) has no PDF viewer: an
+  `<iframe>` or `<embed>` with a PDF stays blank, with no error. Launch with
+  `chromium.launch({ channel: 'chromium' })` to render it.
 - Before you trust a screenshot of a restarted dev server, `curl` the changed asset
   and `grep` for the change. A stale process on the same port serves the old build.
 

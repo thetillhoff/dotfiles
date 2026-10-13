@@ -88,9 +88,15 @@ function probe(maxCh) {
     if (!visible(el)) continue;
     // Content of a closed <details> keeps a box, but it is not rendered.
     if (el.closest('details:not([open])') && !el.matches('summary')) continue;
-    const range = document.createRange();
-    range.selectNodeContents(el);
-    const tops = new Set([...range.getClientRects()].map((r) => Math.round(r.top)));
+    // Only the text wraps; an icon beside the label sits at its own top.
+    const tops = new Set();
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+      if (!n.textContent.trim()) continue;
+      const range = document.createRange();
+      range.selectNodeContents(n);
+      for (const r of range.getClientRects()) tops.add(Math.round(r.top));
+    }
     if (tops.size > 1) wrapped.push({ el: sel(el), text: el.textContent.trim().slice(0, 40), lines: tops.size });
   }
 

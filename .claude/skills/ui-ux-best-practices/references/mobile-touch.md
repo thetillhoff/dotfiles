@@ -50,6 +50,10 @@ fighting the wrong one:
   under the home indicator.
 - **`100dvh`, not `100vh`** - `vh` doesn't account for the mobile URL bar and
   clips full-height layouts (see web-implementation.md).
+- **`svh` for a box whose height must not jump** (a scrolling preview with
+  `max-height: 80vh`): `dvh` follows the URL bar, so the box resizes and
+  flickers while the bar hides on scroll. `svh` is the height with the bars
+  shown and never changes. Write `vh` first as the fallback, `svh` after it.
 - Test with the on-screen keyboard open - it shrinks the viewport and can cover
   the field being typed into; keep the active input scrolled into view.
 

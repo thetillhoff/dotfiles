@@ -79,12 +79,14 @@ Match lenses to the area:
 
 | Area | Lenses the subagent applies |
 | ---- | --------------------------- |
-| Frontend / UI | ui-ux-best-practices + htmx (if HTMX) |
+| Frontend / UI | ui-ux-review + htmx (if HTMX) |
 | Each service | microservice-architecture |
 | Shared / utils | review-comments |
 | Config / infra | relevant infra skill if one exists |
 | Skills (`SKILL.md`) | skill-creator (review/audit mode - coverage, gaps, bloat, drift) |
 | `CLAUDE.md` / `AGENTS.md` | claude-md-writer (brevity, staleness, redundancy) |
+
+A reviewer that applies `ui-ux-review` uses its checklist only. The tier A/B rules of the brief replace its steps to fix and to ask: a subagent cannot ask, so every decision is a tier B finding.
 
 Domain lenses only - the universal lenses below apply on top of every *code*
 row (not the doc rows: skills, `CLAUDE.md`).
@@ -97,7 +99,7 @@ skills, every code area also gets:
 - `/simplify` (or `code-simplifier`) - dead code, over-engineering.
 
 These ship with Claude Code, so they don't drift with local skills. The table's
-per-area entries are the domain layer added on top; the local skills (ui-ux, htmx,
+per-area entries are the domain layer added on top; the local skills (ui-ux-review, htmx,
 microservice-architecture, review-comments, skill-creator, claude-md-writer) are
 your own.
 

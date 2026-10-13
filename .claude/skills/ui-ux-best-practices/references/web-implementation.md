@@ -89,6 +89,10 @@ reach for the relevant section when building that specific thing.
 
 Baseline (2025) unless flagged. Prefer these over the old hacks they replace.
 
+- Gotcha: any `display:` on a class beats the `hidden` attribute (it is only a
+  UA-stylesheet `display: none`). Pair every such class with
+  `.x[hidden] { display: none; }`, or a "hidden" panel stays visible.
+
 - `clamp(min, preferred, max)` - fluid type/spacing without media queries:
   `font-size: clamp(1rem, 0.5rem + 2vw, 2rem)`.
 - `min()` / `max()` - constraint sizing: `width: min(100%, 60ch)` for a
@@ -250,5 +254,14 @@ The small, compounding craft details that separate "fine" from "considered".
   behind `@media (hover:hover)`; see motion.md).
 - **Subtle inset outline on media** for consistent edges against varied
   backgrounds: `img, video { outline: 1px solid rgba(0,0,0,.06); outline-offset: -1px; }`.
+- **A dashed or coloured edge around a filled area is an `outline`, not a
+  `border`.** With `box-sizing: border-box` a border sits inside the box and
+  covers part of the area it marks (a printed address window loses 2px of its
+  real size). `outline` draws outside and follows `border-radius`.
+- **Centre text in a padded box with padding only.** A paragraph's default
+  bottom margin adds space under the last line, so the text sits high. Zero the
+  margin of the direct children and space siblings with `* + *`. Measure it:
+  gap above the first child equals gap below the last (hidden children such as
+  `input[type=file]` do not count).
 - **One type scale, no strays.** Every size comes from the scale
   (12/14/16/18/24/32/48…); a lone 15px or 22px reads as drift.

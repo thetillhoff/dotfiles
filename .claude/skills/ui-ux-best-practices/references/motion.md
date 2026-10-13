@@ -114,6 +114,7 @@ that aids comprehension; drop movement.
 - Remove: parallax, zoom/scale transforms, slide/translate, auto-playing
   carousels.
 - Simplify: multi-step animations collapse to a simple fade.
+- Slow down, never freeze, a progress spinner: a still spinner looks like a hang. Set a longer `animation-duration` (about 4 s per turn) in the reduced block. The blanket reset below freezes spinners, so exempt them.
 
 ```css
 @media (prefers-reduced-motion: reduce) {

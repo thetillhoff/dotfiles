@@ -79,6 +79,20 @@ path. Design each screen around the one thing the user came to do.
   prose above the fold pushes the actual task below the fold and reads as
   unfinished, not thorough. Cut it to one sentence and move the rest behind a
   help icon (tooltip or slide-out panel) for whoever wants it.
+- **Let the control carry the instruction.** Delete lead-in text that a control
+  can say itself. A placeholder shows the format (`example.de`), so "enter the
+  full name including its ending" goes. A button that names the next step
+  ("Continue with example.de", not "Buy domain") shows that nothing is charged
+  yet, so "a check costs nothing" goes. Keep the visible label: the placeholder
+  is a format hint only.
+- **Name the action in plain, positive words.** Say what the user gets:
+  "Register a new domain", not "Register a domain nobody owns yet".
+- **Never word the product's role as ownership of the user's asset.** "The
+  platform becomes its registrar" reads as "the platform owns it". Say who owns
+  it and what the product does: "You own it. The platform manages it."
+- **Word a prerequisite as the next step, not as a block.** "You'll be asked to
+  enter these before you can purchase a domain" supports the user. "A purchase
+  cannot start without it" restricts them, and states the same fact.
 - **Above vs below the fold** - be deliberate about what is seen without
   scrolling. Put the primary action and value there.
 - **Familiar patterns** - do it the way most products do it. Novelty in
@@ -106,6 +120,11 @@ Rules of thumb:
   match how eyes actually scan - place key elements on those paths.
 - **Perspective / flow** - position elements where the flow expects them
   (submit at the end of a form, not the top).
+- **Order rows by relation, not by habit** - in a summary, review or checkout list,
+  each row sits next to the row it relates to most, so the eye never jumps back.
+  Example: pages, print, shipping method, addresses - not pages, shipping, print,
+  addresses. Read the list top to bottom and check each neighbour pair. Fewer mental
+  jumps is a core goal of every flow that asks for a decision or a payment.
 
 ### Sketch the rows in text before you build them
 
@@ -155,9 +174,17 @@ turn to confirm what both of you already knew.
   warning that isn't one. Use a neutral (gray) as the default "nothing's wrong,
   just info" and reserve the traffic-light hues for real state; the
   best/closest/selected item is green, not amber.
+- **Pick the message colour by what the user must do now.** Red is an error:
+  something failed and the user must fix it. Amber is a warning: a thing the
+  user already started is blocked or at risk. Plain text is a state: nothing is
+  wrong. A message that needs no action now gets no colour.
 - **Contrast** must pass in **both light and dark mode**. Detect the user's
   system preference and support both - and always verify both; they break
   independently.
+- **A theme control has three states: browser setting, light, dark.** The browser
+  setting is the default and clears the stored choice. With only light and dark,
+  one click stores a choice for good and the visitor cannot return to following
+  the browser. Show the current state in the icon and in the `aria-label`.
 
 ## 5. Interaction & feedback
 
@@ -182,6 +209,10 @@ absence of feedback reads as "broken".
   (system-wide state like an outage), modal (blocking decision). Anything that
   needs a user action must persist - never auto-dismiss it. Routing matrix in
   `references/design-patterns.md`.
+- **An empty optional setting is a state, not a warning.** Show it as plain
+  text with its action. Use amber only when the missing item blocks a thing the
+  user already started, and red only for an error. A user who never needs the
+  setting must not see an alarm on every visit.
 - **Smart defaults** - pre-fill and pre-select the likely choice. Do not
   autoplay media. Defaults must be replaceable.
 - **One authoritative control per value** - two widgets representing the same
@@ -217,6 +248,16 @@ Forms are where users quit. Reduce effort and never punish.
 
 - **Validate per-input, inline, as they go** - tell the user about a problem on
   the field itself, not only after they hit submit.
+- **Show input constraints before the user types, and mark them live.** A field
+  with rules (password policy, username format, length limit) lists every rule
+  next to the field from the start. Each rule shows met or unmet as the user
+  types, with a marker that changes and not colour alone. A rule the user learns
+  only from a rejected submit is a trap. Link the list to the field with
+  `aria-describedby`, and keep the server check.
+- **An error message names the problem, then the rule, and stops.** "Invalid
+  domain name. Only letters, digits and hyphens are allowed." Not "Enter a valid
+  domain name with its ending, for example example.de. A name uses letters,
+  digits and hyphens." Cut every word that the problem and the rule do not need.
 - **Never clear a field on error.** Losing typed data is the fastest way to lose
   a user.
 - **Accessible label on every input** (not placeholder-as-label). Placeholder
@@ -231,6 +272,15 @@ Forms are where users quit. Reduce effort and never punish.
   rule → feedback; see the anatomy in `references/frameworks.md`.)
 - **Mark the minority.** If most fields are required, mark the *optional* ones;
   if most are optional, mark the *required* ones - never both.
+- **An asterisk needs a legend.** A form that marks required fields with `*`
+  shows "* Required field" once, before the first field. Hide the asterisk from
+  screen readers (`aria-hidden`) and set `aria-required` on the input.
+- **Same element, same look, on every page.** All form elements of one type on
+  a page (checkboxes, radios, text inputs, selects) have the same size, font,
+  gap to the label and outer spacing. Render them from one helper or one CSS
+  class. A broad selector such as `.field input` also hits a checkbox inside
+  that wrapper and changes its size; scope it (`.field > input`) and measure
+  the rendered boxes to confirm.
 - **Error summary for anything long or high-stakes.** On a failed submit, list
   every error in a box at the top, each linking to its field, *and* show the
   inline message per field; move focus to the summary. The single biggest
@@ -238,6 +288,23 @@ Forms are where users quit. Reduce effort and never punish.
 - **One thing per page** for important flows - a single question per page beats a
   wall of fields. See the gov-grade flow patterns (error summary, check-answers,
   confirmation, task list, field-type inputs) in `references/design-patterns.md`.
+
+### Interface text
+
+- **Plain language:** follow ISO 24495-1 (German edition: DIN ISO 24495-1). Not
+  "Leichte Sprache" (DIN SPEC 33429), unless the product targets that audience.
+- **Sentence rules:** ASD-STE100 for English, tekom "Regelbasiertes Schreiben"
+  for German.
+- **Address nobody on a website:** no "du", no "Sie", no "you". Name the thing
+  ("das Dokument"), give an instruction without a subject ("Bitte erneut
+  hochladen."). If a sentence turns unclear that way, keep the form of address
+  the project already uses, on every page.
+- **Do not talk about the reader in the third person either.** The reader is
+  the customer and reads the text. "Die MX-Einträge bleiben beim Kunden" and
+  "das Limit, das der Kontoinhaber setzt" address a stranger. Write what the
+  product does or what is true ("die MX-Einträge bleiben unverändert", "ein
+  selbst gesetztes Limit"). A legal text keeps its defined terms.
+- A legal text keeps the wording that a lawyer approved.
 
 ## 7. Multi-step flows & progress trackers
 
@@ -292,14 +359,18 @@ Server-rendered wizards (each step a fragment swap): see the **htmx** skill.
   accumulates one page at a time and is invisible from inside any single page.
 - **Name a page for its content, not its lineage.** Two pages whose link text has
   to gloss the other ("Model overview (per-crop) →") have failed - rename both to
-  what they contain. Redirect the old path; a rename is not a reason to break a
-  bookmark.
+  what they contain. Delete the old path - no redirect unless the user asks
+  for one. A redirect is legacy weight that nobody prunes.
 - **The page where work starts deserves a nav entry.** Burying the primary action
   inside a page named for observing it (an Analyse button under "Status") costs a
   click and, worse, hides that the action exists.
 - **Group a nav past ~8 items** with separators (media | identity | models |
   system), and keep sibling pages adjacent - a tuning page wedged between two
   media pages breaks the group the eye already learned.
+- **Two languages need a link, not a menu.** The control goes to the same page in
+  the other language and shows the target code (`DE` on the English page). Its
+  accessible name starts with that visible code ("DE - Deutsch"), so Label in
+  Name holds. A third language brings the menu back.
 
 ## 9. Accessibility (non-negotiable)
 
@@ -412,6 +483,11 @@ just "in progress":
 - Fully opaque → the control's spinner + verb is all there is, and that's fine.
 - Several services report the same work → surface the one carrying real detail
   (the worker, not a dispatcher that only knows "busy").
+- Steps run in parallel (a DAG, not a chain) → never "step N of M". Show
+  "X of Y done" plus one row per running step, each with its own bar. A step
+  counter over parallel work makes steps look instant, repeated or skipped.
+- An ETA needs a few seconds of measured speed; a percentage does not. Measure
+  speed from when the counter starts, not job start (load/decode skews it).
 
 **Don't flicker.** Each visible state persists long enough to read
 (~300-500 ms), never flashing one you replace within a blink; if the real number
@@ -536,7 +612,7 @@ High-frequency actions get no animation; rare actions can afford it.
 `transition: all` is banned. Always specify what transitions.
 
 Respect `prefers-reduced-motion`: reduce durations to ~0 while keeping
-opacity/color feedback (which is feedback, not decoration).
+opacity/color feedback (which is feedback, not decoration). A progress spinner turns slowly instead of stopping (see `references/motion.md`).
 
 ### What to avoid (operator-UI AI-slop tells)
 

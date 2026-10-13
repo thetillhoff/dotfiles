@@ -64,6 +64,12 @@ full detail still doesn't want repetition; density is not the same as
 completeness. If removing a section would lose no real information, remove
 it before asking whether to keep it.
 
+## Order items by relation, so the reader needs no mental jumps
+
+In a list, table or summary, put related items next to each other: the item
+before and after a row should be the one it is closest to in meaning. Reduce
+mental gymnastics wherever the reader decides or buys.
+
 ## Closing CTAs lead with outcome, not a restated mechanism
 
 By the time a reader hits the closing call-to-action, they've already read
@@ -85,6 +91,14 @@ and the filings that keep a company legal" tells the reader what a line
 item is for. Naming salaries, staff, or "what's left for the people who run
 it" turns a cost breakdown into an internal HR conversation the reader has
 no stake in and didn't ask to see.
+
+## Do not publish the cost behind the price
+
+A pricing page states the price and what it covers. It does not state the
+supplier price, the margin or factor on top of it, or how a euro splits into
+costs. The reader cannot act on it, and it invites a negotiation the price list
+never offered. Keep the derivation in an internal doc. Cut the notes under a
+plan card to one sentence each; the rates carry the detail.
 
 ## No implementation-detail claims that can go stale silently
 
@@ -112,3 +126,11 @@ the digits) - if so, flag that the edit changes real numbers, not just
 prose, before making it. When the correct real-world answer is unclear (tax
 jurisdiction, legal status), say so and ask rather than picking a plausible
 answer and writing confident copy around it.
+
+## URLs fit together
+
+A mix like `/send`, `/pay` and `/danke` shows that nobody decided.
+
+- **One language for the slugs of a site.** Sibling routes share it. A page with its own text per language gets a path per language (`/en/...`), for every such page. An app step that reads the same in both languages (`/send`, `/thanks`) has one neutral slug.
+- **One URL per page, named like its key.** Route `thanks` has page key `thanks` and path `/thanks`. A second slug for the same page is an alias: delete it, an old link gives 404.
+- **Rename in one change.** The code, the return and redirect URLs that a third party holds (a payment provider), the tests and the docs all use the same slug. The grep for the old slug must find nothing.

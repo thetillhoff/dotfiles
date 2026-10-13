@@ -33,6 +33,7 @@ Project CLAUDE.md is read during EVERY task. Every unnecessary word multiplies a
 - ❌ "How this was discovered" narratives
 - ❌ Detailed walkthroughs or step-by-step tutorials
 - ❌ Historical context ("initially", "we discovered", "after testing")
+- ❌ The rules of a public standard or well-known practice - name it ("ISO 24495-1", "ASD-STE100", "DRY") and add only the project's own choices and exceptions. The reader is an agent that knows the standard.
 
 ## Telegraphic Style Guide
 

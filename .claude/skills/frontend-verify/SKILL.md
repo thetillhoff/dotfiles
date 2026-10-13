@@ -66,7 +66,7 @@ the untested partial lives. Both colour schemes: a contrast failure usually
 exists in only one of them.
 
 What it fails on: any axe violation; horizontal scroll; an element past the
-viewport edge; a nav, footer or button label wrapping to two lines; a body text
+viewport edge; a nav, footer or button label wrapping to two lines (only the text counts, not an icon beside it); a body text
 block wider than 78 characters; an uncaught page error.
 
 ## 3. Check what the tool cannot see
@@ -86,8 +86,22 @@ axe finds roughly a third of WCAG issues. These need you, at 375 and 1280:
   semantics, so the count ("3 items") is never announced.
 - **`scroll-margin-top`** under a sticky header - otherwise the header covers
   whatever just received focus or was jumped to by anchor.
+- **Theme and language controls** - click the theme button through all three
+  states (browser setting, light, dark): the icon and the label change, the page
+  follows, and the third click returns to the browser setting with nothing
+  stored. Reload after each click. The language link must land on the same page
+  in the other language.
 - **Meaning carried by colour alone** - a red border with no text or icon.
-- **Motion** - `prefers-reduced-motion` actually honoured.
+- **Motion** - `prefers-reduced-motion` actually honoured (a progress spinner slows down, it does not stop).
+- **Centred text in padded boxes** - measure the gap above the first child and
+  below the last (`getBoundingClientRect`), in every state the box has (empty,
+  busy, filled). A default paragraph margin makes the bottom bigger.
+- **A raw text key on screen** (`ocr.cover`) - after a deploy, it means a stale
+  cached script with new strings. Check that assets send `Cache-Control`
+  that revalidates, then reload without cache.
+- **Height that depends on the viewport** - grep the CSS for `vh`/`dvh` on boxes
+  that must stay put. Headless Chromium cannot show the URL bar of a phone, so
+  use `svh` and say that no device test ran.
 
 ## 4. Fix the cause, not the measurement
 

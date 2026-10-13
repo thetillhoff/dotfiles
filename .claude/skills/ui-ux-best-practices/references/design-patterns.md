@@ -145,6 +145,10 @@ adding and removing a row as explicit actions, not table furniture:
   footer and a sense of position. Keep crawlable/bookmarkable URLs behind any
   "load more".
 
+### URLs
+
+- **Slugs fit together.** One language for the sibling routes of a site, one URL per page, and a slug that matches the name of the page in the code. Rules and the rename checklist: `website-structure`, "URLs fit together".
+
 ### Empty states
 
 - **An empty state is a designed state, not a blank.** Always tell the user what
