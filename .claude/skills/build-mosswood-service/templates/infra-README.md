@@ -33,7 +33,7 @@ Set per stack in `Pulumi.<env>.yaml`. Never branch on the stack name in code.
 | Throttle of the API stage | `index.ts` | Stops a request flood. |
 | AWS Budgets, mail at 80 % and 100 % | `budget.ts` | Reports slow drift. Its data lags up to 24 hours, so it never replaces the two caps. |
 
-The account quota for Lambda concurrency starts at 10. `task bootstrap` requests 1000. Wait until `aws lambda get-account-settings` shows it, then deploy.
+The account quota for Lambda concurrency starts at 10. `task bootstrap:<env>` requests 1000. Wait until `aws lambda get-account-settings` shows it, then deploy.
 
 ## DNS
 
@@ -53,8 +53,8 @@ Run it in the stack directory with `PULUMI_BACKEND_URL` set as `task deploy` set
 ## Commands
 
 ```sh
-task preview ENV=dev
-task deploy ENV=dev      # ENV=shared first for a new env
+task preview:dev
+task deploy:dev      # deploy:shared first for a new env
 ```
 
 The first deploy of an env: `docs/runbooks/first-deploy.md`.

@@ -23,7 +23,11 @@ new aws.s3.BucketServerSideEncryptionConfiguration('pulumi-state', {
 });
 new aws.s3.BucketLifecycleConfiguration('pulumi-state', {
   bucket: stateBucket.id,
-  rules: [{ id: 'expire-noncurrent-versions', status: 'Enabled', filter: { prefix: '' }, noncurrentVersionExpiration: { noncurrentDays: 90 } }],
+  // Pulumi writes a backup of the state at every run. Each backup is a current object, so the first rule never expires it.
+  rules: [
+    { id: 'expire-noncurrent-versions', status: 'Enabled', filter: { prefix: '' }, noncurrentVersionExpiration: { noncurrentDays: 90 } },
+    { id: 'expire-state-backups', status: 'Enabled', filter: { prefix: '.pulumi/backups/' }, expiration: { days: 90 } },
+  ],
 });
 
 // Every secret in the infra/ state becomes unreadable once the key is gone, so the deletion window is the maximum.

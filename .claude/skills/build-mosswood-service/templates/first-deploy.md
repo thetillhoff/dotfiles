@@ -14,7 +14,7 @@ aws sts get-caller-identity
 ## 2. Bootstrap
 
 ```sh
-task bootstrap ENV=<env>
+task bootstrap:<env>
 ```
 
 **Check:** the bucket `<project>-pulumi-state-<account>` and the alias `alias/<project>-pulumi-secrets` exist. Wait until the Lambda quota shows 1000: `aws lambda get-account-settings`.
@@ -24,7 +24,7 @@ task bootstrap ENV=<env>
 Only before the first env of the project, with the credentials of prd:
 
 ```sh
-task deploy ENV=shared
+task deploy:shared
 ```
 
 **Check:** the zone is active at Cloudflare. Set the name servers at the registrar if the zone is new.
@@ -32,7 +32,7 @@ task deploy ENV=shared
 ## 4. Stack and secrets
 
 ```sh
-task stack ENV=<env>
+task stack:<env>
 cd infra
 export PULUMI_BACKEND_URL='s3://<project>-pulumi-state-<account>?region=eu-central-1'
 pulumi config set --stack <env> --secret cloudflare:apiToken <token>
@@ -45,7 +45,7 @@ pulumi config set --stack <env> --secret cloudflare:apiToken <token>
 ## 5. Deploy
 
 ```sh
-task deploy ENV=<env>
+task deploy:<env>
 ```
 
 **Check:** the product checks of the README. Open each verification mail (alarm subscription, mail sandbox).

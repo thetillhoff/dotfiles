@@ -14,7 +14,7 @@ Pulumi cannot create the bucket that holds its own state. This project is the on
 | `prd` | state bucket, KMS key with alias, Lambda quota request | red |
 
 - The account IDs are in `Pulumi.<stack>.yaml` (`aws:allowedAccountIds`). A run with credentials of another account fails before it changes anything.
-- The state bucket is `<project>-pulumi-state-<account>`. It is versioned, private and encrypted. Old versions expire after 90 days.
+- The state bucket is `<project>-pulumi-state-<account>`. It is versioned, private and encrypted. Old versions and the state backups (`.pulumi/backups/`) expire after 90 days.
 - The KMS key has the alias `alias/<project>-pulumi-secrets` and a 30-day deletion window.
 - The default region of the console is a per-user setting with no API. Set it once by hand to `eu-central-1`.
 
@@ -23,10 +23,10 @@ Pulumi cannot create the bucket that holds its own state. This project is the on
 Get credentials first (`source assume <profile>`, unpiped). Then run from the repo root:
 
 ```sh
-task bootstrap ENV=dev
+task bootstrap:dev
 ```
 
-`task stack ENV=<env>` then creates the stack of `infra/` on the new backend, with the alias as secrets provider.
+`task stack:<env>` then creates the stack of `infra/` on the new backend, with the alias as secrets provider.
 
 ## Cost
 

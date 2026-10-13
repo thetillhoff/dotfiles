@@ -41,7 +41,10 @@
 - Do only what the user asked. A new feature, mechanism or contract that the user did not mention is a separate decision.
 - Ask before you add it. Examples: a version scheme, a new field, a new endpoint, a migration, a new dependency.
 - A change that the user asked for can need such a part to work. Then name the part and ask, or take the smallest option and say so.
+- A guard, a fold or a compatibility layer for old data is such a feature too. Check first whether old data exists (scan the table, read `TODO.md` for go-live state). Ask before you add one.
 - Do not keep something just because the old code had it. If the user asks for a rewrite, ask whether the old extras stay.
+- A proposal that you made starts only after an explicit yes. A question, a counter-question, new facts or an answer to your own questions is not a yes. Answer it, then ask again. This holds for a plan with many steps and for a new project, a branch or an infrastructure change.
+- A question of the user is not a request. Answer it first, and change no file for it.
 
 ## Version Numbers
 
@@ -115,6 +118,14 @@ precedence over `AWS_PROFILE`-based resolution, so `AWS_PROFILE=x pulumi up` can
 under the wrong account with no error. Always run `source assume "<profile>"` unpiped, then
 confirm with a plain `aws sts get-caller-identity` (also unpiped) immediately before any
 command that creates, modifies, or destroys real infrastructure — not just once per session.
+
+### AWS access: assume and check in one Bash call
+
+```sh
+source assume "<profile>"; aws sts get-caller-identity
+```
+
+Without a valid SSO session, `source assume` waits for a browser login and prints a device code. The Bash tool then times out after 120 seconds and moves the call to the background. Print the URL and the code to the user, wait for the "completed" notice, then read the output file. Strip colour codes with `sed 's/\x1b\[[0-9;]*m//g'`.
 
 ### Wrong AWS account: say it first, and only that
 

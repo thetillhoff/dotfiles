@@ -1,7 +1,10 @@
 version: '3'
 
 vars:
-  SECRETS: awskms://alias/<project>-pulumi-secrets?region=eu-central-1
+  PROJECT: <project>
+  SECRETS: awskms://alias/{{.PROJECT}}-pulumi-secrets?region=eu-central-1
+  DEV_ACCOUNT: '<dev-account>'
+  PRD_ACCOUNT: '<prd-account>'
 
 tasks:
   default:
@@ -33,68 +36,89 @@ tasks:
     cmds:
       - echo "replace with the real test commands"
 
-  # infra/bootstrap's Pulumi.yaml pins the local backend. Its state holds no secrets.
-  bootstrap:
-    desc: Account baseline - state bucket, KMS key, Lambda quota, console colour (task bootstrap ENV=dev|prd)
-    dir: infra/bootstrap
-    requires:
-      vars:
-        - name: ENV
-          enum: [dev, prd]
-    env:
-      PULUMI_CONFIG_PASSPHRASE: ""
-    cmds:
-      - npm install --silent
-      - PULUMI_BACKEND_URL='file://~' pulumi stack select --create {{.ENV}}
-      - PULUMI_BACKEND_URL='file://~' pulumi up --stack {{.ENV}}
-
-  # dev deploys from the dev branch, prd from main. shared borrows the bucket and key of prd.
-  stack:
-    desc: Create the stack on its backend if it does not exist (task stack ENV=dev|prd|shared)
-    dir: '{{.STACK_DIR}}'
-    requires: &envRequired
-      vars:
-        - name: ENV
-          enum: [dev, prd, shared]
-    vars: &envVars
-      ACCOUNT: '{{if eq .ENV "dev"}}<dev-account>{{else}}<prd-account>{{end}}'
+  # dev deploys from the dev branch, prd from main. shared (infra/shared) holds what every env shares.
+  # Its state and secrets use the bucket and key of prd.
+  # The wildcard is the env (dev|prd|shared). The task adds --stack, so no pulumi command that lacks it (login, version) fits.
+  "pulumi:*":
+    desc: "Run pulumi on the backend and stack of an env. Example: task pulumi:dev -- config set --secret basicAuth 'dev:<password>'"
+    vars:
+      ENV: '{{index .MATCH 0}}'
+      ACCOUNT: '{{if eq .ENV "dev"}}{{.DEV_ACCOUNT}}{{else}}{{.PRD_ACCOUNT}}{{end}}'
       STACK_DIR: '{{if eq .ENV "shared"}}infra/shared{{else}}infra{{end}}'
-      BRANCH: '{{if eq .ENV "prd"}}main{{else}}dev{{end}}'
-      # Set on the command, not in env: a variable of the caller's shell wins over an env block.
-      BACKEND: 's3://<project>-pulumi-state-{{.ACCOUNT}}?region=eu-central-1'
-    cmds:
-      - PULUMI_BACKEND_URL='{{.BACKEND}}' pulumi stack select --create --secrets-provider '{{.SECRETS}}' {{.ENV}}
-
-  preview:
-    desc: Show what a deploy changes (task preview ENV=dev|prd|shared)
+      BACKEND: 's3://{{.PROJECT}}-pulumi-state-{{.ACCOUNT}}?region=eu-central-1'
     dir: '{{.STACK_DIR}}'
-    requires: *envRequired
-    vars: *envVars
-    cmds:
-      - task: stack
-      - PULUMI_BACKEND_URL='{{.BACKEND}}' pulumi preview --stack {{.ENV}}
-
-  # Runs `pulumi up` on real infrastructure. Operator-invoked only.
-  deploy:
-    desc: Deploy one env from its branch, or shared from any branch (task deploy ENV=dev|prd|shared)
-    dir: '{{.STACK_DIR}}'
-    requires: *envRequired
-    vars: *envVars
     preconditions:
+      - &envKnown
+        sh: '[ "{{.ENV}}" = dev ] || [ "{{.ENV}}" = prd ] || [ "{{.ENV}}" = shared ]'
+        msg: 'The env is dev, prd or shared'
+      - &accountMatches
+        sh: '[ "$(aws sts get-caller-identity --query Account --output text)" = "{{.ACCOUNT}}" ]'
+        msg: 'The AWS credentials are not for account {{.ACCOUNT}} ({{.ENV}}): run assume with the correct profile'
+      - sh: '[ -n "{{.CLI_ARGS}}" ]'
+        msg: 'Pulumi args are missing: task pulumi:{{.ENV}} -- <pulumi args>'
+    cmds:
+      # Set on the command, not in env: a variable of the caller's shell wins over an env block.
+      - PULUMI_BACKEND_URL='{{.BACKEND}}' pulumi {{.CLI_ARGS}} --stack {{.ENV}}
+
+  "stack:*":
+    desc: Create the stack on its backend if it does not exist (task stack:dev|prd|shared)
+    vars:
+      ENV: '{{index .MATCH 0}}'
+    cmds:
+      - task: 'pulumi:{{.ENV}}'
+        vars: { CLI_ARGS: "stack select --create --secrets-provider '{{.SECRETS}}'" }
+
+  "preview:*":
+    desc: Show the diff a deploy makes (task preview:dev|prd|shared)
+    vars:
+      ENV: '{{index .MATCH 0}}'
+    cmds:
+      - task: 'stack:{{.ENV}}'
+      - task: 'pulumi:{{.ENV}}'
+        vars: { CLI_ARGS: 'preview --diff' }
+
+  # Runs `pulumi up` on real infrastructure. Operator-invoked only, never from CI.
+  "deploy:*":
+    desc: Deploy one env from its branch, or shared from any branch (task deploy:dev|prd|shared)
+    vars:
+      ENV: '{{index .MATCH 0}}'
+      BRANCH: '{{if eq .ENV "prd"}}main{{else}}dev{{end}}'
+    preconditions:
+      - *envKnown
       - sh: '[ "{{.ENV}}" = shared ] || [ "$(git rev-parse --abbrev-ref HEAD)" = "{{.BRANCH}}" ]'
         msg: '{{.ENV}} deploys only from the {{.BRANCH}} branch'
     cmds:
       - task: verify
-      - task: stack
-      - PULUMI_BACKEND_URL='{{.BACKEND}}' pulumi up --stack {{.ENV}}
+      - task: 'stack:{{.ENV}}'
+      - task: 'pulumi:{{.ENV}}'
+        vars: { CLI_ARGS: 'up' }
+
+  # infra/bootstrap's Pulumi.yaml pins the local backend. Its state holds no secrets.
+  "bootstrap:*":
+    desc: Account baseline - state bucket, KMS key, Lambda quota, console colour (task bootstrap:dev|prd)
+    dir: infra/bootstrap
+    vars:
+      ENV: '{{index .MATCH 0}}'
+      ACCOUNT: '{{if eq .ENV "dev"}}{{.DEV_ACCOUNT}}{{else}}{{.PRD_ACCOUNT}}{{end}}'
+    env:
+      PULUMI_CONFIG_PASSPHRASE: ""
+    preconditions:
+      - sh: '[ "{{.ENV}}" = dev ] || [ "{{.ENV}}" = prd ]'
+        msg: 'The env is dev or prd'
+      - *accountMatches
+    cmds:
+      - npm install --silent
+      # The local backend, set on the command for the same reason as in pulumi.
+      - PULUMI_BACKEND_URL='file://~' pulumi stack select --create --stack {{.ENV}}
+      - PULUMI_BACKEND_URL='file://~' pulumi up --stack {{.ENV}}
 
   # Deletes data on real infrastructure. Operator-invoked only; the script refuses a non-dev account.
   reset-dev:
     desc: Empty the buckets and tables of dev and re-seed the stack rows, as after a first deploy
     prompt: Delete all data of dev?
     vars:
-      ACCOUNT: '<dev account id>'
-      BACKEND: 's3://<service>-pulumi-state-<dev account id>?region=eu-central-1'
+      ACCOUNT: '{{.DEV_ACCOUNT}}'
+      BACKEND: 's3://{{.PROJECT}}-pulumi-state-{{.DEV_ACCOUNT}}?region=eu-central-1'
     env:
       ACCOUNT: '{{.ACCOUNT}}'
       BACKEND: '{{.BACKEND}}'
