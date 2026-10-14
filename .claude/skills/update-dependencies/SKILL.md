@@ -73,7 +73,10 @@ Do not save it without an answer.
 A green gate is not enough. After the updates, prove that the system still works as deployed, not only that it builds. Do this for every ecosystem, at the end of each step the user can roll out:
 
 - Deploy or run it the way the project does (for example `pulumi preview` and `pulumi up` from local, a Flux reconcile, `docker compose up`, a playbook run). Ask before you touch live infrastructure.
+- Record a baseline before the change (target counts, series counts, endpoint status codes, list of dashboards and rules). Take the same numbers after, and compare. A pod that is `Running` proves little.
+- Render the old and the new chart with the real values (`helm template`) and diff the result: resource set, selectors, images, generated config. A selector or `volumeClaimTemplates` change in a StatefulSet needs a plan.
 - Check the live result: pods and services are healthy, endpoints answer, logs show no new errors. Verify the behavior, not only the config.
+- A new version can turn an old silent failure into a loud one (for example a script that now runs with `pipefail`). Look at the baseline for entries that never worked, and fix or remove them.
 - Name what you could not test. If a step needs the user to roll it out, say so and stop there.
 
 ## 5. Report and ask
