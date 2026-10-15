@@ -20,7 +20,7 @@ Set per stack in `Pulumi.<env>.yaml`. Never branch on the stack name in code.
 | Key | Meaning |
 | --- | --- |
 | `aws:allowedAccountIds` | The one account of the env. A wrong account fails before a change. |
-| `budgetNotificationEmail` | Gets the budget mails. No default. |
+| `notificationEmail` | Gets the budget mails and the alarms. No default. |
 | `monthlyBudgetUsd` | Optional, default 20. |
 
 <!-- product keys -->

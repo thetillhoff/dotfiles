@@ -67,7 +67,7 @@ Three layers. Every service has the same ones.
 - Region `eu-central-1`, set once in the `Pulumi.yaml` of the project (`aws:region: { value: ... }`). Only the registrar and CloudFront certificates use `us-east-1`.
 - Secrets: SSM Parameter Store SecureString. Never in the Pulumi state, never through a template.
 - dev runs the same program and code as prd. Every difference is stack config. Never branch on the stack name.
-- Cost controls are required: reserved concurrency on every Lambda, a throttle on the API stage, and a monthly budget with mail at 80 % and 100 % (`templates/budget.ts`, `budgetNotificationEmail` in each stack config). See "Conditional aspects" for the Lambda quota.
+- Cost controls are required: reserved concurrency on every Lambda, a throttle on the API stage, and a monthly budget with mail at 80 % and 100 % (`templates/budget.ts`, `notificationEmail` in each stack config, also the address for alarms). See "Conditional aspects" for the Lambda quota.
 - dev uses fakes for paid or irreversible providers. A fake records calls and can force failures. It never deduplicates or retries.
 
 ## Pulumi

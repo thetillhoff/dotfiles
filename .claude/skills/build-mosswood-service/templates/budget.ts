@@ -14,6 +14,6 @@ export const costBudget = new aws.budgets.Budget('monthly-cost', {
     threshold,
     thresholdType: 'PERCENTAGE',
     notificationType: 'ACTUAL',
-    subscriberEmailAddresses: [config.require('budgetNotificationEmail')], // no default: a budget that mails nobody is useless
+    subscriberEmailAddresses: [config.require('notificationEmail')], // no default: a budget that mails nobody is useless
   })),
 });
