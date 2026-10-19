@@ -40,7 +40,7 @@ pulumi config set --stack <env> --secret cloudflare:apiToken <token>
 
 **Check:** `Pulumi.<env>.yaml` has `secretsprovider: awskms://alias/...`. Commit the file.
 
-<!-- product secrets: put each in an SSM SecureString by hand, never in Pulumi state -->
+<!-- product secrets: set each as a stack secret (`pulumi config set --stack <env> --secret <key>`) before the first deploy; Pulumi writes the SSM SecureString from it -->
 
 ## 5. Deploy
 

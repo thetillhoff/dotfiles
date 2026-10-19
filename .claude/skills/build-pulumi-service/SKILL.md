@@ -1,11 +1,11 @@
 ---
-name: build-mosswood-service
-description: Use when you start a new service in the mosswood family (a sibling of mosswood-app and sendpdf), or when you align an existing one. Holds the shared repo layout, branches, AWS and Pulumi structure, Taskfile, docs and CLAUDE.md conventions. Also use to check that a sibling repo still follows them.
+name: build-pulumi-service
+description: Use when you start a new service (one repo, one product, on AWS with Pulumi), or when you align an existing one. Holds the shared repo layout, branches, AWS and Pulumi structure, Taskfile, docs and CLAUDE.md conventions. Also use to check that a sibling repo still follows them.
 ---
 
-# Build a mosswood service
+# Build a Pulumi service
 
-A mosswood service is one repo, one product, on AWS with Pulumi.
+A service of this family is one repo, one product, on AWS with Pulumi.
 `mosswood-app` (Go) and `sendpdf` (Node) are the reference repos.
 Copy the shape from them. The language and the product can differ. The rest must not.
 
@@ -54,10 +54,12 @@ Three layers. Every service has the same ones.
 | prd | Own AWS account | Real. |
 
 - A secret is never a `.env` file. There are two places:
-  - Runtime secrets: SSM Parameter Store SecureString, never Secrets Manager. Pulumi seeds a placeholder with `ignoreChanges`, so the parameter and its IAM grant exist before the first run. The operator writes the real value by hand once. The value never enters code or Pulumi state.
-  - IaC secrets (the Cloudflare token): Pulumi stack secrets, encrypted with the KMS key of the account.
+  - Source of every secret: a Pulumi stack secret (`pulumi config set --secret <key>`), encrypted with the KMS key of the account. The value never enters code, but it sits in the Pulumi state. Never edit a parameter by hand: change the stack secret and deploy.
+  - Runtime secrets: Pulumi writes one SSM Parameter Store SecureString per value from the stack secret of the same name (`config.requireSecret`), never Secrets Manager. The code reads the parameter at runtime. A missing stack secret fails `preview` and `up`, so an env that mocks a provider sets a dummy value. The parameter and its IAM grant exist before the first run.
+  - IaC secrets (the Cloudflare token): stack secrets only, no parameter.
+  - Never pipe a command that can fail into `pulumi config set`: a failed read sets an empty secret with exit code 0.
 - Give each real provider client a mock or fake twin with the same interface. Change both together.
-- dev guards the whole site with HTTP basic auth: the optional stack secret `basicAuth` (`user:password`), unset on prd. It is the one runtime secret that is a Pulumi stack secret, not SSM: a dev-only shared gate password, and an SSM read would add a failure path to the gate. The value is `dev:` plus a static password that the operator picks, so it is easy to share on a device. It is a gate, not a protection: use a generated value for an internal portal or any page that holds real data. Set it with `task pulumi:dev -- config set --secret basicAuth` and type the value at the prompt. Static sites do it in the CloudFront viewer-request Function (sendpdf, `index.ts`); a Lambda-served console does it in the handler (mosswood-app, `internal/api/basicauth.go`). The provider webhook stays open. Strip a passed Basic header if the app reads `Authorization` itself.
+- dev guards the whole site with HTTP basic auth: the optional stack secret `basicAuth` (`user:password`), unset on prd. It has no SSM parameter: the gate reads the stack secret at deploy time, and an SSM read would add a failure path to the gate. The value is `dev:` plus a static password that the operator picks, so it is easy to share on a device. It is a gate, not a protection: use a generated value for an internal portal or any page that holds real data. Set it with `task pulumi:dev -- config set --secret basicAuth` and type the value at the prompt. Static sites do it in the CloudFront viewer-request Function (sendpdf, `index.ts`); a Lambda-served console does it in the handler (mosswood-app, `internal/api/basicauth.go`). The provider webhook stays open. Strip a passed Basic header if the app reads `Authorization` itself.
 
 ## AWS
 
@@ -65,7 +67,7 @@ Three layers. Every service has the same ones.
 - Credentials: `source assume <project>-<env>/AdministratorAccess`, unpiped. `pulumi:<env>` checks the account itself.
 - Each stack config sets `aws:allowedAccountIds`. A wrong account fails before it changes anything.
 - Region `eu-central-1`, set once in the `Pulumi.yaml` of the project (`aws:region: { value: ... }`). Only the registrar and CloudFront certificates use `us-east-1`.
-- Secrets: SSM Parameter Store SecureString. Never in the Pulumi state, never through a template.
+- Secrets: Pulumi stack secrets, written to SSM Parameter Store SecureStrings (see "Environments and secrets"). Never through a template or a CloudFormation dynamic reference.
 - dev runs the same program and code as prd. Every difference is stack config. Never branch on the stack name.
 - Cost controls are required: reserved concurrency on every Lambda, a throttle on the API stage, and a monthly budget with mail at 80 % and 100 % (`templates/budget.ts`, `notificationEmail` in each stack config, also the address for alarms). See "Conditional aspects" for the Lambda quota.
 - dev uses fakes for paid or irreversible providers. A fake records calls and can force failures. It never deduplicates or retries.
