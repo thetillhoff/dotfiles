@@ -193,6 +193,15 @@ absence of feedback reads as "broken".
 
 - **Immediate acknowledgment** (<~50 ms for the visible reaction). Loading
   spinners for waits, hover/pressed states, success toasts.
+- **A state rule sets its colours as a pair, and wins over every other state.**
+  Two rules that set the same property compete by specificity, then by source
+  order, not by what you meant. A hover or focus rule that sets only the
+  background can beat a "selected" rule and leave its text colour behind:
+  light text on a light background, and a touch screen keeps the hover after a
+  tap. Set text and background together in each state rule, and give the state
+  that must win a selector at least as specific as the others, placed after
+  them. Test every pair of states (selected + hover, selected + focus,
+  disabled + hover), not each state alone.
 - **Clickable things look clickable** - interactive elements must stand out
   (color, emphasis). Links are underlined and blue-ish by convention; do not
   strip the affordance.

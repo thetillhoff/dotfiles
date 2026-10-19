@@ -77,6 +77,10 @@ axe finds roughly a third of WCAG issues. These need you, at 375 and 1280:
   the visual order, every stop should have a visible ring, and a skip link must
   actually land focus in `<main>` (which needs `tabindex="-1"` for that to
   work - the script reports where focus went).
+- **Combined states** - for each control with a selected, active or disabled
+  state, hover it and focus it in that state (at 375 a tap leaves the hover on).
+  Read the computed `color` and `background-color`: the text must stay readable.
+  axe checks only the resting state.
 - **A mobile menu** - opens with Enter, its links are reachable in order, focus
   is not stranded when it closes.
 - **`lang` on foreign-language content** - a German legal page inside an
@@ -99,9 +103,10 @@ axe finds roughly a third of WCAG issues. These need you, at 375 and 1280:
 - **A raw text key on screen** (`ocr.cover`) - after a deploy, it means a stale
   cached script with new strings. Check that assets send `Cache-Control`
   that revalidates, then reload without cache.
-- **Height that depends on the viewport** - grep the CSS for `vh`/`dvh` on boxes
-  that must stay put. Headless Chromium cannot show the URL bar of a phone, so
-  use `svh` and say that no device test ran.
+- **Height that depends on the viewport** - grep the CSS for `vh`/`dvh`/`svh`/`lvh`
+  on boxes that must stay put. Headless Chromium cannot show the URL bar of a
+  phone, and `svh` is wrong in Firefox on iOS. Use a fixed cap, `aspect-ratio`
+  or `%`, and say that no device test ran.
 
 ## 4. Fix the cause, not the measurement
 

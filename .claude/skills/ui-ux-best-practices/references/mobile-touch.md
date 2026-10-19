@@ -48,12 +48,14 @@ fighting the wrong one:
 - **Safe-area insets**: on notched/rounded phones, pad fixed top/bottom UI with
   `env(safe-area-inset-*)` (needs `viewport-fit=cover`) so a bottom bar isn't
   under the home indicator.
-- **`100dvh`, not `100vh`** - `vh` doesn't account for the mobile URL bar and
-  clips full-height layouts (see web-implementation.md).
-- **`svh` for a box whose height must not jump** (a scrolling preview with
-  `max-height: 80vh`): `dvh` follows the URL bar, so the box resizes and
-  flickers while the bar hides on scroll. `svh` is the height with the bars
-  shown and never changes. Write `vh` first as the fallback, `svh` after it.
+- **No viewport-height unit for a box that must not jump.** `vh` is the large
+  viewport and clips under the URL bar. `dvh` follows the bar and flickers while
+  it hides. `svh` and `lvh` are wrong in third-party iOS browsers (Firefox,
+  Chrome: WebKit bug 279998), so the box still moves. Use a fixed cap
+  (`max-height: 640px`), `aspect-ratio`, `%` or content height. A full-height
+  page: `html { height: 100% } body { min-height: 100% }`.
+- Use `dvh`/`svh` only for an element that may follow the bar (a bottom sheet,
+  an overlay), and test it in Firefox on iOS.
 - Test with the on-screen keyboard open - it shrinks the viewport and can cover
   the field being typed into; keep the active input scrolled into view.
 

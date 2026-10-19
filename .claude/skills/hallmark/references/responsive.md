@@ -91,7 +91,7 @@ This is gate **49** in [`slop-test.md`](slop-test.md). Audit any output that shi
 
 ## Viewport units
 
-- Use `dvh` / `svh` / `lvh` instead of `vh` for heights that interact with mobile chrome.
+- Avoid `vh` units for heights that interact with mobile chrome. `dvh` jumps and `svh`/`lvh` are wrong in third-party iOS browsers. Prefer a fixed cap, `aspect-ratio`, `%` or content height; `dvh` only for an element that may follow the bar.
 - Never `width: 100vw`. Use `width: 100%` with padding; `100vw` includes the scrollbar on desktop and causes overflow.
 
 ## Safe areas
@@ -129,7 +129,7 @@ Tables of data that won't fit: collapse to cards. Use `display: block` on `<tr>`
 ## Bans
 
 - Desktop-first media queries (`max-width: 768px` as the primary direction).
-- `vh` on full-height layouts (use `dvh`).
+- `vh` on full-height layouts (use `height: 100%` on `html`, `min-height: 100%` on `body`).
 - `100vw` widths.
 - Device-sniffing UA strings instead of feature queries.
 - Hover-only interactions.

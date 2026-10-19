@@ -144,8 +144,8 @@ gracefully: `text-wrap: balance` (even ragged headings) and `text-wrap: pretty`
 ### Named page layouts
 
 - **App shell (sticky header/footer, scrolling body):**
-  `body { min-height: 100dvh; display: grid; grid-template-rows: auto 1fr auto }`.
-  Use `dvh`, not `vh`, so the mobile URL bar doesn't clip it. The `1fr` middle row
+  `html { height: 100% } body { min-height: 100%; display: grid; grid-template-rows: auto 1fr auto }`.
+  No `vh`/`dvh`/`svh`: they jump or are wrong on iOS (mobile-touch.md). The `1fr` middle row
   gives a sticky footer with no JS.
 - **Holy grail** (header / left-nav · main · right-aside / footer): one body-level
   grid with `grid-template-areas`; redefine the areas to a single column in one
@@ -183,7 +183,7 @@ consistent:
 - **Cluster** - wrapping inline group (tag lists, button rows):
   `flex-wrap: wrap; gap; align-items: center`.
 - **Cover** - vertical centering with pinned top/bottom (hero, empty state):
-  `min-height: 100dvh; flex-direction: column; justify-content: center`.
+  `min-height: 100%` (parent chain `height: 100%`); `flex-direction: column; justify-content: center`.
 - **Reel** - horizontal-scroll strip (carousels, chip rows):
   `display: flex; overflow-x: auto; gap` + `scroll-snap-type: x`.
 - **Imposter** - centered overlay: `position: absolute; inset: 0; margin: auto`.

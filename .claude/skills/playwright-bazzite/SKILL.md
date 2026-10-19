@@ -58,6 +58,7 @@ A user-scope MCP server named `playwright` runs `mcr.microsoft.com/playwright/mc
 The `playwright@claude-plugins-official` plugin is disabled because it needs a host
 Chrome. The output directory is mounted at the same path inside the container, so the
 file paths that the tools return are valid on the host. Read screenshots from there.
+`browser_file_upload` sees only that directory: copy the file into it first, or the call fails with `ENOENT`.
 
 ```sh
 O=/var/home/$USER/.cache/playwright-mcp
