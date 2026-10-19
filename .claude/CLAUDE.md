@@ -7,9 +7,10 @@
 - Use `cd <path> && git <cmd>`, never `git -C <path> <cmd>`.
 - Superpowers skills must never run git commands.
 - **Start every new topic or feature from the latest upstream state.** Before you write code, run `git pull` on the current branch. Before you branch off `main`, check out `main` and pull it first. This prevents work that starts from a stale base.
-- **Run `git branch --show-current` right before every commit.** Another process can switch the branch of the checkout during a session. A commit once landed on a feature branch of another task that way.
-- **Another session can work in the same repo.** Run `git status` before a commit and stage by path, never `git add -A`: its uncommitted files are not yours. A session of the user (for example `mosswood-app-*`) committed its own work in the middle of this one.
-- **Never pass a commit message with `git commit -m "..."` if it contains backticks.** The shell substitutes them and runs the contents as a command. A message containing the literal words `git add -A` executed exactly that, staging the whole repo into what should have been a five-file commit; another ran the test suite and pasted its output into the message. Always use a quoted heredoc, which substitutes nothing:
+- **Run `git branch --show-current` right before every commit.** Another process can switch the branch of the checkout during a session.
+- **Another session can work in the same repo.** Run `git status` before a commit and stage by path, never `git add -A`: its uncommitted files are not yours. That session can commit in the middle of yours.
+- **A file can hold a hunk of another session.** Stage only your change: write `git show HEAD:<path>` plus your edit to a temp file, run `git hash-object -w <temp>`, then `git update-index --cacheinfo 100644,<hash>,<path>`, then commit. The working tree keeps the other hunk.
+- **Never pass a commit message with `git commit -m "..."` if it contains backticks.** The shell substitutes them and runs the contents as a command. Always use a quoted heredoc, which substitutes nothing:
 
   ```sh
   git commit -F - <<'MSG'
@@ -52,6 +53,12 @@
 - An unreleased draft has no version of its own. Replace it in place: the newest draft is the current version, also when an earlier draft was committed, pushed or reviewed.
 - Do not keep, number or describe earlier drafts in code or comments. Git history is the record.
 
+## Decisions
+
+- Record each decision in the doc that owns it, with its reason and purpose. Two lines at most: what was decided, why, and what change of circumstance would reopen it.
+- A reader must see whether a decision still holds. An old decision is not binding: a revamp can replace it. Replace the entry in place; do not keep the old one.
+- Do not record a decision without its reason.
+
 ## CLI Deprecation
 
 - Do not add a forwarding stub for a removed subcommand or flag ("X moved to Y"). Delete the subcommand outright.
@@ -82,7 +89,7 @@ Every comment is another thing to update, review, and re-read. A stale one is wo
 - **Falsification-first, not narrative-first.** Assume your latest result is wrong; try to break it before reporting. Don't build a story then defend it.
 - **State conclusions with their confounds.** "X, but Y isn't controlled" — never bare "X" when a variable moved alongside.
 - **Control the variable.** Two things changed together (e.g. a multiplier shifting both signal weight and total exposure) = you isolated nothing. Hold confounders constant.
-- **Never write a parser or adapter against an invented fixture.** Capture one real payload from the live endpoint FIRST, commit it as the fixture, then write the code. A fabricated fixture makes every test compare the code against your own assumption, so no test can fail on the one thing that is wrong. Twelve passing reviews of a news-ingestion adapter missed that its source returns space-separated archive URLs, not tab-separated rows, and that the other source returns Atom, not JSON.
+- **Never write a parser or adapter against an invented fixture.** Capture one real payload from the live endpoint FIRST, commit it as the fixture, then write the code. A fabricated fixture makes every test compare the code against your own assumption, so no test can fail on the one thing that is wrong.
 - **A surprising result is a measurement bug until proven otherwise.** Contradictions (0 trades + high exposure) → distrust the parse/instrument before the system.
 - **Verify the premise before building the fix.** One cheap measurement of the real bottleneck beats a confident assumption. Never optimize an unmeasured cost.
 - **Structured data → real parsers.** pandas for CSVs (fields contain commas); shell arrays for lists. Never `awk -F,` column-splitting; never unquoted `for x in $VAR` / `set -- $x` in zsh (it doesn't word-split — use `${=var}` or arrays).
@@ -105,19 +112,13 @@ Always `cd <path> && <cmd>` — never use flag-based directory overrides like `g
 
 For shell-based in-place text replacements, use `sed` — never `perl -pi`. (Prefer the Edit tool over both when editing a known file.)
 
+Never address a line by number (`sed -i '47d'`) in a file that you edited earlier in the session: the numbers shift. Match a pattern, or use Edit.
+
 ### Granted/`assume`: never pipe it, always verify identity before an apply
 
-`assume <profile>` is a shell function (`assume` is aliased to `. assume`) — it must run as a
-plain foreground command in the current shell. Piping it into anything (`source assume ... |
-tail -3`) forks a subshell for the piped side in both bash and zsh, so the exported
-`AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`/`AWS_SESSION_TOKEN` never reach the parent shell —
-the next command then silently falls through to whatever credentials were already in the
-environment. A fresh non-interactive shell can already have stale `AWS_*` env vars baked in
-from an unrelated SSO session (profile init, `.zshrc`, a leftover export) — those take
-precedence over `AWS_PROFILE`-based resolution, so `AWS_PROFILE=x pulumi up` can silently run
-under the wrong account with no error. Always run `source assume "<profile>"` unpiped, then
-confirm with a plain `aws sts get-caller-identity` (also unpiped) immediately before any
-command that creates, modifies, or destroys real infrastructure — not just once per session.
+`assume` sets credentials in the current shell. Run it as a plain foreground command. A pipe forks a subshell, so the credentials never reach the parent shell.
+
+A shell can already hold stale `AWS_*` variables. They override `AWS_PROFILE` and select the wrong account with no error. Run `aws sts get-caller-identity` (unpiped) before every command that creates, changes or destroys infrastructure.
 
 ### AWS access: assume and check in one Bash call
 
@@ -126,6 +127,8 @@ source assume "<profile>"; aws sts get-caller-identity
 ```
 
 Without a valid SSO session, `source assume` waits for a browser login and prints a device code. The Bash tool then times out after 120 seconds and moves the call to the background. Print the URL and the code to the user, wait for the "completed" notice, then read the output file. Strip colour codes with `sed 's/\x1b\[[0-9;]*m//g'`.
+
+Each Bash call is a new shell: credentials of a login that the user ran with `!` do not reach it. After the user logs in, run `source assume` again in the same call as the command that needs it. The cached SSO session then makes it return at once. Do not ask for a second login.
 
 ### Wrong AWS account: say it first, and only that
 
@@ -143,14 +146,21 @@ Already stated above under Git. Repeated here as a reminder for hook sections be
 
 To get a command's exit status, run a plain `echo $?` on its own — not a per-command `echo "label: $?"` each time. If a label is wanted, print a static `echo` line right before it, never in the same command (a preceding command would overwrite `$?`).
 
-### `docker exec` with a heredoc needs `-i`
+### A heredoc into `exec` needs stdin attached
 
-`docker exec <ctr> python3 - <<'EOF'` without `-i` silently runs NOTHING: stdin
-isn't attached, the interpreter reads EOF immediately and exits 0 with no output.
-It looks like a script that produced nothing rather than one that never ran. Use
-`docker exec -i <ctr> python3 - <<'EOF'`, and treat "no output at all" from a
-heredoc as this bug until proven otherwise.
-`kubectl exec` has the same trap: use `kubectl exec -i`.
+Without `-i`, `docker exec <ctr> python3 - <<'EOF'` reads EOF at once and exits 0 with no output. It looks like a script that produced nothing. `kubectl exec` behaves the same. Use `-i`. Treat "no output at all" from a heredoc as this bug until proven otherwise.
+
+### A blocked read-only action: propose a narrow wrapper, never retry
+
+The auto-mode classifier blocks a generic command (`kubectl exec`, `ssh`, `docker exec`) when it cannot see that the payload only reads. Do not retry it in pieces or by another route. Propose one of these, then wait for a yes:
+
+- A permission rule narrowed to read-only, as a template for `settings.json`.
+- A complete command for the user to run with `!`. Never give only the payload (SQL, script).
+- A wrapper target in the task runner that the repo already uses (`Taskfile.yaml` or `Makefile`). It fixes everything except the payload and enforces read-only where the tool allows it. The user then allows ONE rule: `Bash(<runner> <target>:*)`.
+
+A read-only guard in the tool is not proof of read-only. Say what the guard does not cover.
+
+The `~/code/infra/` repo holds the cluster kubeconfig (`pulumi/kubeconfig`) and the `Taskfile.yaml` that sets `KUBECONFIG`. Use its tasks before you write a new wrapper.
 
 ### `docker run -v` needs `:z` on SELinux, and mount dirs not files
 
@@ -162,31 +172,27 @@ script usually wants siblings anyway.
 
 ### `/home` is a symlink to `/var/home` - tools that refuse symlinks break
 
-On this host (Bazzite) `/home` points to `/var/home`. `@swc/core` (used by the
-`cdk init` jest setup) then fails with `Failed to load native binding` /
-`cache root contains a non-directory or symlink`. Set
-`SWC_NATIVE_BINDING_CACHE=/var/home/$USER/.cache/swc` before `npx jest`.
+On this host (Bazzite) `/home` points to `/var/home`. A tool that refuses symlinks in a path fails. Point it at the real path. Example: `SWC_NATIVE_BINDING_CACHE=/var/home/$USER/.cache/swc` for `@swc/core` in `npx jest`.
 
 ### Pulumi CLI: default login is an S3 backend
 
 The CLI on this host is logged in to an S3 backend. Without AWS credentials, `pulumi new` fails with `no EC2 IMDS role found`. Scaffold with `PULUMI_BACKEND_URL=file://~ pulumi new <template> --generate-only`. `@pulumi/pulumi` rejects TypeScript 7: install `typescript@5`.
 
-### `pulumi import` protects the resource by default
+### Never pipe a fallible command into a command that stores its input
 
-`pulumi import` marks each imported resource as protected in the state, even when the code has no `protect`. Pass `--protect=false` when the project uses no protect flags.
+A failed producer in `producer | consumer` does not stop the consumer. The consumer then stores an empty value and exits 0. Example: `aws ssm get-parameter | pulumi config set --secret <key>`. Read the value into a variable first and check it. Then pass the variable.
+
+### An import command can set state that the code does not hold
+
+An import step can write defaults to the state that the code never sets. Example: `pulumi import` protects each resource, even when the code has no `protect`. Read the help of the import command. Pass the flag that matches the project (`--protect=false`).
 
 ### Taskfile: a shell variable wins over an `env:` block
 
-Task lets a variable of the caller's shell override the `env:` of a task. An exported `PULUMI_BACKEND_URL` of one account then sends a task for another env to the wrong state bucket, with no error. Set such a variable on the command itself (`- VAR='{{.VALUE}}' cmd`), never in `env:`. A `vars:` map also rejects the YAML merge key (`<<: *anchor`): put every variable into the anchored map.
+A variable of the caller's shell overrides the `env:` of a task. A variable exported for one environment then silently affects a task for another. Set such a variable on the command itself (`- VAR='{{.VALUE}}' cmd`), never in `env:`.
 
 ### `pkill -f <pattern>` kills its own shell
 
-`pkill -f "node local/server.js"` also matches the Bash tool's own command line
-(which contains that string) and kills it with exit 144 - every command after it
-in the same call never runs. Stop a background server by its task id, or with
-`pkill -f '[n]ode local/server.js'` so the pattern does not match itself.
-The bracket form fails when the same call also holds the plain string (a
-`pkill` and then a restart in one call). Stop and start in two calls.
+`pkill -f <pattern>` also matches the command line of the Bash tool itself and kills it. Every later command in the call never runs. Stop a background server by its task id. Or use a bracketed pattern (`'[n]ode server.js'`) in a call of its own.
 
 ### Playwright: Docker only
 
@@ -228,14 +234,14 @@ Stop because the work is at a clean point, not because the turn ran out. If a fo
 
 - Any task that runs, tests, or installs Python must specify Docker in the plan steps.
 - All git commands in the plan must use `cd <path> && git <cmd>` — never `git -C`.
-- **Check the plan's own code comments against ASD-STE100 before the plan ships.** Implementers copy plan code verbatim, comments included. A plan that mandates the standard while its own samples chain clauses with `and`/`but`/`so` produces one fix round per task. A 9-task plan spent 3 fix rounds on comments that were all plan text.
-- **Check dependency edges, not just interface names.** Two tasks can agree on a signature while no task ever adds the dependency that makes it importable. A plan had `cli` calling `translate_core::Subtitle` and never added `translate-core` to `cli`'s manifest.
+- **Check the plan's own code comments against ASD-STE100 before the plan ships.** Implementers copy plan code verbatim, comments included. A plan whose own samples break the standard causes a fix round per task.
+- **Check dependency edges, not just interface names.** Two tasks can agree on a signature while no task adds the dependency that makes it importable.
 
 ### During superpowers:subagent-driven-development
 
 **Before dispatching any subagent**, include the full content of the `dev-environment` skill in the subagent brief. Subagents do not inherit CLAUDE.md — without this, they will use `pip install` on the host and `git -C`, breaking both constraints.
 
-**On frontend tasks, rebuild and open the page in a real browser after each task** (playwright-bazzite, with a `pageerror` listener). Grep tests of templates and JS pass while a load-time error kills every handler after it. One such error left a whole tab widget dead under a green suite of 400 tests.
+**On frontend tasks, rebuild and open the page in a real browser after each task** (playwright-bazzite, with a `pageerror` listener). Grep tests of templates and JS pass while a load-time error kills every handler after it.
 
 ### During superpowers:test-driven-development
 
