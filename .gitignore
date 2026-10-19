@@ -266,6 +266,9 @@ Pictures/
 
 Postman/
 
+# network share mounted as folder
 Public/
+# network share mounted as symlink
+public
 
 tape.conf
