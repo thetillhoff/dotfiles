@@ -58,7 +58,7 @@ node ~/.claude/skills/frontend-verify/scripts/verify.mjs \
 Options: `--widths` (default 320,360,375,414,600,768,834,1024,1280,1440,1920,2560),
 `--schemes` (default light,dark), `--theme-attr data-theme` when a class or
 attribute switches the theme rather than `prefers-color-scheme`, `--locale` (browser language, for sites that redirect by it), `--storage-state` (a Playwright state file with the login cookie, for pages behind a login), `--max-ch`
-(default 78), `--out`. Exit code 1 means at least one failure. Full detail
+(default 78; set it to the line length of the widest text block the project's layout allows, never to hide a real failure), `--out`. Exit code 1 means at least one failure. Full detail
 lands in `frontend-verify.json`.
 
 Enumerate **every** page, not a sample - the one page you leave out is where

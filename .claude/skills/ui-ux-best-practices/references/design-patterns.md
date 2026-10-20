@@ -27,6 +27,8 @@ opinion. Use as a decision reference when building a specific component or flow.
   never the default focus, always paired with a confirm step.
 - Primary sits **rightmost** in a Western-reading button group; one primary per
   group.
+- **Form footer:** Back left, Continue/Save right (space-between). A lone
+  submit button is centred, not stretched to the field width.
 
 ### Message channel routing (the strongest convergence)
 
@@ -44,6 +46,13 @@ Match **scope + urgency + persistence** to the channel - don't pick by looks:
   (WCAG 2.2). Toast auto-dismiss is for informational acks only.
 - **Banner = system state, never action-feedback.** Don't toast an outage; don't
   banner a "saved ✓".
+- **A notice the user must read before the next step goes where they look:**
+  an in-flow info panel above the form (not under the submit button, where it
+  is only seen after scrolling). After an action, scroll it into view and move
+  focus to it. It is a tinted panel with a border, not coloured text.
+- **A notice an action makes outdated is removed from the DOM**, not hidden or
+  left beside the new one. Two panels that name different values (old and new
+  email) contradict each other.
 - Fixed status vocabulary: **info / success / warning / error** - reuse
   everywhere, always icon + text (never color alone). Warning = recoverable /
   needs attention; error = failed / blocked.
@@ -135,6 +144,13 @@ adding and removing a row as explicit actions, not table furniture:
   taps blindly. A small `(i)`/`?` glyph on the button tells the user a tooltip
   exists before they touch or focus it.
 
+- **Warning mark on a value:** a value that is entered but not yet valid (an
+  unconfirmed email) gets a yellow warning icon next to it, with a tooltip that
+  states the reason. The icon is a focusable `button` so keyboard and touch
+  reach it; its `aria-label` carries the reason, because the visible tooltip
+  is `aria-hidden`. Define the markup once (one template) and reuse it in the
+  panel, the table row and any script-built message.
+
 ### Pagination vs infinite scroll
 
 - **Pagination** for large, addressable sets users navigate/bookmark/jump within
@@ -180,6 +196,12 @@ adding and removing a row as explicit actions, not table furniture:
   Validating every keystroke from the start is noisy; blur-first is the durable
   default. (Server-side validation still authoritative.)
 - Vertical layout (label above input) is the mobile-safe default.
+- **Width: forms, inputs and prose use the page container's width.** A form
+  capped narrower than its container, next to a full-width panel, looks
+  broken. Choose one width for the page and let everything fill it. A very
+  wide container reads worse for long paragraphs; if you accept that, raise
+  the line-length check of `frontend-verify` (`--max-ch`) to match, do not
+  leave it failing.
 
 ## Form & service-design flow patterns
 
