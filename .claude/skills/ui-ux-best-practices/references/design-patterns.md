@@ -169,6 +169,11 @@ adding and removing a row as explicit actions, not table furniture:
 
 - **An empty state is a designed state, not a blank.** Always tell the user what
   to do next (a CTA or guidance). The message/description is the required part.
+- **Empty table: keep the table and its header, put the message in one
+  full-width row** (`colspan` = column count) with the next action in it. The
+  header tells the user what will appear here. Design systems differ (Carbon
+  replaces the table; Supabase keeps the header); we keep it, and the message
+  stays inside the table so a screen reader still gets the table semantics.
 - Distinguish the types - first-use, no-results, error - each needs different
   copy and action. First-use doubles as onboarding ("create your first X").
   No-results suggests adjusting or clearing filters.
