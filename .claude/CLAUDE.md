@@ -86,6 +86,7 @@ Every comment is another thing to update, review, and re-read. A stale one is wo
 
 ## Research & Debugging Discipline
 
+- **A problem that can recur: propose a lasting fix.** Recur means the cause is outside the code (a provider adds a region, a certificate expires, a quota fills). Do not offer only the one-off patch. Propose auto-remediation first. If it is unsafe or would need a guess, propose the normal fix: an alert that names the case, plus the one place where the fix goes. Wait for a yes (see Scope).
 - **Falsification-first, not narrative-first.** Assume your latest result is wrong; try to break it before reporting. Don't build a story then defend it.
 - **State conclusions with their confounds.** "X, but Y isn't controlled" — never bare "X" when a variable moved alongside.
 - **Control the variable.** Two things changed together (e.g. a multiplier shifting both signal weight and total exposure) = you isolated nothing. Hold confounders constant.

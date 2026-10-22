@@ -25,6 +25,9 @@ runs in a Microsoft image. Never run `npx playwright install` on the host.
 - An image tag can lag the npm release (`manifest unknown`). List the tags and take
   the newest `-noble` one:
   `curl -s https://mcr.microsoft.com/v2/playwright/tags/list | tr ',' '\n' | grep -E '"v1\.[0-9]+\.[0-9]+-noble"' | tail -1`
+- `page.setContent()` cannot load a `file://` stylesheet: the page renders unstyled with no error.
+  Inline the CSS (`<style>` from `fs.readFileSync`). Prove a CSS check with a control case that
+  must fail, and run it once against the old CSS.
 - The images ship browsers, not the npm `playwright` package. Install the same
   version inside the container. The `playwright/python` image lacks its package too.
 - The default headless browser (`chromium-headless-shell`) has no PDF viewer: an

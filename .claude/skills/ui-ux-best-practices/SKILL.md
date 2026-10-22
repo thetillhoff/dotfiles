@@ -232,6 +232,13 @@ absence of feedback reads as "broken".
   saving must not silently reset a deliberate choice (theme, playback state,
   sort order, filter, zoom). Preserve it; change it only via an explicit control
   for that mode.
+- **A control that changes how the page looks previews the change on the page
+  at once, and adds nothing of its own.** Dimmer, theme, font size, density,
+  zoom: opening the control must leave the page as it is. A scrim behind the
+  panel tints the page before the first drag, so the user judges the setting
+  against a skewed page (a dim panel with a 40% scrim looked dimmed at 0).
+  If the panel needs an outside press to close it, keep that backdrop
+  transparent. Keep the panel readable at every value.
 - **A helper action gives feedback where the operator clicked.** Confirm on the
   control itself (button label → `Adopted ✓` for ~1 s); never scroll the
   viewport to a distant element or move focus off the button. Yanking the scroll
