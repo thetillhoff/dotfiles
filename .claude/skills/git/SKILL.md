@@ -375,6 +375,10 @@ Never push feature commits directly to `main`. Always:
 
 This keeps local `main` clean and in sync with remote `main`.
 
+### Check what a branch carries before you merge it
+
+A branch carries every commit of the line it was cut from, not only its own. Run `git log <target>..<branch> --oneline | wc -l` before you merge. A count far above your own commits means the branch was cut from another long-lived branch (`wip`, a feature line). A merge into `<target>` then lands all of that and often conflicts in the files you touched. Merge into the branch it was cut from instead (`git merge-base` and `git branch --contains` show it), or cherry-pick your commits. Read the repo's `AGENTS.md` for the branch roles first.
+
 ### Branch Cleanup After Merge
 
 After merging a branch (locally or via PR), always delete it in both places:

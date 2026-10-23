@@ -1,5 +1,7 @@
 # dotfiles
 
+This repo is checked out in `~` itself, so `~/.claude` is the live copy. Never clone it a second time.
+
 ```sh
 git init
 git remote add origin git@github.com:thetillhoff/dotfiles.git

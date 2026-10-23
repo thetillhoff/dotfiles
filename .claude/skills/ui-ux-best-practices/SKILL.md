@@ -492,7 +492,8 @@ size, spacing, radius, shadow, duration, opacity) is a whole number or a short
 step unless a measured need says otherwise. `oklch(43% 0.105 152)` implies a
 precision that no eye sees; `oklch(43% 0.1 152)` looks the same. Extra decimals
 are invented, add noise to every diff, and make equal values look different.
-Round, then check that the result looks the same. Prefer steps of the scale
+Round, then prove it: the OKLab distance of old and new colour stays under 0.02
+(below that no eye sees it), and each text pair keeps its WCAG contrast. Prefer steps of the scale
 (`0.5rem`, `1rem`, `1.5rem`) over fitted values (`0.875rem`, `1.375rem`).
 Exception: a value that is fractional by nature (line-height `1.5`, a fluid
 `clamp()`).

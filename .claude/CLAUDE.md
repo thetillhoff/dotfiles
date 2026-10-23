@@ -246,6 +246,7 @@ End a piece of work with the repo in a state a fresh session could close - no im
 - A gap the user accepts (no fix planned) moves from `TODO.md` to `KNOWN-ISSUES.md`. `TODO.md` holds only work someone will do.
 - Commit completed work with a written message; never leave a coherent change uncommitted or half-applied. (Push only when asked.)
 - Write down anything deliberately deferred (a `TODO.md` entry or a `ponytail:` comment) instead of leaving it implicit.
+- Remove a stale reference when you see it, in docs and in comments: a renamed repo or module, a removed file, an old path, a command that no longer exists. Do not only report it. Check that the doc is true (run the command it names) before you keep a line.
 - Persist all session learnings to files — never rely on memory. Each learning that's reusable across repos (a workflow rule, a tool quirk, a preference) goes in this global CLAUDE.md or a global skill; each one specific to a repo goes in that repo's `AGENTS.md`, docs, or a repo-local skill (see the next section). This means editing existing skills and CLAUDE.md sections, not just adding new ones — if a skill or CLAUDE.md section was wrong, incomplete, or out of date during the session, correct it in place before finishing. Treat "I'll remember this" as a bug: if it isn't in a file, it didn't happen.
 
 ## Where a learning goes: skills before always-loaded files
