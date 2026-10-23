@@ -1,6 +1,6 @@
 ---
-name: kubernetes-kind
-description: Apply for any task involving kubectl, kind, k8s manifests, or local/remote cluster operations. Enforces --context on every kubectl call, documents kind cluster conventions, points to this machine's named clusters in references/my-clusters.md, and defines what make up / make down must provide.
+name: kubernetes
+description: Apply for any task involving kubectl, kind, k8s manifests, Flux, Helm or cluster operations, and for cluster problems with storage (Longhorn, PVCs), TLS (cert-manager, Gateway API), DNS (external-dns, Cloudflare in front of a cluster), HTTP/3 or Postgres on Kubernetes. Enforces --context on every kubectl call, documents kind cluster conventions, points to this machine's named clusters in references/my-clusters.md, and defines what make up / make down must provide. Read references/longhorn.md for volumes, PVCs and Longhorn upgrades, and references/ingress-tls.md for TLS, DNS, Cloudflare and HTTP/3.
 ---
 
 # Kubernetes & kind
@@ -154,3 +154,25 @@ Readiness that returns 200 regardless of a downstream connection reports `1/1 Ru
 pod that can do nothing. Decide deliberately whether the probe gates on the dependency. If it does
 not, make the SUCCESS path visible in the log - a "connected" line logged below the pod's configured
 level means healthy and broken look identical, and only an out-of-band query can tell them apart.
+
+## A StatefulSet does not replace a pod that is not Ready
+
+A crash-looping pod keeps its old revision after you fix the spec. Delete the pod once the new spec is applied (`kubectl delete pod <name>`). The PVC stays. A Deployment does not have this problem.
+
+## Flux can lag behind a new chart version
+
+A `HelmRelease` can report `no '<chart>' chart with version matching` while the version exists upstream. The source-controller keeps an old index. Run `flux reconcile source helm <repo> -n <namespace>`, then reconcile the release.
+
+## Env file for `fileKeyRef`
+
+`env[].valueFrom.fileKeyRef` (feature `EnvFiles`, beta since 1.35) reads one key from a file that an init container wrote to a shared `emptyDir`. The file accepts only single-quoted values: `KEY='value'`. An unquoted or double-quoted value fails the pod with `couldn't parse env file`. Use `optional: true` to let the pod start without the file.
+
+## Postgres on Kubernetes: run as the image user
+
+The alpine image uses uid 70, the Debian image uid 999. Postgres refuses a data directory owned by another uid, and `fsGroup` changes only the group. After a switch between images, run a one-time root `chown -R` (init container with `CHOWN` and `DAC_OVERRIDE`) and remove it afterwards. The libc also changes: run `REINDEX DATABASE` if the database uses a locale other than `C`.
+
+## kopf operators
+
+- A handler receives `spec` as a `kopf.Spec` view, not a dict. `json.dumps(spec)` raises `TypeError`. Only the top level is the view, so `json.dumps(dict(spec))` works. A test must build a real `Body({...}).spec`: a test with a plain dict stays green.
+- kopf keeps a copy of the whole resource in the `last-handled-configuration` annotation. Large lists in a resource cost memory twice.
+- A resource with kopf finalizers cannot be deleted while the operator runs with 0 replicas. Scale it up, or patch `metadata.finalizers` to null for an orphan.

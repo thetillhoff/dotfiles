@@ -22,6 +22,13 @@
 
   The quoted `'MSG'` delimiter is what disables substitution; an unquoted `MSG` does not. Use the same form for `--amend`.
 
+## Shell Commands: One Step Per Call
+
+- Run commands one by one where you can. Do not chain unrelated steps (move, sed, file creation, build) into one call.
+- Reason: the auto-mode classifier judges a whole call. One flagged part blocks all of it, and you cannot tell which part. Small calls show the flagged step and keep the rest.
+- A call that the classifier denies: split it into single steps and run them one at a time. Do not rerun it whole. Do not work around a step that is denied alone.
+- Exception: steps that must share a shell, such as `source assume ...; aws sts get-caller-identity`. Their state is lost between calls.
+
 ## Parallel Agents
 
 - A hand-back can be interim: an agent that spawns helpers reports early, or repeats the same report many times. Do not trust a report. Check the tree: build, vet, tests, and a diff filter for the kind of change that was allowed. Stop a looping agent with `TaskStop`.
@@ -86,6 +93,7 @@ Every comment is another thing to update, review, and re-read. A stale one is wo
 
 ## Research & Debugging Discipline
 
+- **A bug in one place: find its siblings before you report.** `grep` every site of the same pattern (here: 36 handlers built their own login redirect, and the fix covered one). Fix them through one shared helper, or name the sites that you left and why.
 - **A problem that can recur: propose a lasting fix.** Recur means the cause is outside the code (a provider adds a region, a certificate expires, a quota fills). Do not offer only the one-off patch. Propose auto-remediation first. If it is unsafe or would need a guess, propose the normal fix: an alert that names the case, plus the one place where the fix goes. Wait for a yes (see Scope).
 - **Falsification-first, not narrative-first.** Assume your latest result is wrong; try to break it before reporting. Don't build a story then defend it.
 - **State conclusions with their confounds.** "X, but Y isn't controlled" — never bare "X" when a variable moved alongside.
@@ -159,6 +167,15 @@ The auto-mode classifier blocks a generic command (`kubectl exec`, `ssh`, `docke
 - A complete command for the user to run with `!`. Never give only the payload (SQL, script).
 - A wrapper target in the task runner that the repo already uses (`Taskfile.yaml` or `Makefile`). It fixes everything except the payload and enforces read-only where the tool allows it. The user then allows ONE rule: `Bash(<runner> <target>:*)`.
 
+### A command for the user: variables first, no placeholders inside
+
+When you give the user a command to run, make it easy to paste and run:
+
+- Values that the user must fill in come first, as variables (`user=...`, `password=...`). Then the command uses them. Never put a `<placeholder>` in the middle of a command.
+- Values that you know (a URL, a name, a path) go into the command as they are. Make a variable of a known value only when the command uses it more than once, and put that variable after the ones to fill in.
+- A command longer than a few lines: write a script to the scratchpad that takes arguments. Give the user one short command that runs it.
+- The same applies to test commands, not only to fixes.
+
 A read-only guard in the tool is not proof of read-only. Say what the guard does not cover.
 
 The `~/code/infra/` repo holds the cluster kubeconfig (`pulumi/kubeconfig`) and the `Taskfile.yaml` that sets `KUBECONFIG`. Use its tasks before you write a new wrapper.
@@ -195,6 +212,10 @@ A variable of the caller's shell overrides the `env:` of a task. A variable expo
 
 `pkill -f <pattern>` also matches the command line of the Bash tool itself and kills it. Every later command in the call never runs. Stop a background server by its task id. Or use a bracketed pattern (`'[n]ode server.js'`) in a call of its own.
 
+### Taskfile: a background server needs a script
+
+In an inline Taskfile command, `server=$!` with `trap 'kill $server' EXIT` does not stop the server: it keeps its port after the task ends, and the next run then tests that old process. Put start, wait and stop into a bash script (`scripts/*.sh`), check that the port is free first, and call the script from the task.
+
 ### Playwright: Docker only
 
 Never install a browser on the host. Use the `playwright-bazzite` skill for screenshots, scripted flows and the Playwright MCP.
@@ -225,7 +246,31 @@ End a piece of work with the repo in a state a fresh session could close - no im
 - A gap the user accepts (no fix planned) moves from `TODO.md` to `KNOWN-ISSUES.md`. `TODO.md` holds only work someone will do.
 - Commit completed work with a written message; never leave a coherent change uncommitted or half-applied. (Push only when asked.)
 - Write down anything deliberately deferred (a `TODO.md` entry or a `ponytail:` comment) instead of leaving it implicit.
-- Persist all session learnings to files — never rely on memory. Each learning that's reusable across repos (a workflow rule, a tool quirk, a preference) goes in this global CLAUDE.md or a global skill; each one specific to a repo goes in that repo's `CLAUDE.md`, docs, or a repo-local skill. This means editing existing skills and CLAUDE.md sections, not just adding new ones — if a skill or CLAUDE.md section was wrong, incomplete, or out of date during the session, correct it in place before finishing. Treat "I'll remember this" as a bug: if it isn't in a file, it didn't happen.
+- Persist all session learnings to files — never rely on memory. Each learning that's reusable across repos (a workflow rule, a tool quirk, a preference) goes in this global CLAUDE.md or a global skill; each one specific to a repo goes in that repo's `AGENTS.md`, docs, or a repo-local skill (see the next section). This means editing existing skills and CLAUDE.md sections, not just adding new ones — if a skill or CLAUDE.md section was wrong, incomplete, or out of date during the session, correct it in place before finishing. Treat "I'll remember this" as a bug: if it isn't in a file, it didn't happen.
+
+## Where a learning goes: skills before always-loaded files
+
+An always-loaded file (global `CLAUDE.md`, repo `AGENTS.md`) loads into every session. Keep it small. A skill or a README loads only when its topic comes up.
+
+- Prefer `AGENTS.md` over `CLAUDE.md` in a repo. Add a `CLAUDE.md` only when a tool needs it. It then contains only `@AGENTS.md`.
+- Own skills are ours. Improve them freely: edit, merge, split, rename or delete them.
+
+| Layer | Holds |
+| ----- | ----- |
+| Global `CLAUDE.md` | Rules for how to work, in every repo. |
+| Global skill | Generic knowledge about a tool or platform (Kubernetes, Flux, Postgres, SOPS). Create a skill only when none fits. |
+| Repo `AGENTS.md` | Layout, commands and gotchas that apply to most tasks in that repo. Soft limit: about 150 lines. |
+| Repo README or repo skill | A fact about one app or one config, or a long topic for one kind of task. Put it next to the code. |
+
+Test for each repo-specific entry, in this order:
+
+1. The code, the config or git history shows it: delete it.
+2. It is a one-off story (an incident, a measured number, "we tried X"): it belongs in a commit message. Delete it.
+3. It applies to any project that uses the tool: move it to the global skill. The repo keeps only the project fact (names, paths, versions).
+4. Only one kind of task needs it: move it to a README next to the code or to a repo skill.
+5. Otherwise it stays in the repo `AGENTS.md`.
+
+Existing files (global `CLAUDE.md`, skills, repo `CLAUDE.md` and `AGENTS.md`, repo skills) do not all follow this yet. When the user asks for a review, or when you edit a file in this scope, sort it with the test above.
 
 Stop because the work is at a clean point, not because the turn ran out. If a follow-up prompt would obviously just be "now tidy up / update the docs / commit", do that now.
 
@@ -259,6 +304,7 @@ Stop because the work is at a clean point, not because the turn ran out. If a fo
 ## Answer Length
 
 - Answer exactly what the user asked, and stop. A request for a command gets the command, with no explanation, no variants and no safety notes.
+- A yes/no question gets "yes" or "no". Add a clause only when the plain answer would be false or misleading. Never announce a caveat without stating it.
 - Add details only when the user asks for them, or when a step can destroy data or cost money.
 - Do not wrap a command in extra shell (`read -rs`, `unset`, pipes) unless the user asks. Leave a value the user must fill in as the last argument or as `<placeholder>`.
 

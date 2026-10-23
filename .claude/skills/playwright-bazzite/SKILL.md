@@ -33,6 +33,7 @@ runs in a Microsoft image. Never run `npx playwright install` on the host.
 - The default headless browser (`chromium-headless-shell`) has no PDF viewer: an
   `<iframe>` or `<embed>` with a PDF stays blank, with no error. Launch with
   `chromium.launch({ channel: 'chromium' })` to render it.
+- After a click that sends a request, wait for the URL or the response (`page.waitForResponse`) before the next `goto`. A `goto` cancels the request, and the test then checks a state that never happened.
 - Before you trust a screenshot of a restarted dev server, `curl` the changed asset
   and `grep` for the change. A stale process on the same port serves the old build.
 
@@ -54,6 +55,10 @@ docker run --rm --init --ipc=host --userns=keep-id --network host -v "$DIR:/work
   mcr.microsoft.com/playwright:v1.63.0-noble \
   bash -c "npm install playwright@1.63.0 --no-save --silent && node flow.js"
 ```
+
+## Test suite (`@playwright/test`)
+
+Put the specs and `playwright.config.mjs` in a read-only mounted directory. In the container, copy them to a writable one, run `npm i @playwright/test@1.63.0 --no-save --silent && npx playwright test`, and set `outputDir` to a mounted writable path. Start the app under test from a bash script on the host (not inline in a Taskfile, see global CLAUDE.md), on a port that a developer's own server does not use.
 
 ## Playwright MCP (`mcp__playwright__browser_*`)
 

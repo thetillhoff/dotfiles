@@ -89,6 +89,7 @@ tasks:
         msg: '{{.ENV}} deploys only from the {{.BRANCH}} branch'
     cmds:
       - task: verify
+        if: '[ "{{.ENV}}" = prd ]'
       - task: 'stack:{{.ENV}}'
       - task: 'pulumi:{{.ENV}}'
         vars: { CLI_ARGS: 'up' }

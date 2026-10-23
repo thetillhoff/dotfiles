@@ -114,7 +114,7 @@ Start from `templates/Taskfile.yml`. Tasks: `verify`, `test`, `bootstrap:<env>`,
 - Set `PULUMI_BACKEND_URL` on the command (in `pulumi:*`), never in `env:`. A shell variable beats `env:` and sends a task to the wrong account.
 - A `vars:` map rejects the YAML merge key. Put every variable in the anchored map.
 - `task stack:<env>` creates a missing stack with the alias as secrets provider. `preview` and `deploy` run it. This replaces a manual `pulumi stack init`. `preview` always passes `--diff`.
-- `deploy` refuses a branch that does not match the env. `shared` runs from any branch. `deploy` runs `verify` first.
+- `deploy` refuses a branch that does not match the env. `shared` runs from any branch. Only `deploy:prd` runs `verify` first. `deploy:dev` and `deploy:shared` skip it, because the full gate costs minutes on every iteration: run `task verify` yourself before you call a change done. Use `if: '[ "{{.ENV}}" = prd ]'` on the `verify` step.
 - `reset-dev` empties every bucket and table of the dev stack, then runs `pulumi up --refresh` to re-seed `TableItem` rows. It uses `templates/reset-dev.sh` as `scripts/reset-dev.sh`. The script reads the ids from the stack state and refuses a non-dev account. It does not clean Cognito or SSM: add that per service.
 - A product with a UI adds `a11y`: `frontend-verify` in Docker, one run for each language (`--locale`), signed in with the stub cookie when the pages need a login (`--storage-state`). Mount only `.a11y/` (script and site `:ro,z`), pin every npm package, and start the server on the host. `a11y` is not part of `verify`: it takes minutes.
 - `default` lists the tasks. A destructive task uses `prompt:` and refuses the wrong account in its script. `install` runs `npm install` in every Node project.

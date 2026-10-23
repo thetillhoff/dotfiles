@@ -1,6 +1,6 @@
 # My named clusters
 
-Machine-specific cluster instances for the `kubernetes-kind` skill. The skill body
+Machine-specific cluster instances for the `kubernetes` skill. The skill body
 (`../SKILL.md`) holds the universal method; this file holds the concrete clusters.
 
 ## hydra (remote, production)

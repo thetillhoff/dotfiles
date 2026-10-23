@@ -202,6 +202,15 @@ absence of feedback reads as "broken".
   that must win a selector at least as specific as the others, placed after
   them. Test every pair of states (selected + hover, selected + focus,
   disabled + hover), not each state alone.
+- **Every error, warning and notice is one component.** One box with one padding,
+  one border and radius, and one margin to what is above and below it, in a
+  colour per kind (error, warning, notice). A message that touches a button or
+  an input, or a page with its own spacing for the same kind of message, is a
+  bug. Put the rule on the role or class (`[role=alert]`, `.notice`), never on a
+  page or an id, so that a new page cannot differ. Place the message where the
+  eye is when the action ends: directly under the control that caused it, never
+  far from it. Check every kind of message in a screenshot, next to a button, an
+  input and a heading.
 - **Clickable things look clickable** - interactive elements must stand out
   (color, emphasis). Links are underlined and blue-ish by convention; do not
   strip the affordance.
@@ -321,6 +330,23 @@ Forms are where users quit. Reduce effort and never punish.
   product does or what is true ("die MX-Einträge bleiben unverändert", "ein
   selbst gesetztes Limit"). A legal text keeps its defined terms.
 - A legal text keeps the wording that a lawyer approved.
+- **Say what the system does and what the reader must do. Nothing else.** Check
+  each claim against the code path behind it: what is checked, when, and what
+  happens on failure. Name a mechanism by what it proves. A code from a mailbox
+  proves access to that mailbox: it does not "confirm the address" or "verify
+  that you are the owner". Never promise an outcome that the code does not
+  enforce. Write the steps in the order in which they happen.
+- **One job for each kind of text:**
+  - Label: the noun. No verb, no help.
+  - Description (between label and control): what the field is for, or its
+    format. One sentence. Never repeat the label.
+  - Hint (under a control): what applies in the current state. One sentence.
+  - Warning: the consequence, placed before the action that it belongs to.
+  - Error: what is wrong, in the words of the field, then what to do ("Enter a
+    valid phone number."). No blame, no internal term, and never "invalid" or
+    "failed" alone.
+  - Button: the verb of the action ("Change payment method").
+  - Empty state and success: the fact, then the next step.
 
 ## 7. Multi-step flows & progress trackers
 
@@ -355,6 +381,10 @@ three. For loading/long-job progress bars and spinners, see §12 (operator UIs).
 - **End with a check-answers page then a confirmation page** - let the user
   review (with per-row "Change" links) before submit, and confirm what happened
   - what's next after. Never bounce them silently back to a list.
+- **Say "Saved" only when the page moves on.** A save that still needs a code,
+  a confirmation or another step leads to a screen of its own for that step, with
+  no "Saved" notice on the form. The user reads "saved" as "done", and "save
+  again to continue" breaks that. A wrong address gets a "Change it" link back.
 - **Non-linear, resumable work → a task-list**, not a linear tracker: a landing
   page of sub-tasks tagged Completed / In progress / Cannot start yet. Use it
   when sections can be done in any order across sessions. Details in
@@ -456,6 +486,16 @@ Before shipping any element, ask:
 A native control beats a custom one. A plain button beats a styled one when the
 plain one communicates the same thing. Restraint is the tell of a real designer;
 excess is the tell of a generator. When unsure, cut it.
+
+**Whole numbers by default.** A design value (colour lightness, chroma, hue,
+size, spacing, radius, shadow, duration, opacity) is a whole number or a short
+step unless a measured need says otherwise. `oklch(43% 0.105 152)` implies a
+precision that no eye sees; `oklch(43% 0.1 152)` looks the same. Extra decimals
+are invented, add noise to every diff, and make equal values look different.
+Round, then check that the result looks the same. Prefer steps of the scale
+(`0.5rem`, `1rem`, `1.5rem`) over fitted values (`0.875rem`, `1.375rem`).
+Exception: a value that is fractional by nature (line-height `1.5`, a fluid
+`clamp()`).
 
 ---
 
@@ -581,6 +621,10 @@ Words in the UI are design material. Keep them consistent:
 
 - Action buttons use the verb of what they do. Button says "Merge"; resulting
   toast says "Merged X into Y."
+- **A button names an action, never a destination.** "Payment method" says
+  where the click goes, "Change payment method" says what it does. Plain
+  navigation is a link, not a button. A control that must look like a button and
+  only opens a page says so: "Visit X", "View invoices".
 - Destructive actions name the target. Not "Delete" - "Delete person Y
   (3 samples)".
 - Entity names (track, scene, person, source) stay the same across pages. No

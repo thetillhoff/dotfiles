@@ -22,9 +22,11 @@ Do this before you collect learnings. A session ends only when no thread is open
 3. **Branches:** list local branches that are not merged into the default branch of the repo, and branches that are ahead of their upstream or have none.
 4. **Sort each finding:**
    - **Finish it now:** a coherent uncommitted change. Verify it, then commit it with a written message. Never stage a change that you did not make: add paths, never `git add -A`.
-   - **Needs the user:** an unpushed commit, an unmerged branch, a decision, an unanswered question. Push, merge and delete only on request. Name each one.
+   - **Needs the user:** an unmerged branch, a decision, an unanswered question. Merge and delete only on request. Name each one.
+   - **Unpushed commits:** mention the count in one clause. Do not ask to push. Do not give the command or explain how to push. The user knows.
    - **Record it:** a deferred item goes to `TODO.md` (routing: step 3), so no thread lives only in chat.
-5. **Ask:** put every "needs the user" item and every skill proposal (step 3) in one list, with the exact command or answer that closes it. Stop and wait for the answer before you report. Do not end the session with an open thread.
+5. **Ask:** put every "needs the user" item and every skill proposal (step 3) in one list, with the answer that closes it. Stop and wait for the answer before you report. Do not end the session with an open thread.
+   - **Each item stands alone.** The user may read it hours later, or only this list. Give the full context: what the thing is, where it lives (page, file, command), what state it is in, what the options are, and your recommendation. Never write "the earlier question", "as discussed" or "the item above". A reader who saw nothing else must be able to answer.
 
 ## 2. Collect candidates
 

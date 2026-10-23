@@ -22,3 +22,13 @@ Use explicit `handle` blocks. Caddy's implicit directive order runs `try_files` 
 ```
 
 The `handle` block creates an explicit priority boundary: the first match wins, later blocks are skipped.
+
+## Compression, deploy and secrets
+
+- `encode gzip` is load-bearing: without it the JS chunk and large API responses go out raw. After a deploy that changes the Caddyfile, check `Content-Encoding: gzip` on `/assets/index-*.js`.
+- A Caddyfile change ships only after a commit and an image rebuild.
+- Never put an API secret into a `VITE_*` variable: Vite inlines it into the bundle. Add the token in the Caddy proxy hop from its environment.
+
+## Type check of a Vite project
+
+`npx tsc --noEmit` checks nothing when the root `tsconfig.json` has `"files": []` and project references. It exits 0 even for a file with syntax errors. Use `tsc -b`, or `npm run build` when the script is `tsc -b && vite build`.
