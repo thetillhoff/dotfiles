@@ -55,14 +55,23 @@ tasks:
         brew update
         brew upgrade
         brew cleanup
-        softwareupdate --install --all
+      - cmd: softwareupdate --install --all
+        platforms: [darwin]
+      - cmd: flatpak update -y
+        platforms: [linux]
 
   update-system:
-    desc: Update system
+    desc: Update system (reboots only if the update needs it)
     dir: '{{.USER_WORKING_DIR}}'
     cmds:
-      - |
-        sudo softwareupdate --install --all --restart
+      - cmd: sudo softwareupdate --install --all --restart
+        platforms: [darwin]
+      - cmd: |
+          ujust update
+          if rpm-ostree status --json | jq -e '.deployments[0].staged' >/dev/null; then
+            systemctl reboot
+          fi
+        platforms: [linux]
 
   netspeed:
     desc: Show current network speed
@@ -87,20 +96,29 @@ tasks:
         git ls-remote --get-url
 
   flush-dns:
-    desc: Flush DNS on macOS
+    desc: Flush DNS
     dir: '{{.USER_WORKING_DIR}}'
     cmds:
-      - |
-        sudo dscacheutil -flushcache
-        sudo killall -HUP mDNSResponder
+      - cmd: |
+          sudo dscacheutil -flushcache
+          sudo killall -HUP mDNSResponder
+        platforms: [darwin]
+      - cmd: resolvectl flush-caches
+        platforms: [linux]
 
   renew-dhcp:
-    desc: Renew DHCP on macOS
+    desc: Renew DHCP
     dir: '{{.USER_WORKING_DIR}}'
     cmds:
-      - |
-        sudo ipconfig set en0 BOOTP
-        sudo ipconfig set en0 DHCP
+      - cmd: |
+          sudo ipconfig set en0 BOOTP
+          sudo ipconfig set en0 DHCP
+        platforms: [darwin]
+      - cmd: |
+          dev=$(ip route show default | awk '{print $5; exit}')
+          sudo nmcli device disconnect "$dev"
+          sudo nmcli device connect "$dev"
+        platforms: [linux]
 
   whatsmyip:
     desc: Show current public ip (v4 & v6)
@@ -192,9 +210,12 @@ tasks:
     desc: Show local IPs, public IP, and open ports
     dir: '{{.USER_WORKING_DIR}}'
     cmds:
+      - echo "=== Local IPs ==="
+      - cmd: ifconfig | grep -E "^[[:space:]]+inet6? " | grep -v "127.0.0.1\|::1\|fe80::" | awk '{print $2}'
+        platforms: [darwin]
+      - cmd: ip -o addr show scope global | awk '{print $4}'
+        platforms: [linux]
       - |
-        echo "=== Local IPs ==="
-        ifconfig | grep -E "^[[:space:]]+inet6? " | grep -v "127.0.0.1\|::1\|fe80::" | awk '{print $2}'
         echo ""
         echo "=== Public IP ==="
         dig @ns.sslip.io txt ip.sslip.io +short -4 | tr -d '"'
@@ -203,27 +224,28 @@ tasks:
         echo "=== Open Ports ==="
         { echo "ADDRESS PROCESS PID"; lsof -iTCP -sTCP:LISTEN -P -n | awk 'NR>1 {print $9, $1, $2}' | sort -t: -k2 -n; } | column -t
 
-  backup:
-    desc: Backup home dir
-    cmds:
-      - |
-        TIMESTAMP=$(date +%Y-%m-%d-%H-%M-%S)
-        ssh -i ~/.ssh/id_backup-macbook-superluminar backup-macbook-superluminar@blackhole.local "mkdir -p /mnt/cold/backup-macbook-superluminar/$TIMESTAMP/"
-        rsync -chaxP --info=progress2 \
-          -e "ssh -i ~/.ssh/id_backup-macbook-superluminar" \
-          --exclude=.cache/ \
-          --exclude=.cursor/ \
-          --exclude=.kube/cache/ \
-          --exclude=.pulumi/plugins/ \
-          --exclude=.vscode/extensions/ \
-          --exclude=.npm/ \
-          --exclude=.nvm/ \
-          --exclude=.rd/ \
-          --exclude=Library/ \
-          --exclude=Pictures/ \
-          --exclude=go/ \
-          /Users/$(whoami)/ \
-          backup-macbook-superluminar@blackhole.local:/mnt/cold/backup-macbook-superluminar/$TIMESTAMP/
+# Disabled: tied to the old macbook. Re-add with mac and linux support for the next machine.
+#   backup:
+#     desc: Backup home dir
+#     cmds:
+#       - |
+#         TIMESTAMP=$(date +%Y-%m-%d-%H-%M-%S)
+#         ssh -i ~/.ssh/id_backup-macbook-superluminar backup-macbook-superluminar@blackhole.local "mkdir -p /mnt/cold/backup-macbook-superluminar/$TIMESTAMP/"
+#         rsync -chaxP --info=progress2 \
+#           -e "ssh -i ~/.ssh/id_backup-macbook-superluminar" \
+#           --exclude=.cache/ \
+#           --exclude=.cursor/ \
+#           --exclude=.kube/cache/ \
+#           --exclude=.pulumi/plugins/ \
+#           --exclude=.vscode/extensions/ \
+#           --exclude=.npm/ \
+#           --exclude=.nvm/ \
+#           --exclude=.rd/ \
+#           --exclude=Library/ \
+#           --exclude=Pictures/ \
+#           --exclude=go/ \
+#           /Users/$(whoami)/ \
+#           backup-macbook-superluminar@blackhole.local:/mnt/cold/backup-macbook-superluminar/$TIMESTAMP/
 
   pull-file:
     desc: Pull a specific file from upstream without touching other uncommitted changes (`task pull-file -- .zshrc`)
