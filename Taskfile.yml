@@ -74,12 +74,15 @@ tasks:
         platforms: [linux]
 
   onedrive-reauth:
-    desc: Re-authorise onedrive (interactive) and restart its service
+    desc: Restart the onedrive service; if it is failed, re-authorise (interactive) first
     platforms: [linux]
     cmds:
-      - onedrive --reauth
-      - systemctl --user reset-failed homebrew.onedrive-cli.service
-      - systemctl --user restart homebrew.onedrive-cli.service
+      - |
+        if systemctl --user is-failed --quiet homebrew.onedrive-cli.service; then
+          onedrive --reauth
+          systemctl --user reset-failed homebrew.onedrive-cli.service
+        fi
+        systemctl --user restart homebrew.onedrive-cli.service
 
   netspeed:
     desc: Show current network speed
