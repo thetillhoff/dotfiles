@@ -2,6 +2,9 @@
 # prompt separator by color as well
 # bg:#303030
 
+# Following ~/public triggers its SMB automount, which blocks the prompt.
+follow_symlinks = false
+
 # A minimal left prompt
 format = """
 [╭─](fg:#505050)\
