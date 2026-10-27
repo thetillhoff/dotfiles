@@ -17,7 +17,8 @@ description: >
   tool, admin UI, control panel, queue, dashboard, or back-office tool. Triggers
   on "UX", "usability", "user flow", "make it intuitive", "is this good UI",
   "make it look good", "build UI", "component", "animation", "dark mode",
-  "responsive", "accessibility", "admin UI", "control panel", "back office".
+  "responsive", "accessibility", "admin UI", "control panel", "back office",
+  "email template", "letter", "invoice layout", "customer communication".
   Principles-and-implementation layer - invoke alongside frontend-design or
   hallmark for aesthetic direction. NOT for: copy/content (copywriting),
   charts/data viz (dataviz), design-system specs (design-system), or HTMX
@@ -462,6 +463,30 @@ Once past a couple of screens, stop deciding the same thing twice. Define once,
 reuse everywhere - typography scale, color usage, button styles & states,
 spacing, border-radius, animation speed, and shared components (tables, cards,
 grids). This is what makes a product feel like one product.
+
+### Customer communication: one layout
+
+Every message to a customer (email, PDF letter, invoice, SMS) is part of the
+design system, not a string in a handler.
+
+- Build the frame in one place. A message kind passes only its content: subject,
+  reason, data. The frame (footer, legal details, contact or report address)
+  comes from the shared builder, so no kind can omit it. Make it structural,
+  not a convention.
+- Use one order in every kind: what the reader must act on (code, amount,
+  deadline), then the limit or consequence, then the reason for the message,
+  then what to do if it was not them, then the footer.
+- Use one term and one phrase for one thing, in mails and on pages. Take a limit
+  such as a code lifetime from the same constant as the page.
+- Subjects are static per kind and start with the product name. A secret never
+  goes in a subject: it shows on a lock screen.
+- A business message carries the legal details of the sender that the law asks
+  for (company, legal form, seat, register, managing director). A letter holds
+  them in the same place as an email. Check the rule of the jurisdiction, for
+  example § 35a GmbHG in Germany, and keep the sender a company, not a person.
+- A plain-text mail needs no logo and no header line. A PDF letter or an HTML
+  mail takes fonts and colors from the same tokens as the product.
+- Test each kind for the frame parts (footer, contact address, the first line).
 
 ## 11. Least design necessary
 
