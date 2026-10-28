@@ -100,8 +100,15 @@ Every comment is another thing to update, review, and re-read. A stale one is wo
 - **Control the variable.** Two things changed together (e.g. a multiplier shifting both signal weight and total exposure) = you isolated nothing. Hold confounders constant.
 - **Never write a parser or adapter against an invented fixture.** Capture one real payload from the live endpoint FIRST, commit it as the fixture, then write the code. A fabricated fixture makes every test compare the code against your own assumption, so no test can fail on the one thing that is wrong.
 - **A surprising result is a measurement bug until proven otherwise.** Contradictions (0 trades + high exposure) → distrust the parse/instrument before the system.
-- **Verify the premise before building the fix.** One cheap measurement of the real bottleneck beats a confident assumption. Never optimize an unmeasured cost.
+- **Verify the premise before building the fix.** One cheap measurement of the real bottleneck beats a confident assumption. Never optimize an unmeasured cost. A timeout or time budget comes from the run times of the real job in the real environment (several runs, slow ones included). A `curl` of one endpoint or a number in a comment is not that measurement: a 5 minute budget set from a guess failed every run of a job that takes 7 to 13 minutes.
 - **Structured data → real parsers.** pandas for CSVs (fields contain commas); shell arrays for lists. Never `awk -F,` column-splitting; never unquoted `for x in $VAR` / `set -- $x` in zsh (it doesn't word-split — use `${=var}` or arrays).
+
+## Scheduled Jobs: Avoid Minute 00 and 30
+
+- Do not schedule a job that fetches from an external server at minute 00 or 30. Many other jobs run at these minutes, so the server is busiest then and throttles with 429.
+- Pick another minute (for example `:40`) when the interval stays the same. Cron has no seconds field, so the minute is the finest offset.
+- Run two jobs that hit the same target on different minutes.
+- A schedule that a user names exactly (a meeting, a fixed report time) stays as the user said.
 
 ## Scaffolding Over Manual File Creation
 
