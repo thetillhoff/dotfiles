@@ -215,6 +215,10 @@ An import step can write defaults to the state that the code never sets. Example
 
 A variable of the caller's shell overrides the `env:` of a task. A variable exported for one environment then silently affects a task for another. Set such a variable on the command itself (`- VAR='{{.VALUE}}' cmd`), never in `env:`.
 
+### Taskfile: a YAML anchor must come before its alias
+
+`*alias` above its `&anchor` fails with `unknown anchor ... referenced` and no task lists. Put a new task that reuses an anchor below the task that defines it (often the end of the file).
+
 ### `pkill -f <pattern>` kills its own shell
 
 `pkill -f <pattern>` also matches the command line of the Bash tool itself and kills it. Every later command in the call never runs. Stop a background server by its task id. Or use a bracketed pattern (`'[n]ode server.js'`) in a call of its own.
