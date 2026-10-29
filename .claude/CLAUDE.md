@@ -7,7 +7,7 @@
 - Use `cd <path> && git <cmd>`, never `git -C <path> <cmd>`.
 - Superpowers skills must never run git commands.
 - **Start every new topic or feature from the latest upstream state.** Before you write code, run `git pull` on the current branch. Before you branch off `main`, check out `main` and pull it first. This prevents work that starts from a stale base.
-- **Run `git branch --show-current` right before every commit.** Another process can switch the branch of the checkout during a session.
+- **Run `git branch --show-current` right before every commit.** Another process can switch the branch of the checkout during a session. Run it in its own call and read the answer before you commit: a `branch && commit` chain commits on the wrong branch (it happened, on `main`).
 - **Another session can work in the same repo.** Run `git status` before a commit and stage by path, never `git add -A`: its uncommitted files are not yours. That session can commit in the middle of yours.
 - **A file can hold a hunk of another session.** Stage only your change: write `git show HEAD:<path>` plus your edit to a temp file, run `git hash-object -w <temp>`, then `git update-index --cacheinfo 100644,<hash>,<path>`, then commit. The working tree keeps the other hunk.
 - **Never pass a commit message with `git commit -m "..."` if it contains backticks.** The shell substitutes them and runs the contents as a command. Always use a quoted heredoc, which substitutes nothing:

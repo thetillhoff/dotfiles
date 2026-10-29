@@ -13,7 +13,8 @@ description: >
   resources. Triggers on: "microservice", "service architecture", "split
   this service", "add a service", "how should these services talk",
   "shared library vs service", "queue/worker", "service status/health",
-  "self-contained service".
+  "self-contained service". Also use when checking the stack config of
+  each environment for missing or unused keys ("config check").
 ---
 
 # Microservice Architecture
@@ -104,6 +105,18 @@ The through-line: **the broker is always up and cheap to query; the busy worker 
 ## State ownership
 
 Each piece of state has exactly one owner; everything else derives or reads through a contract. Don't let two services write the same table or two components cache the same fact - they drift. When you need a fact in two places, pick the owner and have the other read it (or read the broker's shared result), rather than duplicating the write path.
+
+## Config check per environment
+
+One task checks the config of every env (dev, prd, shared) in one run. It is offline: it reads the stack files and needs no credentials. A typo in a namespace (`moswood-app:key`) raises no error and leaves the real key missing until a deploy fails, so the check exists to catch it first.
+
+- **Derive the key list from the code.** Run the real program against mocks with the keys of one stack file, and record every config read. A hand-written table drifts. A key that only one branch reads (a simulated registrar, an optional provider) is then right without a rule.
+- **Report both sides, with the full key (`namespace:key`).** `missing` is a key that the code needs. `unused` is a key that nothing reads. Hand a placeholder to a missing required key so one run lists all of them.
+- **Skip `unused` when the program stopped early.** The reads after the failure never happened, and every later key would show as unused. Report the failure itself.
+- **Name the keys that only a provider reads** (`cloudflare:apiToken`, `aws:allowedAccountIds`). The program never reads them, so list them as required and never as unused.
+- **Env-only keys need a list** (`DEV_ONLY`): required on dev, forbidden on prd, also with the value `false`. A secret such as `basicAuth` cannot be switched off with `false`. The reads cannot show this rule, because the program reads the key on every stack.
+- **A separate Pulumi project (`shared`) uses the same harness.** Its own `node_modules` holds a second `@pulumi/pulumi` that the mocks do not reach, so resolve that one package from the main project.
+- Reference code: `mosswood-app/infra/check-config.ts` and `sendpdf/infra/test/check-config.ts`.
 
 ## Spec discipline
 
