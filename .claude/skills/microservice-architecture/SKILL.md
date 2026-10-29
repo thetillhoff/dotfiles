@@ -21,6 +21,8 @@ description: >
 
 Principles for a fleet of cooperating backend services behind a broker. Distilled from a real ML-pipeline landscape; written to generalize. Each principle leads with the *why* - apply judgement, don't cargo-cult.
 
+A small serverless app (a few Lambdas, one table, a sweep) is not a fleet. Only the sections "Config check per environment", "Fail loud, fail durably", "Spec discipline" and "Operational hygiene" apply to it. The broker, transport and fleet-status sections do not.
+
 ## The two load-bearing rules
 
 **Self-contained services.** A service owns everything it needs to run: its Dockerfile, its dependencies (pinned), its model/assets, its worker loop, and its slice of state. It talks to the rest of the world *only* through explicit contracts - a queue message, an HTTP endpoint, a broker key - never by importing another service's internals or reaching into another service's database. The test: you can delete every other service, hand this one its inputs, and it still runs and is testable in isolation. Self-containment is what lets you rebuild, redeploy, scale, and reason about one service without holding the whole fleet in your head.
@@ -116,6 +118,7 @@ One task checks the config of every env (dev, prd, shared) in one run. It is off
 - **Name the keys that only a provider reads** (`cloudflare:apiToken`, `aws:allowedAccountIds`). The program never reads them, so list them as required and never as unused.
 - **Env-only keys need a list** (`DEV_ONLY`): required on dev, forbidden on prd, also with the value `false`. A secret such as `basicAuth` cannot be switched off with `false`. The reads cannot show this rule, because the program reads the key on every stack.
 - **A separate Pulumi project (`shared`) uses the same harness.** Its own `node_modules` holds a second `@pulumi/pulumi` that the mocks do not reach, so resolve that one package from the main project.
+- Name the task `check-config` in every repo. Run the file with `tsx`, not a compile step.
 - Reference code: `mosswood-app/infra/check-config.ts` and `sendpdf/infra/test/check-config.ts`.
 
 ## Spec discipline
@@ -126,7 +129,10 @@ Design docs name **contracts** (what must be true) not **mechanisms** (how you h
 
 - **Rebuild every image that bakes changed shared code - silently running stale is the trap.** A shared library copied into N images (see the two load-bearing rules) means one edit must rebuild all N. Build tooling often *doesn't*: `docker compose up` builds an image only if it's **missing**, never on source change, so an edited shared module keeps running its old version in every already-built image with **no error**. The tell: "I changed the shared code / fixed the bug and nothing happened at runtime" → the image wasn't rebuilt. Make your up/deploy step rebuild-on-change (`compose build` before `up`, a content hash, or per-image stamps), and treat "a shared-lib change had no effect" as an un-rebuilt image until proven otherwise.
 - **Keep each service's Dockerfile COPY list in sync with its imports.** A new local/shared module that's imported but never added to the `COPY` lines crashes the service on startup (`ModuleNotFoundError`) - and stays **latent** until something triggers a rebuild, which (per the point above) may be long after the code merged. When you add a module, add its COPY; when a rebuilt image won't boot, check the COPY list before anything else.
-- **Pin dependencies.** A floating version is a latent "works on my node" failure and defeats reproducible rebuilds.
+- **Pin dependencies.** A floating version is a latent "works on my node" failure and defeats reproducible rebuilds. A lockfile (`npm ci`, `go.sum`) pins; a `^` range in the manifest is fine. Renovate does the bumps.
+- **CI checks, no CI deploys.** Run the steps of the local `verify` gate on the Renovate branches, cheapest first, so branch automerge waits on a real status. Deploy from the operator's machine only.
+- **Check the real resources too.** A mocks test proves the code keeps a protection (`retainOnDelete`, PITR, versioning). A read-only `check-protection:<env>` task proves AWS holds it. Keep both.
+- **Keep local tool output out of git.** Ignore `docs/superpowers/` (local plans) and `.playwright-mcp/` (browser snapshots), and in `.markdownlintignore` too.
 - **Prefer plain/linear build progress in tooling.** Fancy in-place TUI progress renderers mangle into pages of duplicated garbage under some container providers/terminals; a `--progress plain`-style flag gives readable, log-friendly output.
 - **One k8s resource per file**, named `<kind>-<name>.yaml`; wire each into the kustomization. Never bundle resources with `---`.
 - **Run language runtimes with system deps in containers**, not on the host.
