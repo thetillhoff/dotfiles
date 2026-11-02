@@ -104,6 +104,17 @@ Remedies, in order of value:
 
 The through-line: **the broker is always up and cheap to query; the busy worker is not.** Derive fleet status from the former.
 
+## HTTP edge alarms (API Gateway in front of a function)
+
+- The built-in `5xx` metric has no status split and no path. A 5xx that the function returns on purpose (a 503 in maintenance mode) leaves `Errors` and `Throttles` at 0 and still alarms.
+- Turn on the access log of the stage (path, status, client IP, user agent, integration error). Keep the retention short, because it holds client IPs.
+- Alarm on a metric filter of the access log. While maintenance mode is on, the filter ignores 503 and keeps every other 5xx.
+- An alarm mail from CloudWatch has no path. For one mail with the cause, a function that reads the log of the alarm window and sends the mail needs a fallback to the plain alarm text, or its own failure silences every alarm.
+
+## `www` redirect for an apex domain
+
+A CNAME alone does not redirect: the browser stays on `www`. Use a proxied `www` record plus a Cloudflare redirect rule (301, query string kept) to the apex. The stack that owns the zone holds both, because a zone allows one redirect ruleset. The token needs the permission "Zone - Single Redirect - Edit". Do this only for a domain that serves a page on its apex.
+
 ## State ownership
 
 Each piece of state has exactly one owner; everything else derives or reads through a contract. Don't let two services write the same table or two components cache the same fact - they drift. When you need a fact in two places, pick the owner and have the other read it (or read the broker's shared result), rather than duplicating the write path.
