@@ -65,6 +65,8 @@ When `encrypt_boot = true`, Packer calls `ec2:CopyImage` in the **build account*
 - CloudTrail `lookup-events` shows why a Cognito call failed.
 - `aws iam simulate-principal-policy` shows what a Lambda role may do.
 - `aws cloudfront test-function` runs a viewer-request Function on the real runtime.
+- `aws logs tail` has no `--until`. For a time window use `filter-log-events` with `--start-time $(date -d <ISO time> +%s)000` and `--end-time`. In a command for the user, set `export AWS_PAGER=` first, or the pager hides the output.
+- An API Gateway 5xx alarm with `Errors` and `Throttles` at 0 on the function means the function itself answered 5xx (a deliberate 503 such as maintenance mode) or API Gateway rejected the response. The built-in `5xx` metric has no path and no status split: turn on the access log of the stage.
 
 ## CloudFront Functions are not Node
 
