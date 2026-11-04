@@ -167,10 +167,14 @@ brew "thetillhoff/tap/webscan", trusted: true
 # Terminal-based AI coding assistant
 cask "claude-code"
 cask "font-meslo-lg-nerd-font"
+# Terminal emulator that uses platform-native UI and GPU acceleration
+cask "ghostty"
 # A fast, cross-platform build tool inspired by Make, designed for modern workflows.
 cask "go-task/tap/go-task", trusted: true
 # Backup/restore tool
 cask "kopiaui"
+# Automatically quit apps when their last window is closed
+cask "last-window-quits"
 # Interactive JavaScript, Python or SQL interface
 cask "mysql-shell"
 # Tool to reverse the direction of scrolling
