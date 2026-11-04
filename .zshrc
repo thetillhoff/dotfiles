@@ -324,11 +324,15 @@ if command -v nmap >/dev/null 2>&1; then
 fi
 
 # nvm with nvmrc
-[ -d "$HOME/.nvm" ] \
-&& export NVM_DIR="$HOME/.nvm"
+export NVM_DIR="$HOME/.nvm"
+mkdir -p "$NVM_DIR"
+
+# Homebrew's nvm keeps nvm.sh outside NVM_DIR
+NVM_SH="$NVM_DIR/nvm.sh"
+[ -s "$NVM_SH" ] || NVM_SH="$BREW_HOME/opt/nvm/nvm.sh"
 
 # --no-use skips slow version resolution at startup; load-nvmrc (chpwd hook) switches on demand
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" --no-use
+[ -s "$NVM_SH" ] && \. "$NVM_SH" --no-use
 
 # nvm / nvmrc
 autoload -U add-zsh-hook
