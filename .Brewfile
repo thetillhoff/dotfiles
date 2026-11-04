@@ -122,6 +122,8 @@ brew "sops"
 brew "sqlc"
 # Cross-shell prompt for astronauts
 brew "starship"
+# Easiest, most secure way to use WireGuard and 2FA
+brew "tailscale"
 # User interface to the TELNET protocol
 brew "telnet"
 # Clean up files in directories based on their age
@@ -179,5 +181,7 @@ cask "last-window-quits"
 cask "mysql-shell"
 # Tool to reverse the direction of scrolling
 cask "scroll-reverser"
+# Mesh VPN based on WireGuard
+cask "tailscale-app"
 # Pluggable Terraform linter
 cask "terraform-linters/tap/tflint", trusted: true
