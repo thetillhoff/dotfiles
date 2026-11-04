@@ -323,38 +323,40 @@ if command -v nmap >/dev/null 2>&1; then
   alias portscan="nmap -sT -T4 -vv -p-"
 fi
 
-# nvm with nvmrc
-export NVM_DIR="$HOME/.nvm"
-mkdir -p "$NVM_DIR"
-
-# Homebrew's nvm keeps nvm.sh outside NVM_DIR
-NVM_SH="$NVM_DIR/nvm.sh"
-[ -s "$NVM_SH" ] || NVM_SH="$BREW_HOME/opt/nvm/nvm.sh"
-
-# --no-use skips slow version resolution at startup; load-nvmrc (chpwd hook) switches on demand
-[ -s "$NVM_SH" ] && \. "$NVM_SH" --no-use
-
-# nvm / nvmrc
 autoload -U add-zsh-hook
-load-nvmrc() {
-  local nvmrc_path
-  nvmrc_path="$(nvm_find_nvmrc)"
-  if [ -n "$nvmrc_path" ]; then
-    local nvmrc_node_version
-    nvmrc_node_version=$(nvm version "$(cat "${nvmrc_path}")")
 
-    if [ "$nvmrc_node_version" = "N/A" ]; then
-      nvm install
-    elif [ "$nvmrc_node_version" != "$(nvm version)" ]; then
-      nvm use
+# nvm with nvmrc; Homebrew's nvm keeps nvm.sh outside NVM_DIR
+NVM_SH=""
+for f in "$HOME/.nvm/nvm.sh" "$BREW_HOME/opt/nvm/nvm.sh"; do
+  [ -s "$f" ] && NVM_SH="$f" && break
+done
+
+if [ -n "$NVM_SH" ]; then
+  export NVM_DIR="$HOME/.nvm"
+  mkdir -p "$NVM_DIR"
+  # --no-use skips slow version resolution at startup; load-nvmrc (chpwd hook) switches on demand
+  \. "$NVM_SH" --no-use
+
+  load-nvmrc() {
+    local nvmrc_path
+    nvmrc_path="$(nvm_find_nvmrc)"
+    if [ -n "$nvmrc_path" ]; then
+      local nvmrc_node_version
+      nvmrc_node_version=$(nvm version "$(cat "${nvmrc_path}")")
+
+      if [ "$nvmrc_node_version" = "N/A" ]; then
+        nvm install
+      elif [ "$nvmrc_node_version" != "$(nvm version)" ]; then
+        nvm use
+      fi
+    elif [ -n "$(PWD=$OLDPWD nvm_find_nvmrc)" ] && [ "$(nvm version)" != "$(nvm version default)" ]; then
+      echo "Reverting to nvm default version"
+      nvm use default
     fi
-  elif [ -n "$(PWD=$OLDPWD nvm_find_nvmrc)" ] && [ "$(nvm version)" != "$(nvm version default)" ]; then
-    echo "Reverting to nvm default version"
-    nvm use default
-  fi
-}
-add-zsh-hook chpwd load-nvmrc
-load-nvmrc
+  }
+  add-zsh-hook chpwd load-nvmrc
+  load-nvmrc
+fi
 
 # Source per-project shell completions on cd (any repo shipping .completion.zsh)
 _load_dir_completion() { [[ -f .completion.zsh ]] && source .completion.zsh }
