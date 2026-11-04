@@ -41,6 +41,8 @@ AppImages/
 
 .cdk/
 
+.CFUserTextEncoding
+
 .claude.json
 .claude/*
 !.claude/CLAUDE.md
@@ -241,7 +243,8 @@ contexts/
 
 Desktop/
 
-Documents/
+# Documents is a symlink (OneDrive), so no trailing `/`
+Documents
 
 Downloads/
 
@@ -259,9 +262,8 @@ Music/
 
 ntws/
 
-# This is a symlink and therefore not a folder
-OneDrive - thetillhoff
-OneDrive/
+# Any OneDrive folder or symlink, whatever the organisation
+OneDrive*
 
 Pictures/
 
