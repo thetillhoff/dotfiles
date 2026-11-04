@@ -27,11 +27,10 @@ This repo is checked out in `~` itself, so `~/.claude` is the live copy. Never c
    git branch --set-upstream-to=origin/main main
    ```
 
-4. Install Homebrew. Add it to the `PATH`.
+4. Install Homebrew. The tracked `.zprofile` adds it to the `PATH` in new shells. Add it to the current shell.
 
    ```sh
    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-   echo 'eval "$(/opt/homebrew/bin/brew shellenv zsh)"' >> ~/.zprofile
    eval "$(/opt/homebrew/bin/brew shellenv zsh)"
    ```
 
@@ -47,9 +46,15 @@ This repo is checked out in `~` itself, so `~/.claude` is the live copy. Never c
    brew bundle install --file ~/.Brewfile
    ```
 
-7. Open a new terminal.
+7. Define the `sortjson` filter that `.gitattributes` uses. Claude Code rewrites `.claude/settings.json` with a changing key order. The filter sorts the keys, so git shows only real changes. Git does not run commands from tracked files, so each clone must define it. The filter needs `jq` from step 6.
 
-Before step 6, the shell prints errors for `nvm_find_nvmrc`, `starship` and `direnv`. The tools do not exist yet. The errors stop after step 7.
+   ```sh
+   git config filter.sortjson.clean 'jq -S .'
+   ```
+
+8. Open a new terminal.
+
+Before step 6, the shell prints errors for `nvm_find_nvmrc`, `starship` and `direnv`. The tools do not exist yet. The errors stop after step 8.
 
 ### Identity
 
