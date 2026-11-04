@@ -6,6 +6,7 @@ tap "go-task/tap", trusted: true
 tap "hashicorp/tap", trusted: true
 tap "siderolabs/tap", trusted: true
 tap "stripe/stripe-cli"
+tap "terraform-linters/tap"
 tap "thetillhoff/tap", trusted: true
 # Run your GitHub Actions locally
 brew "act"
@@ -144,26 +145,26 @@ brew "zsh-syntax-highlighting"
 # A database toolkit
 brew "ariga/tap/atlas", trusted: true
 # The easiest way to access your cloud.
-brew "common-fate/granted/granted"
+brew "common-fate/granted/granted", trusted: true
 # Remove all the resources from an AWS account
 brew "ekristen/tap/aws-nuke", trusted: true
-# Flux CLI
-brew "fluxcd/tap/flux"
+# CLI for GitOps continuous delivery
+brew "fluxcd/tap/flux", trusted: true
 # Packer
-brew "hashicorp/tap/packer"
+brew "hashicorp/tap/packer", trusted: true
 # Terraform
-brew "hashicorp/tap/terraform"
+brew "hashicorp/tap/terraform", trusted: true
 # CLI for out-of-band management of Kubernetes nodes created by Talos
-brew "siderolabs/tap/talosctl"
+brew "siderolabs/tap/talosctl", trusted: true
 # Stripe CLI utility
 brew "stripe/stripe-cli/stripe", trusted: true
 # Pi coding agent harness with model routing, bash safety, and subagent delegation
 brew "thetillhoff/tap/kern", trusted: true
 # Minimal golang templater for websites
-brew "thetillhoff/tap/temingo", link: false
+brew "thetillhoff/tap/temingo", link: false, trusted: true
 # Verifies web things
-brew "thetillhoff/tap/webscan"
-# Terminal-based AI coding agent
+brew "thetillhoff/tap/webscan", trusted: true
+# Terminal-based AI coding assistant
 cask "claude-code"
 cask "font-meslo-lg-nerd-font"
 # A fast, cross-platform build tool inspired by Make, designed for modern workflows.
@@ -174,3 +175,5 @@ cask "kopiaui"
 cask "mysql-shell"
 # Tool to reverse the direction of scrolling
 cask "scroll-reverser"
+# Pluggable Terraform linter
+cask "terraform-linters/tap/tflint", trusted: true
