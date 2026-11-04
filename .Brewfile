@@ -4,8 +4,6 @@ tap "ekristen/tap"
 tap "fluxcd/tap", trusted: true
 tap "go-task/tap", trusted: true
 tap "hashicorp/tap", trusted: true
-tap "homebrew/cask"
-tap "homebrew/core"
 tap "siderolabs/tap", trusted: true
 tap "stripe/stripe-cli"
 tap "thetillhoff/tap", trusted: true
@@ -125,8 +123,6 @@ brew "sqlc"
 brew "starship"
 # User interface to the TELNET protocol
 brew "telnet"
-# Linter for Terraform files
-brew "tflint"
 # Clean up files in directories based on their age
 brew "tmpreaper"
 # Program that allows you to count code, quickly
@@ -167,6 +163,8 @@ brew "thetillhoff/tap/kern", trusted: true
 brew "thetillhoff/tap/temingo", link: false
 # Verifies web things
 brew "thetillhoff/tap/webscan"
+# Terminal-based AI coding agent
+cask "claude-code"
 cask "font-meslo-lg-nerd-font"
 # A fast, cross-platform build tool inspired by Make, designed for modern workflows.
 cask "go-task/tap/go-task", trusted: true

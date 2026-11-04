@@ -10,10 +10,16 @@
   ],
   "trustedformulae": [
     "ariga/tap/atlas",
+    "common-fate/granted/granted",
     "ekristen/tap/aws-nuke",
-    "fwdcloudsec/granted/granted",
+    "fluxcd/tap/flux",
+    "hashicorp/tap/packer",
+    "hashicorp/tap/terraform",
+    "siderolabs/tap/talosctl",
     "stripe/stripe-cli/stripe",
-    "thetillhoff/tap/kern"
+    "thetillhoff/tap/kern",
+    "thetillhoff/tap/temingo",
+    "thetillhoff/tap/webscan"
   ],
   "trustedcasks": [
     "go-task/tap/go-task"

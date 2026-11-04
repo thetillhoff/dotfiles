@@ -127,10 +127,16 @@ source $ZSH/oh-my-zsh.sh
 && bashcompinit \
 && complete -C "$BREW_HOME/bin/aws_completer" aws
 
-# brew
-if command -v brew >/dev/null 2>&1; then
-  alias brew="brew bundle dump --file=$HOME/.Brewfile --force --no-flatpak --no-npm --no-go --no-cargo --no-uv --no-krew --no-vscode --no-mas --no-winget 2>/dev/null; brew"
-fi
+# brew: refresh ~/.Brewfile after a successful change; macOS only, because a Linux dump would drop mac-only entries
+brew() {
+  command brew "$@" || return
+  case "$1" in
+    install|uninstall|reinstall|tap|untap)
+      [ "$(uname -s)" = "Darwin" ] \
+      && command brew bundle dump --file="$HOME/.Brewfile" --force --no-flatpak --no-npm --no-go --no-cargo --no-uv --no-krew --no-vscode --no-mas --no-winget 2>/dev/null
+      ;;
+  esac
+}
 
 # clear
 alias cls="clear"
@@ -356,10 +362,6 @@ if command -v pbpaste >/dev/null 2>&1; then
   alias paste="pbpaste"
 fi
 
-# TODO remove
-# powerlevel10k
-# [ -s "$HOME/.p10k.zsh" ] \
-# && source $HOME/.p10k.zsh
 
 # rancher desktop
 [ -s "$HOME/.rd/bin" ] \
@@ -642,11 +644,6 @@ cenv() {
 # ensure nerdfonts are installed
 # [ -s "$BREW_HOME" ] && [ -s "$BREW_HOME/Caskroom/font-meslo-lg-nerd-font" ] || brew install --cask font-meslo-lg-nerd-font
 
-# TODO remove
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-# [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
-
-# TODO enable
 eval "$(starship init zsh)"
 
 eval "$(direnv hook zsh)"

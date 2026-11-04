@@ -2,29 +2,67 @@
 
 This repo is checked out in `~` itself, so `~/.claude` is the live copy. Never clone it a second time.
 
-```sh
-git init
-git remote add origin git@github.com:thetillhoff/dotfiles.git
-git branch --set-upstream-to=origin/main main
-git pull
-git checkout main # not sure if needed
+## Initial setup (macOS)
 
- brew tap thetillhoff/homebrew-tap
- brew tap hashicorp/tap
- brew tap fluxcd/tap
-cat .brew-list | xargs brew install
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+1. Install the command line tools. Git needs them.
 
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" # Install oh-my-zsh
-git reset --hard
-git checkout main -f
-git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k # Install powerlevel10k
-brew install --cask font-meslo-lg-nerd-font # Install nerd-font
-```
+   ```sh
+   xcode-select --install
+   ```
 
-```sh
-touch .hushlogin # Silence iterm2 startup message
-```
+2. Create an SSH key. Add the public key to GitHub.
+
+   ```sh
+   ssh-keygen -t ed25519 -C "<email>"
+   cat ~/.ssh/id_ed25519.pub
+   ```
+
+3. Check out this repo into `~`.
+
+   ```sh
+   cd ~
+   git init
+   git remote add origin git@github.com:thetillhoff/dotfiles.git
+   git pull origin main
+   git branch --set-upstream-to=origin/main main
+   ```
+
+4. Install Homebrew. Add it to the `PATH`.
+
+   ```sh
+   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+   echo 'eval "$(/opt/homebrew/bin/brew shellenv zsh)"' >> ~/.zprofile
+   eval "$(/opt/homebrew/bin/brew shellenv zsh)"
+   ```
+
+5. Install oh-my-zsh. Answer `n` to the question about `.zshrc`, so the installer keeps the `.zshrc` of this repo.
+
+   ```sh
+   sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+   ```
+
+6. Install all packages, taps and casks from `.Brewfile`. This includes the Nerd Font and Claude Code.
+
+   ```sh
+   brew bundle install --file ~/.Brewfile
+   ```
+
+7. Open a new terminal.
+
+Before step 6, the shell prints errors for `nvm_find_nvmrc`, `starship` and `direnv`. The tools do not exist yet. The errors stop after step 7.
+
+### Identity
+
+`.gitconfig` sets no email. Git takes the identity from these tracked files:
+
+- `~/code/.gitconfig`: default for every repo under `~`.
+- `~/code/<org>/.gitconfig`: overrides the default for the repos in that directory. Add a matching `includeIf` to `.gitconfig` for a new org.
+
+### Maintain `.Brewfile`
+
+`.Brewfile` is shared by macOS and Linux. On Linux, `brew bundle install` can fail for mac-only entries. Install the rest and ignore those.
+
+On macOS, the `brew` function in `.zshrc` rewrites `.Brewfile` after a successful `install`, `uninstall`, `reinstall`, `tap` or `untap`. It does nothing on Linux, because a Linux dump would drop the mac-only entries. On Linux, edit the file by hand.
 
 ## amdgpu GPU-hang coredump capture
 

@@ -1,8 +1,6 @@
 [user]
 	name = Till Hoffmann
-	# No global email/signingkey on purpose: commits outside a known org dir
-	# must fail until an includeIf below sets an identity.
-	# Per-org email+signingkey live in ~/.gitconfigs/<org>.
+	# No global email on purpose: identity comes from the includeIf files below.
 	# useConfigOnly makes git ERROR on unset email instead of guessing user@host.
 	useConfigOnly = true
 [commit]
@@ -31,13 +29,12 @@
 [tag]
 	sort = -v:refname
 
-# gitconfigs
-# Identity lives in a per-machine ~/code/.gitconfig (flat layout) and/or a
-# per-owner ~/code/<owner>/.gitconfig. Missing include files are no-ops, so the
-# same config works across machines regardless of which layout is present.
+# Identity files
+# ~/code/.gitconfig is the default for every repo under ~. A per-org file
+# overrides it, because the later include wins. Missing files are no-ops.
 [includeIf "gitdir:~/"]
-	path = ~/code/.gitconfig
-[includeIf "gitdir:~/"]
-	path = ~/code/thetillhoff/.gitconfig
+    path = ~/code/.gitconfig
 [includeIf "gitdir:~/code/thetillhoff/"]
-	path = ~/code/thetillhoff/.gitconfig
+    path = ~/code/thetillhoff/.gitconfig
+[includeIf "gitdir:~/code/cloudastro/"]
+    path = ~/code/cloudastro/.gitconfig

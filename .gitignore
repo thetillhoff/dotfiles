@@ -232,8 +232,9 @@ Applications/
 # !code/*.*
 # !code/*
 code/.DS_Store
-code/*/
+code/*/*
 !code/*/.envrc
+!code/.gitconfig
 !code/*/.gitconfig
 
 contexts/
