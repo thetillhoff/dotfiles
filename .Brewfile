@@ -90,6 +90,8 @@ brew "mysql-client"
 brew "ncdu"
 # Port scanning utility for large networks
 brew "nmap"
+# Open-source, cross-platform JavaScript runtime environment
+brew "node"
 # Manage multiple Node.js versions
 brew "nvm"
 # Drop-in replacement for Terraform. Infrastructure as Code Tool
