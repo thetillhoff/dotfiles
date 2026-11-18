@@ -9,6 +9,8 @@
 - **Start every new topic or feature from the latest upstream state.** Before you write code, run `git pull` on the current branch. Before you branch off `main`, check out `main` and pull it first. This prevents work that starts from a stale base.
 - **Run `git branch --show-current` right before every commit.** Another process can switch the branch of the checkout during a session. Run it in its own call and read the answer before you commit: a `branch && commit` chain commits on the wrong branch (it happened, on `main`).
 - **Another session can work in the same repo.** Run `git status` before a commit and stage by path, never `git add -A`: its uncommitted files are not yours. That session can commit in the middle of yours.
+- **`git rm` and `git mv` stage at once.** A later `git add <paths> && git commit` also commits that staged deletion, so it lands in the wrong commit. Run `git diff --cached --name-only` before each commit, or delete with plain `rm` and stage the deletion together with its own commit.
+- **Push only what the user asked you to push in this turn.** The auto-mode classifier denies a push of a follow-up commit. Commit it, then give the user the `! git push` command.
 - **A file can hold a hunk of another session.** Stage only your change: write `git show HEAD:<path>` plus your edit to a temp file, run `git hash-object -w <temp>`, then `git update-index --cacheinfo 100644,<hash>,<path>`, then commit. The working tree keeps the other hunk.
 - **Never pass a commit message with `git commit -m "..."` if it contains backticks.** The shell substitutes them and runs the contents as a command. Always use a quoted heredoc, which substitutes nothing:
 
@@ -101,7 +103,7 @@ Every comment is another thing to update, review, and re-read. A stale one is wo
 - **Never write a parser or adapter against an invented fixture.** Capture one real payload from the live endpoint FIRST, commit it as the fixture, then write the code. A fabricated fixture makes every test compare the code against your own assumption, so no test can fail on the one thing that is wrong.
 - **A surprising result is a measurement bug until proven otherwise.** Contradictions (0 trades + high exposure) → distrust the parse/instrument before the system.
 - **Verify the premise before building the fix.** One cheap measurement of the real bottleneck beats a confident assumption. Never optimize an unmeasured cost. A timeout or time budget comes from the run times of the real job in the real environment (several runs, slow ones included). A `curl` of one endpoint or a number in a comment is not that measurement: a 5 minute budget set from a guess failed every run of a job that takes 7 to 13 minutes.
-- **Structured data → real parsers.** pandas for CSVs (fields contain commas); shell arrays for lists. Never `awk -F,` column-splitting; never unquoted `for x in $VAR` / `set -- $x` in zsh (it doesn't word-split — use `${=var}` or arrays).
+- **Structured data → real parsers.** pandas for CSVs (fields contain commas); shell arrays for lists. Never `awk -F,` column-splitting; never unquoted `for x in $VAR` / `set -- $x` in zsh (it doesn't word-split — use `${=var}` or arrays). Symptom: the loop runs once with the whole list as one word, for example `kubectl get "ns longhorn"` gives `the server doesn't have a resource type`.
 
 ## Scheduled Jobs: Avoid Minute 00 and 30
 
@@ -129,6 +131,10 @@ Always `cd <path> && <cmd>` — never use flag-based directory overrides like `g
 For shell-based in-place text replacements, use `sed` — never `perl -pi`. (Prefer the Edit tool over both when editing a known file.)
 
 Never address a line by number (`sed -i '47d'`) in a file that you edited earlier in the session: the numbers shift. Match a pattern, or use Edit.
+
+macOS `sed` (BSD) puts a literal `n` for `\n` in a replacement. Use a backslash followed by a real newline, or `awk`.
+
+Never rewrite a whole file (`cat > file`) from a view that you filtered (`grep -v '#'`): the rewrite drops the comments that the view hid. Edit the file in place.
 
 ### Granted/`assume`: never pipe it, always verify identity before an apply
 

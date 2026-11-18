@@ -127,6 +127,12 @@ than forbidding it. Same retrofit trap for any immutable field (Service `cluster
 kubectl apply --server-side --dry-run=server --context=<remote-ctx> -f <file>
 ```
 
+On a slow link the client times out while it downloads the OpenAPI schema (`failed to download openapi`). Add `--validate=false --request-timeout=60s`; that also skips the check for unknown fields. Then check a new field against the CRD instead (`kubectl get crd <name> -o json | jq '...properties | has("<field>")'`). The server still rejects an invalid CEL expression: dry-run a broken copy once to prove the check works.
+
+## A changed CronJob schedule runs the missed slot
+
+When the schedule of a CronJob (also the one behind a Longhorn RecurringJob) moves to a later time of day, the controller can run the most recent "missed" slot at the next sync. The Job name shows the slot (`<name>-<minutes since epoch>`). The day of the change then has two runs; plan for that in jobs that lock shared state, such as backups.
+
 ## A Flux Kustomization is all-or-nothing
 
 One resource failing its dry-run aborts the WHOLE Kustomization - every other manifest in it silently
@@ -137,6 +143,14 @@ code:
 kubectl get kustomization <name> -n flux-system --context=<ctx> \
   -o 'jsonpath={range .status.conditions[*]}{.type}={.status} {.message}{"\n"}{end}'
 ```
+
+To watch a push roll out, wait until every Kustomization is `Ready` at the new commit; the revision ends in the commit hash:
+
+```bash
+kubectl get kustomizations -n flux-system --context=<ctx> -o json | jq -r '.items[] | "\(.metadata.name) \(.status.lastAppliedRevision | split(":")[-1][0:8]) \(.status.conditions[] | select(.type=="Ready") | .status)"'
+```
+
+A source that failed backs off exponentially (about 1, 2, 3, 6, 13 minutes). After the cause is gone, it recovers at its next retry; forcing a reconcile is a write.
 
 `spec.force: true` makes Flux delete and recreate on such a failure. Do not reach for it to escape one
 bad manifest: it applies to every resource in the Kustomization, including StatefulSets whose PVCs you

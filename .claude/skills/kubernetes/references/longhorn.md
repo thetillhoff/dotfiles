@@ -27,6 +27,13 @@ kubectl -n longhorn delete volumes.longhorn.io <pv-name>
 - The default `networkPolicies` (rendered since chart 1.12.1) block Prometheus from scraping longhorn-manager on `:9500`. Set `restrictInternalTraffic: false`, or set `metricsScrapeSources`.
 - Longhorn never prunes the backups of a deleted volume. List `backupvolumes.longhorn.io` and delete the stale ones by hand.
 
+## Backups
+
+- `failed to acquire lock backupstore/volumes/... please try again later` means two backup operations on one volume at once, for example a second run while the retention cleanup of the first still deletes. A RecurringJob Job retries the whole run (`backoffLimit: 3`), and each retry backs up every volume again, which makes the collisions worse. A system backup collides with it as well.
+- Alert on `time() - longhorn_volume_last_backup_at`, not on `longhorn_backup_state == 4`: a Backup object in state Error stays until someone deletes it, so that alert keeps firing after a later backup succeeds.
+- `longhorn_backup_target_status` has one series per `condition`; `condition="unavailable"` is 1 while the target is down.
+- A `system-backup` RecurringJob with `volume-backup-policy: if-not-present` points to the newest volume backups. Schedule it after the volume backup job.
+
 ## A stale attachment ticket pins an RWX volume to another node
 
 A foreign ticket on a Longhorn RWX volume (`kubectl get volumeattachments.longhorn.io -n longhorn <pvc> -o jsonpath='{.spec.attachmentTickets}'`) keeps the volume on that node. The share-manager stays stopped, and every mount hangs in `ContainerCreating`. Remove the foreign ticket. A job that waits on such a mount shows `Running` for ever, so give long waits a timeout.
