@@ -74,6 +74,8 @@ brew "jq"
 brew "kind"
 # Tool that can switch between kubectl contexts easily and create aliases
 brew "kubectx"
+# Kubernetes command-line interface
+brew "kubernetes-cli"
 # Postgres C API library
 brew "libpq"
 # High quality, one-dimensional sample-rate conversion library
